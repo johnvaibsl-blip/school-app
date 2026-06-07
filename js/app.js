@@ -135,6 +135,14 @@ function showScreen(id) {
     else if (examTimerInterval) clearInterval(examTimerInterval);
     if (id === 'screen-my-study' && USER_ROLE === 'student') loadLibraryGrid();
     if (id === 'screen-content-library' && (USER_ROLE === 'teacher' || USER_ROLE === 'admin')) loadTeacherContentLibrary();
+    if (id === 'screen-home' && USER_ROLE === 'student') loadStudentHome();
+    if (id === 'screen-teacher-dash' && USER_ROLE === 'teacher') loadTeacherDashboard();
+    if (id === 'screen-notif') loadNotifications();
+    if (id === 'screen-homework') loadHomeworkList();
+    if (id === 'screen-exam') loadExamList();
+    if (id === 'screen-announcements') loadAnnouncements();
+    if (id === 'screen-pricing') loadPackages();
+    if (id === 'screen-tutors') loadTeacherRankings();
 }
 
 function navTo(btn, screenId) {
@@ -872,4 +880,342 @@ function loadTeacherContentLibrary() {
         .catch(function() {
             container.innerHTML = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">Failed to load content.</p>';
         });
+}
+
+// === PHASE 1: DYNAMIC LOADING FUNCTIONS ===
+
+// Helper: fetch JSON
+function api(action, params) {
+    var url = '/api/index.php?action=' + action;
+    if (params) { Object.keys(params).forEach(function(k) { url += '&' + k + '=' + encodeURIComponent(params[k]); }); }
+    return fetch(url).then(function(r) { return r.json(); });
+}
+
+// Helper: get subject name by id
+function getSubjectName(id) {
+    var map = {1:'Mathematics',2:'English',3:'Science',4:'Bangla',5:'Physics',6:'Chemistry',7:'Biology',8:'ICT',9:'Geography',10:'Religion',11:'Accounting',12:'Finance',13:'History'};
+    return map[id] || 'General';
+}
+
+// Helper: get subject icon by id
+function getSubjectIcon(id) {
+    var map = {1:'calculator',2:'book-text',3:'flask-conical',4:'pen-tool',5:'atom',6:'test-tubes',7:'bug',8:'laptop',9:'globe',10:'landmark',11:'calculator',12:'wallet',13:'landmark'};
+    return map[id] || 'book-open';
+}
+
+// Helper: get subject color by id
+function getSubjectColor(id) {
+    var map = {1:'#3B82F6',2:'#8B5CF6',3:'#22C55E',4:'#F59E0B',5:'#3B82F6',6:'#06B6D4',7:'#10B981',8:'#06B6D4',9:'#F97316',10:'#EC4899',11:'#F59E0B',12:'#06B6D4',13:'#8B5CF6'};
+    return map[id] || '#6366F1';
+}
+
+// Helper: format date
+function formatDate(d) {
+    if (!d) return '';
+    var dt = new Date(d);
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return dt.getDate() + ' ' + months[dt.getMonth()] + ', ' + dt.getFullYear();
+}
+
+// === STUDENT HOME ===
+function loadStudentHome() {
+    // Set name
+    var nameEl = document.getElementById('homeUserName');
+    if (nameEl) nameEl.textContent = USER_NAME.split(' ')[0];
+    var avatarEl = document.getElementById('homeUserAvatar');
+    if (avatarEl) avatarEl.textContent = (USER_NAME || 'U')[0].toUpperCase();
+    var classEl = document.getElementById('homeUserClass');
+    if (classEl) classEl.textContent = USER_CLASS || 'Class 8';
+
+    // Load progress
+    api('student_progress').then(function(prog) {
+        if (prog && prog.id) {
+            var streakEl = document.getElementById('homeStreak');
+            var levelEl = document.getElementById('homeLevel');
+            var xpEl = document.getElementById('homeXP');
+            var xpBar = document.getElementById('homeXPBar');
+            var booksEl = document.getElementById('homeBooks');
+            var hwScoreEl = document.getElementById('homeHWScore');
+            var examScoreEl = document.getElementById('homeExamScore');
+            var streakBadge = document.getElementById('homeStreakBadge');
+            if (streakEl) streakEl.textContent = prog.streak || 0;
+            if (streakBadge) streakBadge.textContent = prog.streak || 0;
+            if (levelEl) levelEl.textContent = 'Level ' + Math.floor((prog.books_read || 0) / 2 + 1) + ' Learner';
+            if (xpEl) xpEl.textContent = ((prog.study_hours || 0) * 50) + ' / 3,000 XP';
+            if (xpBar) xpBar.style.width = Math.min(((prog.study_hours || 0) * 50 / 3000) * 100, 100) + '%';
+            if (booksEl) booksEl.textContent = (prog.books_read || 0) + ' / 30';
+            if (hwScoreEl) hwScoreEl.textContent = (prog.homework_score || 0) + '%';
+            if (examScoreEl) examScoreEl.textContent = (prog.exam_score || 0) + '%';
+        }
+    }).catch(function(){});
+
+    // Load notification count
+    api('notifications').then(function(nots) {
+        var unread = (nots || []).filter(function(n) { return !n.is_read; }).length;
+        var badge = document.getElementById('homeNotifBadge');
+        if (badge) badge.textContent = unread || 0;
+    }).catch(function(){});
+
+    // Load homework count
+    api('homework').then(function(hw) {
+        var pending = (hw || []).filter(function(h) { return h.status === 'pending'; }).length;
+        var el = document.getElementById('homeHWPending');
+        if (el) el.textContent = pending + ' pending';
+    }).catch(function(){});
+
+    // Load exam count
+    api('exams').then(function(exams) {
+        var upcoming = (exams || []).filter(function(e) { return e.status === 'upcoming'; }).length;
+        var el = document.getElementById('homeExamUpcoming');
+        if (el) el.textContent = upcoming + ' upcoming';
+    }).catch(function(){});
+
+    // Load live class
+    api('live_classes').then(function(classes) {
+        var next = (classes || []).find(function(c) { return c.status === 'live' || c.status === 'scheduled'; });
+        var el = document.getElementById('homeLiveClass');
+        if (el && next) {
+            var subjName = getSubjectName(next.subject_id);
+            el.textContent = subjName + ' - ' + (next.start_time || '');
+        } else if (el) {
+            el.textContent = 'No upcoming class';
+        }
+    }).catch(function(){});
+
+    // Load mentors count
+    api('teachers').then(function(teachers) {
+        var el = document.getElementById('homeMentors');
+        if (el) el.textContent = (teachers || []).length + ' Mentors Active';
+    }).catch(function(){});
+}
+
+// === TEACHER DASHBOARD ===
+function loadTeacherDashboard() {
+    // Set name
+    var nameEl = document.getElementById('teacherDashName');
+    if (nameEl) nameEl.textContent = USER_NAME.split(' ')[0];
+    var avatarEl = document.getElementById('teacherDashAvatar');
+    if (avatarEl) avatarEl.textContent = (USER_NAME || 'T')[0].toUpperCase();
+    var greetingEl = document.getElementById('teacherGreetingName');
+    if (greetingEl) greetingEl.textContent = USER_NAME.split(' ')[0];
+
+    // Load teacher profile
+    api('teachers').then(function(teachers) {
+        var t = (teachers || []).find(function(te) { return te.name === USER_NAME; });
+        if (t) {
+            var el = document.getElementById('teacherDashSubject');
+            if (el) el.textContent = t.subject || 'Teacher';
+        }
+    }).catch(function(){});
+
+    // Load stats
+    api('teachers').then(function(teachers) {
+        var t = (teachers || []).find(function(te) { return te.name === USER_NAME; });
+        if (t) {
+            var els = { students: document.getElementById('teacherStatStudents'), reports: document.getElementById('teacherStatReports'), pending: document.getElementById('teacherStatPending'), classes: document.getElementById('teacherStatClasses') };
+            if (els.students) els.students.textContent = t.total_students || 0;
+        }
+    }).catch(function(){});
+
+    // Load pending homework submissions count
+    api('homework_submissions').then(function(subs) {
+        var pending = (subs || []).filter(function(s) { return s.status === 'submitted'; }).length;
+        var el = document.getElementById('teacherStatPending');
+        if (el) el.textContent = pending || 0;
+    }).catch(function(){});
+
+    // Load today's classes
+    api('live_classes').then(function(classes) {
+        var container = document.getElementById('teacherTodayClasses');
+        if (!container) return;
+        var html = '';
+        (classes || []).forEach(function(c) {
+            var subjName = getSubjectName(c.subject_id);
+            var color = getSubjectColor(c.subject_id);
+            var statusColor = c.status === 'live' ? '#EF4444' : '#10B981';
+            var statusText = c.status === 'live' ? 'LIVE' : 'Scheduled';
+            html += '<div class="list-item" style="cursor:pointer">' +
+                '<div class="icon-box sm" style="background:' + color + '20;color:' + color + '"><i data-lucide="' + getSubjectIcon(c.subject_id) + '" class="icon-sm"></i></div>' +
+                '<div class="list-item-content"><h5>' + subjName + '</h5><p>' + (c.start_time || '') + ' - ' + (c.end_time || '') + '</p></div>' +
+                '<span class="list-item-badge" style="background:' + statusColor + '20;color:' + statusColor + '">' + statusText + '</span></div>';
+        });
+        if (!html) html = '<p style="text-align:center;padding:16px;font-size:12px;color:var(--text3)">No classes today</p>';
+        container.innerHTML = html;
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    }).catch(function(){});
+
+    // Load recent submissions
+    api('homework_submissions').then(function(subs) {
+        var container = document.getElementById('teacherRecentSubs');
+        if (!container) return;
+        var recent = (subs || []).slice(0, 3);
+        var html = '';
+        recent.forEach(function(s) {
+            var color = s.status === 'graded' ? '#10B981' : s.status === 'revision' ? '#EF4444' : '#F59E0B';
+            var statusText = s.status.charAt(0).toUpperCase() + s.status.slice(1);
+            html += '<div class="list-item" style="cursor:pointer">' +
+                '<div class="icon-box sm" style="background:' + color + '20;color:' + color + '"><i data-lucide="file-text" class="icon-sm"></i></div>' +
+                '<div class="list-item-content"><h5>Submission #' + s.id + '</h5><p>' + statusText + ' - HW #' + s.homework_id + '</p></div>' +
+                '<span class="list-item-badge" style="background:' + color + '20;color:' + color + '">' + statusText + '</span></div>';
+        });
+        if (!html) html = '<p style="text-align:center;padding:16px;font-size:12px;color:var(--text3)">No submissions yet</p>';
+        container.innerHTML = html;
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    }).catch(function(){});
+}
+
+// === NOTIFICATIONS ===
+function loadNotifications() {
+    var container = document.getElementById('notifList');
+    if (!container) return;
+    api('notifications').then(function(items) {
+        var html = '';
+        (items || []).forEach(function(n) {
+            var iconMap = { homework: 'file-text', exam: 'clipboard', class: 'tv', broadcast: 'megaphone', system: 'info' };
+            var colorMap = { homework: '#F59E0B', exam: '#EF4444', class: '#3B82F6', broadcast: '#8B5CF6', system: '#6366F1' };
+            var icon = iconMap[n.type] || 'bell';
+            var color = colorMap[n.type] || '#6366F1';
+            var readStyle = n.is_read ? 'opacity:0.6' : '';
+            html += '<div class="list-item" style="' + readStyle + '">' +
+                '<div class="icon-box sm" style="background:' + color + '20;color:' + color + '"><i data-lucide="' + icon + '" class="icon-sm"></i></div>' +
+                '<div class="list-item-content"><h5>' + (n.title || '') + '</h5><p>' + (n.message || '') + '</p></div></div>';
+        });
+        if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No notifications</p>';
+        container.innerHTML = html;
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    }).catch(function() {
+        container.innerHTML = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">Failed to load</p>';
+    });
+}
+
+// === HOMEWORK LIST ===
+function loadHomeworkList() {
+    var container = document.getElementById('homeworkList');
+    if (!container) return;
+    api('homework').then(function(items) {
+        var html = '';
+        (items || []).forEach(function(h) {
+            var subjName = getSubjectName(h.subject_id);
+            var color = getSubjectColor(h.subject_id);
+            var icon = getSubjectIcon(h.subject_id);
+            var statusColor = h.status === 'submitted' ? '#10B981' : '#F59E0B';
+            html += '<div class="glass-card" style="padding:14px;cursor:pointer" onclick="showScreen(\'screen-hw-detail\')">' +
+                '<div style="display:flex;align-items:center;gap:10px">' +
+                '<div class="icon-box sm" style="background:' + color + '20;color:' + color + '"><i data-lucide="' + icon + '" class="icon-sm"></i></div>' +
+                '<div style="flex:1"><h5 style="font-size:13px;font-weight:600">' + (h.title || '') + '</h5>' +
+                '<p style="font-size:10px;color:var(--text3)">' + subjName + ' - Due: ' + formatDate(h.due_date) + '</p></div>' +
+                '<span class="list-item-badge" style="background:' + statusColor + '20;color:' + statusColor + '">' + (h.status || '') + '</span>' +
+                '</div></div>';
+        });
+        if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No homework assigned</p>';
+        container.innerHTML = html;
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    }).catch(function() {
+        container.innerHTML = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">Failed to load</p>';
+    });
+}
+
+// === EXAM LIST ===
+function loadExamList() {
+    var container = document.getElementById('examList');
+    if (!container) return;
+    api('exams').then(function(items) {
+        var html = '';
+        (items || []).forEach(function(e) {
+            var subjName = getSubjectName(e.subject_id);
+            var color = getSubjectColor(e.subject_id);
+            var statusColor = e.status === 'upcoming' ? '#F59E0B' : e.status === 'completed' ? '#10B981' : '#EF4444';
+            html += '<div class="glass-card" style="padding:14px;cursor:pointer" onclick="showScreen(\'screen-exam-interface\')">' +
+                '<div style="display:flex;align-items:center;gap:10px">' +
+                '<div class="icon-box sm" style="background:' + color + '20;color:' + color + '"><i data-lucide="clipboard" class="icon-sm"></i></div>' +
+                '<div style="flex:1"><h5 style="font-size:13px;font-weight:600">' + (e.title || '') + '</h5>' +
+                '<p style="font-size:10px;color:var(--text3)">' + subjName + ' - ' + formatDate(e.exam_date) + ' - ' + (e.total_marks || 0) + ' marks</p></div>' +
+                '<span class="list-item-badge" style="background:' + statusColor + '20;color:' + statusColor + '">' + (e.status || '') + '</span>' +
+                '</div></div>';
+        });
+        if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No exams scheduled</p>';
+        container.innerHTML = html;
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    }).catch(function() {
+        container.innerHTML = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">Failed to load</p>';
+    });
+}
+
+// === ANNOUNCEMENTS ===
+function loadAnnouncements() {
+    var container = document.getElementById('announcementList');
+    if (!container) return;
+    api('announcements').then(function(items) {
+        var html = '';
+        (items || []).forEach(function(a) {
+            var iconMap = { exam: 'clipboard', general: 'info', event: 'calendar', homework: 'file-text' };
+            var colorMap = { exam: '#EF4444', general: '#6366F1', event: '#10B981', homework: '#F59E0B' };
+            var icon = iconMap[a.category] || 'megaphone';
+            var color = colorMap[a.category] || '#6366F1';
+            html += '<div class="glass-card" style="padding:14px">' +
+                '<div style="display:flex;align-items:start;gap:10px">' +
+                '<div class="icon-box sm" style="background:' + color + '20;color:' + color + '"><i data-lucide="' + icon + '" class="icon-sm"></i></div>' +
+                '<div style="flex:1"><h5 style="font-size:13px;font-weight:600">' + (a.title || '') + '</h5>' +
+                '<p style="font-size:11px;color:var(--text3);margin-top:2px">' + (a.message || '') + '</p>' +
+                '<p style="font-size:9px;color:var(--text3);margin-top:4px">' + formatDate(a.created_at) + '</p></div>' +
+                '</div></div>';
+        });
+        if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No announcements</p>';
+        container.innerHTML = html;
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    }).catch(function() {
+        container.innerHTML = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">Failed to load</p>';
+    });
+}
+
+// === PACKAGES/PRICING ===
+function loadPackages() {
+    var container = document.getElementById('pricingList');
+    if (!container) return;
+    api('packages').then(function(items) {
+        var html = '';
+        (items || []).forEach(function(p) {
+            var features = (p.features || '').split(',');
+            var featureHtml = features.map(function(f) {
+                return '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)"><i data-lucide="check" style="width:12px;height:12px;color:#10B981"></i>' + f.trim() + '</div>';
+            }).join('');
+            var price = (p.price || 0).toLocaleString();
+            html += '<div class="glass-card" style="padding:20px;text-align:center;position:relative">' +
+                (p.is_active ? '<span style="position:absolute;top:10px;right:10px;background:linear-gradient(135deg,#10B981,#059669);color:white;font-size:9px;padding:3px 8px;border-radius:20px;font-weight:600">Popular</span>' : '') +
+                '<h3 style="font-size:16px;font-weight:700;margin-bottom:4px">' + (p.name || '') + '</h3>' +
+                '<div style="font-size:28px;font-weight:800;color:var(--primary);margin:12px 0">৳' + price + '</div>' +
+                '<p style="font-size:10px;color:var(--text3);margin-bottom:12px">' + (p.duration || 30) + ' days</p>' +
+                '<div style="text-align:left;padding:0 8px;margin-bottom:16px">' + featureHtml + '</div>' +
+                '<button class="btn-primary glass-btn" style="width:100%" onclick="showScreen(\'screen-payment\')">Choose Plan</button></div>';
+        });
+        if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No packages available</p>';
+        container.innerHTML = html;
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    }).catch(function() {
+        container.innerHTML = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">Failed to load</p>';
+    });
+}
+
+// === TEACHER RANKINGS ===
+function loadTeacherRankings() {
+    var container = document.getElementById('teacherRankingsList');
+    if (!container) return;
+    api('teachers').then(function(items) {
+        var sorted = (items || []).sort(function(a, b) { return (b.rating || 0) - (a.rating || 0); });
+        var html = '';
+        sorted.forEach(function(t, i) {
+            var medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1);
+            var medalStyle = i < 3 ? 'font-size:16px' : 'font-size:12px;font-weight:700;color:var(--text3)';
+            html += '<div class="list-item" style="cursor:pointer" onclick="showScreen(\'screen-teacher-profile\')">' +
+                '<div style="' + medalStyle + ';min-width:28px;text-align:center">' + medal + '</div>' +
+                '<div class="user-avatar" style="background:linear-gradient(135deg,' + getSubjectColor(t.subject === 'Mathematics' ? 1 : t.subject === 'English Literature' ? 2 : 3) + ',' + getSubjectColor(t.subject === 'Mathematics' ? 1 : t.subject === 'English Literature' ? 2 : 3) + '80);width:36px;height:36px;font-size:14px">' + (t.name || 'T')[0] + '</div>' +
+                '<div class="list-item-content"><h5>' + (t.name || '') + '</h5><p>' + (t.subject || '') + '</p></div>' +
+                '<div style="text-align:right"><div style="font-size:14px;font-weight:700;color:#F59E0B">⭐ ' + (t.rating || 0) + '</div><div style="font-size:9px;color:var(--text3)">' + (t.total_students || 0) + ' students</div></div></div>';
+        });
+        if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No teachers found</p>';
+        container.innerHTML = html;
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    }).catch(function() {
+        container.innerHTML = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">Failed to load</p>';
+    });
 }

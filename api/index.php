@@ -40,6 +40,31 @@ switch ($path) {
     case 'live_classes': jsonResponse($db->query('live_classes')); break;
     case 'announcements': jsonResponse($db->queryAll('SELECT * FROM announcements ORDER BY id DESC')); break;
     case 'packages': jsonResponse($db->query('packages')); break;
+    case 'notifications':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $role = $_SESSION['role'] ?? '';
+        $all = $db->query('notifications');
+        $filtered = array_filter($all, function($n) use ($role) {
+            return ($n['target_role'] ?? '') === $role || ($n['target_role'] ?? '') === 'all';
+        });
+        jsonResponse(array_values($filtered));
+        break;
+    case 'student_progress':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $sid = intval($_GET['student_id'] ?? $_SESSION['user_id'] ?? 0);
+        $prog = $db->find('student_progress', 'student_id', $sid);
+        jsonResponse($prog ?: []);
+        break;
+    case 'homework_submissions':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        jsonResponse($db->queryAll('SELECT * FROM homework_submissions ORDER BY id DESC'));
+        break;
+    case 'exam_results':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $eid = intval($_GET['student_id'] ?? $_SESSION['user_id'] ?? 0);
+        $results = $db->findAll('exam_results', 'student_id', $eid);
+        jsonResponse($results);
+        break;
     case 'library':
         $class = $_GET['class'] ?? '';
         $subjectId = $_GET['subject_id'] ?? '';

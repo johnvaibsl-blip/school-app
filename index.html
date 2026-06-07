@@ -117,30 +117,30 @@
         <div style="position:absolute;bottom:-20px;left:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.06)"></div>
         <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;position:relative;z-index:1">
             <div style="display:flex;align-items:center;gap:10px">
-                <div class="user-avatar" style="background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.4)">A</div>
+                <div class="user-avatar" id="homeUserAvatar" style="background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.4)">A</div>
                 <div>
-                    <h3 style="font-size:16px;font-weight:700;margin-bottom:1px">Hello, Arman <i data-lucide="hand" style="width:14px;height:14px;vertical-align:middle"></i></h3>
-                    <p style="font-size:10px;opacity:0.8">Class 8 <span class="premium-badge" style="background:linear-gradient(135deg,#FBBF24,#F59E0B);color:#78350F;font-weight:600"><i data-lucide="crown" style="width:8px;height:8px"></i> Premium</span></p>
+                    <h3 style="font-size:16px;font-weight:700;margin-bottom:1px">Hello, <span id="homeUserName">Student</span> <i data-lucide="hand" style="width:14px;height:14px;vertical-align:middle"></i></h3>
+                    <p style="font-size:10px;opacity:0.8"><span id="homeUserClass">Class 8</span> <span class="premium-badge" style="background:linear-gradient(135deg,#FBBF24,#F59E0B);color:#78350F;font-weight:600"><i data-lucide="crown" style="width:8px;height:8px"></i> Premium</span></p>
                 </div>
             </div>
             <div style="display:flex;align-items:center;gap:8px">
                 <button style="background:rgba(255,255,255,0.15);border:none;width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative" onclick="showScreen('screen-notif')">
                     <i data-lucide="bell" style="width:18px;height:18px;color:white"></i>
-                    <span style="position:absolute;top:-2px;right:-2px;width:16px;height:16px;background:#EF4444;border-radius:50%;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #10B981">3</span>
+                    <span style="position:absolute;top:-2px;right:-2px;width:16px;height:16px;background:#EF4444;border-radius:50%;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #10B981" id="homeNotifBadge">0</span>
                 </button>
                 <div style="background:rgba(255,255,255,0.15);border-radius:12px;padding:6px 10px;display:flex;align-items:center;gap:6px">
                     <i data-lucide="flame" style="width:16px;height:16px;color:#FBBF24"></i>
-                    <div><div style="font-size:14px;font-weight:800;line-height:1">7</div><div style="font-size:8px;opacity:0.7">Day Streak</div></div>
+                    <div><div style="font-size:14px;font-weight:800;line-height:1" id="homeStreak">0</div><div style="font-size:8px;opacity:0.7">Day Streak</div></div>
                 </div>
             </div>
         </div>
         <div style="position:relative;z-index:1">
             <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-                <span style="font-size:10px;opacity:0.85">Level 8 Learner</span>
-                <span style="font-size:10px;opacity:0.85">2,450 / 3,000 XP</span>
+                <span style="font-size:10px;opacity:0.85" id="homeLevel">Level 1 Learner</span>
+                <span style="font-size:10px;opacity:0.85" id="homeXP">0 / 3,000 XP</span>
             </div>
             <div style="background:rgba(255,255,255,0.2);border-radius:10px;height:8px;overflow:hidden">
-                <div style="background:white;border-radius:10px;height:100%;width:82%"></div>
+                <div style="background:white;border-radius:10px;height:100%;width:0%" id="homeXPBar"></div>
             </div>
         </div>
     </header>
@@ -306,7 +306,7 @@
                     <span class="live-badge"><span class="live-dot"></span> LIVE</span>
                 </div>
                 <h4>Live Class</h4>
-                <p>Math Class 8</p>
+                <p id="homeLiveClass">No upcoming class</p>
                 <p>Mr. Rahim</p>
                 <div class="mentor-avatar">R</div>
                 <button class="quick-card-btn">Join Now</button>
@@ -314,22 +314,19 @@
             <div class="quick-card orange" onclick="showScreen('screen-homework')">
                 <div class="quick-card-header"><span class="quick-card-icon"><i data-lucide="file-text" style="width:20px;height:20px"></i></span></div>
                 <h4>Homework</h4>
-                <p>4 Pending</p>
-                <p>2 Submitted</p>
+                <p id="homeHWPending">0 pending</p>
                 <button class="quick-card-btn" onclick="event.stopPropagation();showScreen('screen-homework')">View All</button>
             </div>
             <div class="quick-card blue" onclick="showScreen('screen-exam')">
                 <div class="quick-card-header"><span class="quick-card-icon"><i data-lucide="calendar" style="width:20px;height:20px"></i></span></div>
                 <h4>Upcoming Exam</h4>
-                <p>Science Test</p>
-                <p>23 May, 2025</p>
+                <p id="homeExamUpcoming">0 upcoming</p>
                 <button class="quick-card-btn">View Details</button>
             </div>
             <div class="quick-card green" onclick="showScreen('screen-tutors')">
                 <div class="quick-card-header"><span class="quick-card-icon"><i data-lucide="users" style="width:20px;height:20px"></i></span></div>
                 <h4>My Mentors</h4>
-                <p>3 Mentors</p>
-                <p>Active</p>
+                <p id="homeMentors">0 Mentors Active</p>
                 <button class="quick-card-btn" onclick="event.stopPropagation();showScreen('screen-tutors')">View All</button>
             </div>
         </div>
@@ -366,30 +363,26 @@
             <div class="stat-card">
                 <div class="stat-icon green"><i data-lucide="book-open" style="width:18px;height:18px"></i></div>
                 <h5>Books Read</h5>
-                <div class="val">12 <span>/ 30</span></div>
+                <div class="val"><span id="homeBooks">0 / 30</span></div>
                 <div class="stat-bar"><div class="stat-bar-fill" style="width:40%;background:#22C55E"></div></div>
-                <p class="lbl">40%</p>
             </div>
             <div class="stat-card">
                 <div class="stat-icon orange"><i data-lucide="file-text" style="width:18px;height:18px"></i></div>
                 <h5>Homework Score</h5>
-                <div class="val">85<span>%</span></div>
+                <div class="val"><span id="homeHWScore">0%</span></div>
                 <div class="stat-bar"><div class="stat-bar-fill" style="width:85%;background:#F97316"></div></div>
-                <p class="lbl great">Great!</p>
             </div>
             <div class="stat-card">
                 <div class="stat-icon blue"><i data-lucide="target" style="width:18px;height:18px"></i></div>
                 <h5>Exam Score</h5>
-                <div class="val">78<span>%</span></div>
+                <div class="val"><span id="homeExamScore">0%</span></div>
                 <div class="stat-bar"><div class="stat-bar-fill" style="width:78%;background:#3B82F6"></div></div>
-                <p class="lbl good">Good</p>
             </div>
             <div class="stat-card">
                 <div class="stat-icon red"><i data-lucide="flame" style="width:18px;height:18px"></i></div>
                 <h5>Study Streak</h5>
-                <div class="val">7 <span>Days</span></div>
+                <div class="val"><span id="homeStreakBadge">0</span> <span>Days</span></div>
                 <div class="stat-bar"><div class="stat-bar-fill" style="width:100%;background:#EF4444"></div></div>
-                <p class="lbl">Keep it up!</p>
             </div>
             <div class="trophy-card">
                 <div class="trophy-emoji"><i data-lucide="trophy" style="width:32px;height:32px;color:#F59E0B"></i></div>
@@ -553,47 +546,8 @@
         <div class="tt-section-header">
             <span class="tt-section-title">Top Rated Teachers</span>
         </div>
-        <div class="tt-hscroll">
-            <div class="tt-top-card" onclick="showScreen('screen-teacher-profile')">
-                <div class="tt-top-rank">1</div>
-                <div class="tt-top-avatar">R</div>
-                <h4>Mr. Rahim</h4>
-                <div class="tt-top-subject">Mathematics</div>
-                <div class="tt-top-meta">
-                    <span><i data-lucide="star"></i> 4.8</span>
-                    <span><i data-lucide="users"></i> 120</span>
-                </div>
-            </div>
-            <div class="tt-top-card" onclick="showScreen('screen-teacher-profile')">
-                <div class="tt-top-rank">2</div>
-                <div class="tt-top-avatar" style="background:linear-gradient(135deg,#EC4899,#F472B6)">S</div>
-                <h4>Ms. Sarah</h4>
-                <div class="tt-top-subject">English</div>
-                <div class="tt-top-meta">
-                    <span><i data-lucide="star"></i> 4.9</span>
-                    <span><i data-lucide="users"></i> 95</span>
-                </div>
-            </div>
-            <div class="tt-top-card" onclick="showScreen('screen-teacher-profile')">
-                <div class="tt-top-rank">3</div>
-                <div class="tt-top-avatar" style="background:linear-gradient(135deg,#22C55E,#4ADE80)">K</div>
-                <h4>Mr. Karim</h4>
-                <div class="tt-top-subject">Science</div>
-                <div class="tt-top-meta">
-                    <span><i data-lucide="star"></i> 4.7</span>
-                    <span><i data-lucide="users"></i> 88</span>
-                </div>
-            </div>
-            <div class="tt-top-card" onclick="showScreen('screen-teacher-profile')">
-                <div class="tt-top-rank">4</div>
-                <div class="tt-top-avatar" style="background:linear-gradient(135deg,#F59E0B,#F97316)">N</div>
-                <h4>Ms. Nusrat</h4>
-                <div class="tt-top-subject">Bangla</div>
-                <div class="tt-top-meta">
-                    <span><i data-lucide="star"></i> 4.8</span>
-                    <span><i data-lucide="users"></i> 150</span>
-                </div>
-            </div>
+        <div id="teacherRankingsList" class="tt-hscroll">
+            <!-- Dynamic: loaded by loadTeacherRankings() -->
         </div>
 
         <!-- 4. My Tutors -->
@@ -1137,29 +1091,8 @@
             <button class="filter-chip">Pending</button>
             <button class="filter-chip">Submitted</button>
         </div>
-        <div class="hw-card" onclick="showScreen('screen-hw-detail')">
-            <div class="hw-header"><span class="hw-subject math">Math</span><span class="hw-status pending">Pending</span></div>
-            <h4>Quadratic Equation Practice</h4>
-            <p>Solve exercises 3.2, questions 1-10</p>
-            <div class="hw-deadline"><i data-lucide="clock"></i> Due: Tomorrow, 11:59 PM</div>
-        </div>
-        <div class="hw-card" onclick="showScreen('screen-hw-detail')">
-            <div class="hw-header"><span class="hw-subject science">Science</span><span class="hw-status pending">Pending</span></div>
-            <h4>Cell Structure Diagram</h4>
-            <p>Draw and label plant & animal cell</p>
-            <div class="hw-deadline"><i data-lucide="clock"></i> Due: May 25, 2025</div>
-        </div>
-        <div class="hw-card" onclick="showScreen('screen-hw-detail')">
-            <div class="hw-header"><span class="hw-subject english">English</span><span class="hw-status submitted">Submitted</span></div>
-            <h4>Essay Writing</h4>
-            <p>Write an essay on "My Best Friend"</p>
-            <p style="font-size:9px;color:var(--success);margin-top:4px"><i data-lucide="check-circle" style="width:10px;height:10px"></i> Graded: 85/100</p>
-        </div>
-        <div class="hw-card" onclick="showScreen('screen-hw-detail')">
-            <div class="hw-header"><span class="hw-subject bangla">Bangla</span><span class="hw-status submitted">Submitted</span></div>
-            <h4>_poem Analysis</h4>
-            <p>Analyze the poem "Amar Sonar Bangla"</p>
-            <p style="font-size:9px;color:var(--success);margin-top:4px"><i data-lucide="check-circle" style="width:10px;height:10px"></i> Graded: 92/100</p>
+        <div id="homeworkList">
+            <!-- Dynamic: loaded by loadHomeworkList() -->
         </div>
     </div>
 </div>
@@ -1211,42 +1144,8 @@
         <button class="icon-btn" onclick="showToast('Filters coming soon!','info')"><i data-lucide="filter"></i></button>
     </header>
     <div class="main-content">
-        <div class="section-header"><h2 class="section-title">Upcoming</h2></div>
-        <div class="exam-card">
-            <div class="exam-header">
-                <div class="exam-icon"><i data-lucide="flask-conical" style="width:20px;height:20px"></i></div>
-                <div class="exam-info"><h4>Science Test</h4><p>Chapter 5-7 - MCQ + Written</p></div>
-            </div>
-            <div class="exam-details">
-                <span class="exam-detail"><i data-lucide="calendar"></i> 23 May, 2025</span>
-                <span class="exam-detail"><i data-lucide="clock"></i> 10:00 AM</span>
-                <span class="exam-detail"><i data-lucide="star"></i> 50 marks</span>
-            </div>
-            <button class="btn-primary" onclick="showScreen('screen-exam-interface')">Start Exam</button>
-        </div>
-        <div class="exam-card">
-            <div class="exam-header">
-                <div class="exam-icon" style="background:linear-gradient(135deg,#F59E0B,#F97316)"><i data-lucide="calculator" style="width:20px;height:20px"></i></div>
-                <div class="exam-info"><h4>Math Quiz</h4><p>Algebra - MCQ Only</p></div>
-            </div>
-            <div class="exam-details">
-                <span class="exam-detail"><i data-lucide="calendar"></i> 28 May, 2025</span>
-                <span class="exam-detail"><i data-lucide="clock"></i> 02:00 PM</span>
-                <span class="exam-detail"><i data-lucide="star"></i> 30 marks</span>
-            </div>
-            <button class="btn-outline" onclick="showToast('Exam details coming soon!','info')">View Details</button>
-        </div>
-
-        <div class="section-header"><h2 class="section-title">Past Exams</h2></div>
-        <div class="exam-card" onclick="showScreen('screen-exam-result')">
-            <div class="exam-header">
-                <div class="exam-icon" style="background:linear-gradient(135deg,#22C55E,#4ADE80)"><i data-lucide="book-open" style="width:20px;height:20px"></i></div>
-                <div class="exam-info"><h4>English Grammar</h4><p>Completed - Score: 82%</p></div>
-            </div>
-            <div class="exam-details">
-                <span class="exam-detail"><i data-lucide="calendar"></i> 15 May, 2025</span>
-                <span class="exam-detail badge green">Passed</span>
-            </div>
+        <div id="examList">
+            <!-- Dynamic: loaded by loadExamList() -->
         </div>
     </div>
 </div>
@@ -1485,30 +1384,8 @@
             <button class="filter-chip">Exams</button>
             <button class="filter-chip">Classes</button>
         </div>
-        <div class="notif-item unread">
-            <div class="notif-icon purple"><i data-lucide="file-text" style="width:16px;height:16px"></i></div>
-            <div class="notif-info"><h5>New Homework Assigned</h5><p>Math: Quadratic Equation Practice due tomorrow</p></div>
-            <span class="notif-time">2m ago</span>
-        </div>
-        <div class="notif-item unread">
-            <div class="notif-icon blue"><i data-lucide="calendar" style="width:16px;height:16px"></i></div>
-            <div class="notif-info"><h5>Exam Reminder</h5><p>Science Test on 23 May, 2025 at 10:00 AM</p></div>
-            <span class="notif-time">1h ago</span>
-        </div>
-        <div class="notif-item unread">
-            <div class="notif-icon green"><i data-lucide="tv" style="width:16px;height:16px"></i></div>
-            <div class="notif-info"><h5>Live Class Starting</h5><p>Math Algebra with Mr. Rahim starts in 5 minutes</p></div>
-            <span class="notif-time">2h ago</span>
-        </div>
-        <div class="notif-item">
-            <div class="notif-icon orange"><i data-lucide="bot" style="width:16px;height:16px"></i></div>
-            <div class="notif-info"><h5>AI Tutor Tip</h5><p>Try asking about quadratic formulas for your homework!</p></div>
-            <span class="notif-time">5h ago</span>
-        </div>
-        <div class="notif-item">
-            <div class="notif-icon red"><i data-lucide="flame" style="width:16px;height:16px"></i></div>
-            <div class="notif-info"><h5>Streak Milestone!</h5><p>Congratulations! You've reached a 7-day streak!</p></div>
-            <span class="notif-time">1d ago</span>
+        <div id="notifList">
+            <!-- Dynamic: loaded by loadNotifications() -->
         </div>
     </div>
 </div>
@@ -1560,42 +1437,8 @@
             <button class="toggle-btn active" onclick="togglePricing(this)">Monthly</button>
             <button class="toggle-btn" onclick="togglePricing(this)">Yearly</button>
         </div>
-        <div class="pricing-card">
-            <div class="pricing-name">Basic</div>
-            <div class="pricing-price">Free<span></span></div>
-            <p class="pricing-desc">Get started with basic features</p>
-            <ul class="pricing-features">
-                <li><i data-lucide="check"></i> 5 AI questions/day</li>
-                <li><i data-lucide="check"></i> Basic homework help</li>
-                <li><i data-lucide="check"></i> Limited live classes</li>
-            </ul>
-            <button class="btn-outline" disabled style="opacity:0.5;cursor:not-allowed">Current Plan</button>
-        </div>
-        <div class="pricing-card popular">
-            <div class="pricing-badge">POPULAR</div>
-            <div class="pricing-name">Premium</div>
-            <div class="pricing-price">৳499<span>/month</span></div>
-            <p class="pricing-desc">Unlock full learning potential</p>
-            <ul class="pricing-features">
-                <li><i data-lucide="check"></i> Unlimited AI questions</li>
-                <li><i data-lucide="check"></i> All live classes</li>
-                <li><i data-lucide="check"></i> Priority homework review</li>
-                <li><i data-lucide="check"></i> Exam analytics</li>
-                <li><i data-lucide="check"></i> Download materials</li>
-            </ul>
-            <button class="btn-primary" onclick="showScreen('screen-payment')">Upgrade Now</button>
-        </div>
-        <div class="pricing-card">
-            <div class="pricing-name">Family</div>
-            <div class="pricing-price">৳999<span>/month</span></div>
-            <p class="pricing-desc">For families with multiple students</p>
-            <ul class="pricing-features">
-                <li><i data-lucide="check"></i> Everything in Premium</li>
-                <li><i data-lucide="check"></i> Up to 3 students</li>
-                <li><i data-lucide="check"></i> Parent dashboard</li>
-                <li><i data-lucide="check"></i> Progress reports</li>
-            </ul>
-            <button class="btn-outline" onclick="showScreen('screen-payment')">Choose Plan</button>
+        <div id="pricingList">
+            <!-- Dynamic: loaded by loadPackages() -->
         </div>
 
         <div style="background:var(--card);border-radius:12px;padding:16px;margin-top:16px;box-shadow:var(--shadow)">
@@ -1805,8 +1648,8 @@
 <div id="screen-teacher-dash" class="screen">
     <header class="header glass-header">
         <div class="header-center" style="display:flex;align-items:center;gap:10px">
-            <div class="user-avatar" style="background:linear-gradient(135deg,#22C55E,#4ADE80)">R</div>
-            <div class="user-info"><h3>Mr. Rahim</h3><p>Mathematics Teacher</p></div>
+            <div class="user-avatar" id="teacherDashAvatar" style="background:linear-gradient(135deg,#22C55E,#4ADE80)">R</div>
+            <div class="user-info"><h3 id="teacherDashName">Teacher</h3><p id="teacherDashSubject">Teacher</p></div>
         </div>
         <button class="icon-btn glass-card-sm" onclick="showScreen('screen-messages')"><i data-lucide="bell"></i></button>
     </header>
@@ -1816,7 +1659,7 @@
         <div class="welcome-banner card-enter" style="background:linear-gradient(135deg,#059669,#10B981)">
             <div style="display:flex;justify-content:space-between;align-items:start">
                 <div>
-                    <h2 style="font-size:18px;margin-bottom:4px">Good morning, Mr. Rahim!</h2>
+                    <h2 style="font-size:18px;margin-bottom:4px">Good morning, <span id="teacherGreetingName">Teacher</span>!</h2>
                     <p style="font-size:11px;opacity:0.85">You have 3 classes today</p>
                 </div>
                 <div style="text-align:right">
@@ -1834,22 +1677,22 @@
         <div class="stats-row-enhanced card-enter" style="animation-delay:0.1s">
             <div class="stat-pill" onclick="showScreen('screen-my-students')">
                 <div class="stat-icon" style="background:#EEF2FF;color:#6366F1"><i data-lucide="users" style="width:14px;height:14px"></i></div>
-                <div class="stat-val" style="color:#6366F1">120</div>
+                <div class="stat-val" style="color:#6366F1" id="teacherStatStudents">0</div>
                 <div class="stat-lbl">Students</div>
             </div>
             <div class="stat-pill" onclick="showScreen('screen-reports')">
                 <div class="stat-icon" style="background:#DCFCE7;color:#22C55E"><i data-lucide="file-bar-chart" style="width:14px;height:14px"></i></div>
-                <div class="stat-val" style="color:#22C55E">18</div>
+                <div class="stat-val" style="color:#22C55E" id="teacherStatReports">0</div>
                 <div class="stat-lbl">Reports</div>
             </div>
             <div class="stat-pill" onclick="showScreen('screen-hw-analytics')">
                 <div class="stat-icon" style="background:#FEF3C7;color:#F59E0B"><i data-lucide="clock" style="width:14px;height:14px"></i></div>
-                <div class="stat-val" style="color:#F59E0B">24</div>
+                <div class="stat-val" style="color:#F59E0B" id="teacherStatPending">0</div>
                 <div class="stat-lbl">Pending</div>
             </div>
             <div class="stat-pill" onclick="showScreen('screen-class-schedule')">
                 <div class="stat-icon" style="background:#FEE2E2;color:#EF4444"><i data-lucide="calendar" style="width:14px;height:14px"></i></div>
-                <div class="stat-val" style="color:#EF4444">8</div>
+                <div class="stat-val" style="color:#EF4444" id="teacherStatClasses">0</div>
                 <div class="stat-lbl">Classes</div>
             </div>
         </div>
@@ -1882,22 +1725,8 @@
             <h2 class="section-title"><i data-lucide="calendar" style="width:16px;height:16px;color:var(--info)"></i> Today's Classes</h2>
             <a class="section-link" onclick="showScreen('screen-class-schedule')">See All</a>
         </div>
-        <div class="card-enter" style="animation-delay:0.3s;display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
-            <div class="hw-card" style="display:flex;align-items:center;gap:12px;border-left:3px solid #6366F1">
-                <div style="min-width:40px;text-align:center"><div style="font-size:16px;font-weight:800;color:#6366F1">9:00</div><div style="font-size:9px;color:var(--text3)">AM</div></div>
-                <div style="flex:1"><h5 style="font-size:12px">Class 10 - Mathematics</h5><p style="font-size:10px;color:var(--text3)">Chapter 4: Quadratic Equations</p></div>
-                <span style="font-size:9px;padding:3px 8px;border-radius:10px;background:#DCFCE7;color:#22C55E">45 min</span>
-            </div>
-            <div class="hw-card" style="display:flex;align-items:center;gap:12px;border-left:3px solid #F59E0B">
-                <div style="min-width:40px;text-align:center"><div style="font-size:16px;font-weight:800;color:#F59E0B">11:00</div><div style="font-size:9px;color:var(--text3)">AM</div></div>
-                <div style="flex:1"><h5 style="font-size:12px">Class 9 - Physics</h5><p style="font-size:10px;color:var(--text3)">Chapter 2: Force & Motion</p></div>
-                <span style="font-size:9px;padding:3px 8px;border-radius:10px;background:#FEF3C7;color:#F59E0B">50 min</span>
-            </div>
-            <div class="hw-card" style="display:flex;align-items:center;gap:12px;border-left:3px solid #EF4444">
-                <div style="min-width:40px;text-align:center"><div style="font-size:16px;font-weight:800;color:#EF4444">2:30</div><div style="font-size:9px;color:var(--text3)">PM</div></div>
-                <div style="flex:1"><h5 style="font-size:12px">Class 10 - Chemistry</h5><p style="font-size:10px;color:var(--text3)">Chapter 5: Organic Chemistry</p></div>
-                <span style="font-size:9px;padding:3px 8px;border-radius:10px;background:#FEE2E2;color:#EF4444">40 min</span>
-            </div>
+        <div id="teacherTodayClasses" class="card-enter" style="animation-delay:0.3s;display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+            <!-- Dynamic: loaded by loadTeacherDashboard() -->
         </div>
 
         <!-- Menu Grid -->
@@ -1948,29 +1777,8 @@
             <h2 class="section-title"><i data-lucide="clock" style="width:16px;height:16px;color:var(--text3)"></i> Recent Submissions</h2>
             <a class="section-link" onclick="showScreen('screen-evaluate')">View All</a>
         </div>
-        <div class="list-item card-enter" style="animation-delay:0.5s" onclick="showScreen('screen-evaluate')">
-            <div class="icon-box orange sm"><i data-lucide="file-text" class="icon-sm"></i></div>
-            <div class="list-item-content">
-                <h5>Sakib - Quadratic Equation</h5>
-                <p>Math - Submitted 2 hours ago</p>
-            </div>
-            <span class="list-item-badge" style="background:#FEF3C7;color:#D97706">Pending</span>
-        </div>
-        <div class="list-item card-enter" style="animation-delay:0.55s" onclick="showScreen('screen-evaluate')">
-            <div class="icon-box orange sm"><i data-lucide="file-text" class="icon-sm"></i></div>
-            <div class="list-item-content">
-                <h5>Nafi - Linear Equations</h5>
-                <p>Math - Submitted 3 hours ago</p>
-            </div>
-            <span class="list-item-badge" style="background:#FEF3C7;color:#D97706">Pending</span>
-        </div>
-        <div class="list-item card-enter" style="animation-delay:0.6s" onclick="showScreen('screen-evaluate')">
-            <div class="icon-box green sm"><i data-lucide="check-circle" class="icon-sm"></i></div>
-            <div class="list-item-content">
-                <h5>Tanvir - Physics Lab Report</h5>
-                <p>Physics - Graded yesterday</p>
-            </div>
-            <span class="list-item-badge" style="background:#DCFCE7;color:#22C55E">Graded</span>
+        <div id="teacherRecentSubs">
+            <!-- Dynamic: loaded by loadTeacherDashboard() -->
         </div>
     </div>
 </div>
@@ -2303,41 +2111,8 @@
         <button class="icon-btn glass-card-sm" onclick="showScreen('screen-create-announcement')"><i data-lucide="plus"></i></button>
     </header>
     <div class="main-content">
-        <div class="glass-card" style="padding:16px;margin-bottom:12px;border-left:4px solid var(--primary)">
-            <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-                <span style="font-size:10px;font-weight:600;color:var(--primary)"><i data-lucide="pin" style="width:10px;height:10px"></i> Pinned</span>
-                <span style="font-size:9px;color:var(--text3)">Today, 10:00 AM</span>
-            </div>
-            <h4 style="font-size:14px;font-weight:700;margin-bottom:4px">Exam Schedule Updated</h4>
-            <p style="font-size:11px;color:var(--text2);line-height:1.5">Science test has been rescheduled to May 25th. Please prepare accordingly.</p>
-            <div style="display:flex;gap:8px;margin-top:10px">
-                <button style="font-size:10px;padding:4px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);cursor:pointer" onclick="showToast('Edit coming soon!','info')">Edit</button>
-                <button style="font-size:10px;padding:4px 12px;border-radius:8px;border:1px solid var(--danger);background:transparent;color:var(--danger);cursor:pointer" onclick="showToast('Delete coming soon!','info')">Delete</button>
-            </div>
-        </div>
-        <div class="glass-card" style="padding:16px;margin-bottom:12px">
-            <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-                <span style="font-size:10px;font-weight:600;color:var(--success)"><i data-lucide="megaphone" style="width:10px;height:10px"></i> General</span>
-                <span style="font-size:9px;color:var(--text3)">Yesterday</span>
-            </div>
-            <h4 style="font-size:14px;font-weight:700;margin-bottom:4px">Homework Reminder</h4>
-            <p style="font-size:11px;color:var(--text2);line-height:1.5">Chapter 3 exercises are due tomorrow. Submit on time!</p>
-            <div style="display:flex;gap:8px;margin-top:10px">
-                <button style="font-size:10px;padding:4px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);cursor:pointer" onclick="showToast('Edit coming soon!','info')">Edit</button>
-                <button style="font-size:10px;padding:4px 12px;border-radius:8px;border:1px solid var(--danger);background:transparent;color:var(--danger);cursor:pointer" onclick="showToast('Delete coming soon!','info')">Delete</button>
-            </div>
-        </div>
-        <div class="glass-card" style="padding:16px;margin-bottom:12px">
-            <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-                <span style="font-size:10px;font-weight:600;color:var(--warning)"><i data-lucide="party-popper" style="width:10px;height:10px"></i> Event</span>
-                <span style="font-size:9px;color:var(--text3)">2 days ago</span>
-            </div>
-            <h4 style="font-size:14px;font-weight:700;margin-bottom:4px">Math Olympiad</h4>
-            <p style="font-size:11px;color:var(--text2);line-height:1.5">Interested students can register for the upcoming Math Olympiad.</p>
-            <div style="display:flex;gap:8px;margin-top:10px">
-                <button style="font-size:10px;padding:4px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);cursor:pointer" onclick="showToast('Edit coming soon!','info')">Edit</button>
-                <button style="font-size:10px;padding:4px 12px;border-radius:8px;border:1px solid var(--danger);background:transparent;color:var(--danger);cursor:pointer" onclick="showToast('Delete coming soon!','info')">Delete</button>
-            </div>
+        <div id="announcementList">
+            <!-- Dynamic: loaded by loadAnnouncements() -->
         </div>
     </div>
 </div>
