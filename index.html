@@ -750,13 +750,13 @@
         <!-- Compact Horizontal Card -->
         <div class="tutor-profile-card">
             <div class="tutor-avatar">
-                R
+                <span id="tpAvatar">T</span>
                 <div class="tutor-avatar-badge"><i data-lucide="check"></i></div>
             </div>
             <div class="tutor-info">
-                <h3>Mr. Rahim Ahmed</h3>
-                <div class="tutor-subject">Mathematics</div>
-                <div class="tutor-exp">12 years experience</div>
+                <h3 id="tpName">Loading...</h3>
+                <div class="tutor-subject" id="tpSubject">Loading...</div>
+                <div class="tutor-exp" id="tpExp">Loading...</div>
             </div>
             <button class="tutor-action-btn" onclick="showScreen('screen-messages')"><i data-lucide="message-circle"></i></button>
         </div>
@@ -765,23 +765,23 @@
         <div class="tutor-stats-row">
             <div class="tutor-stat-item">
                 <i data-lucide="star"></i>
-                <span class="stat-val">4.8</span>
+                <span class="stat-val" id="tpRating">0</span>
                 <span class="stat-lbl">Rating</span>
             </div>
             <div class="tutor-stat-item">
                 <i data-lucide="users"></i>
-                <span class="stat-val">120</span>
+                <span class="stat-val" id="tpStudents">0</span>
                 <span class="stat-lbl">Students</span>
             </div>
             <div class="tutor-stat-item">
                 <i data-lucide="book-open"></i>
-                <span class="stat-val">500+</span>
+                <span class="stat-val" id="tpLessons">0</span>
                 <span class="stat-lbl">Lessons</span>
             </div>
         </div>
 
         <div class="section-header"><h2 class="section-title">About</h2></div>
-        <p style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:16px">Mr. Rahim is a passionate mathematics teacher with 12+ years of experience. He specializes in making complex math concepts simple and fun for students.</p>
+        <p id="tpBio" style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:16px">Loading...</p>
 
         <div class="section-header"><h2 class="section-title">Membership Plan</h2></div>
         <div class="teacher-pro-card">
@@ -812,54 +812,23 @@
         </div>
 
         <div class="section-header"><h2 class="section-title">Reviews</h2></div>
-        <div class="hw-card">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-                <div class="user-avatar" style="width:28px;height:28px;font-size:10px">S</div>
-                <div><h5 style="font-size:11px">Sakib</h5><p style="font-size:9px;color:var(--warning)"></p></div>
-            </div>
-            <p style="font-size:11px;color:var(--text2)">Best math teacher ever! Makes everything so easy to understand.</p>
+        <div id="tpReviews" class="hw-card">
+            <!-- Dynamic: loaded by loadTeacherProfile() -->
         </div>
 
         <div style="background:linear-gradient(135deg,var(--primary),#7C3AED);border-radius:14px;padding:16px;margin-top:16px;text-align:center">
             <i data-lucide="video" style="width:32px;height:32px;color:white;margin-bottom:8px"></i>
             <h4 style="font-size:14px;font-weight:700;color:white;margin-bottom:4px">Book a Live Session</h4>
-            <p style="font-size:11px;color:rgba(255,255,255,0.8);margin-bottom:12px">1-on-1 tutoring with Mr. Rahim</p>
+            <p style="font-size:11px;color:rgba(255,255,255,0.8);margin-bottom:12px">1-on-1 tutoring</p>
             <button class="btn-primary" style="background:white;color:var(--primary);width:100%" onclick="showToast('Session booking coming soon!','info')">Book Session - ৳300/hr</button>
         </div>
 
         <!-- Teacher's Materials -->
         <div class="section-header" style="margin-top:16px">
-            <h2 class="section-title"><i data-lucide="folder" style="width:14px;height:14px;color:var(--warning)"></i> Mr. Rahim's Materials</h2>
-            <span style="font-size:10px;color:var(--text3)">4 files</span>
+            <h2 class="section-title"><i data-lucide="folder" style="width:14px;height:14px;color:var(--warning)"></i> Teacher's Materials</h2>
         </div>
-        <div class="list-item" onclick="showToast('Opening file...','info')">
-            <div class="icon-box green sm"><i data-lucide="book-open" class="icon-sm"></i></div>
-            <div class="list-item-content">
-                <h5>Math Class 8 Textbook</h5>
-                <p>Book - 12.5 MB</p>
-            </div>
-            <span class="list-item-badge" style="background:#DCFCE7;color:#16A34A">New</span>
-        </div>
-        <div class="list-item" onclick="showToast('Opening file...','info')">
-            <div class="icon-box purple sm"><i data-lucide="file-text" class="icon-sm"></i></div>
-            <div class="list-item-content">
-                <h5>Quadrilaterals Notes</h5>
-                <p>Notes - 2.4 MB</p>
-            </div>
-        </div>
-        <div class="list-item" onclick="showToast('Opening file...','info')">
-            <div class="icon-box orange sm"><i data-lucide="file" class="icon-sm"></i></div>
-            <div class="list-item-content">
-                <h5>Chapter 5 Practice Sheet</h5>
-                <p>PDF - 1.2 MB</p>
-            </div>
-        </div>
-        <div class="list-item" onclick="showToast('Opening file...','info')">
-            <div class="icon-box red sm"><i data-lucide="video" class="icon-sm"></i></div>
-            <div class="list-item-content">
-                <h5>Algebra Tutorial Video</h5>
-                <p>Video - 45 MB</p>
-            </div>
+        <div id="tpMaterials">
+            <!-- Dynamic: loaded by loadTeacherProfile() -->
         </div>
     </div>
 </div>
@@ -956,13 +925,13 @@
             <!-- Avatar Row -->
             <div class="sp-avatar-row">
                 <div class="sp-avatar">
-                    A
+                    <span id="profileUserAvatar">A</span>
                     <div class="sp-pro-badge">PRO</div>
                 </div>
                 <div class="sp-name-area">
-                    <h2>Arman Khan</h2>
-                    <div class="sp-role">Class 8 - Premium Student</div>
-                    <div class="sp-welcome">Welcome back! Keep learning.</div>
+                    <h2 id="profileUserName">Loading...</h2>
+                    <div class="sp-role" id="profileUserClass">Loading...</div>
+                    <div class="sp-welcome" id="profileUserEmail"></div>
                 </div>
             </div>
 
@@ -990,48 +959,29 @@
             <div class="sp-stat-row">
                 <div class="sp-stat-card">
                     <i data-lucide="book-open"></i>
-                    <span class="sp-stat-val">12</span>
+                    <span class="sp-stat-val" id="profileStat1">0</span>
                     <span class="sp-stat-lbl">Books</span>
                 </div>
                 <div class="sp-stat-card">
                     <i data-lucide="target"></i>
-                    <span class="sp-stat-val">85%</span>
+                    <span class="sp-stat-val" id="profileStat2">0%</span>
                     <span class="sp-stat-lbl">Score</span>
                 </div>
                 <div class="sp-stat-card">
                     <i data-lucide="flame"></i>
-                    <span class="sp-stat-val">7</span>
+                    <span class="sp-stat-val" id="profileStat3">0</span>
                     <span class="sp-stat-lbl">Streak</span>
                 </div>
                 <div class="sp-stat-card">
                     <i data-lucide="award"></i>
-                    <span class="sp-stat-val">5</span>
+                    <span class="sp-stat-val" id="profileStat4">0</span>
                     <span class="sp-stat-lbl">Badges</span>
                 </div>
             </div>
 
             <!-- Achievement Chips -->
-            <div class="sp-badges-scroll">
-                <div class="sp-badge-chip">
-                    <div class="sp-badge-icon gold"><i data-lucide="trophy"></i></div>
-                    <span>Top Performer</span>
-                </div>
-                <div class="sp-badge-chip">
-                    <div class="sp-badge-icon green"><i data-lucide="book-open"></i></div>
-                    <span>Bookworm</span>
-                </div>
-                <div class="sp-badge-chip">
-                    <div class="sp-badge-icon red"><i data-lucide="flame"></i></div>
-                    <span>7 Day Streak</span>
-                </div>
-                <div class="sp-badge-chip">
-                    <div class="sp-badge-icon blue"><i data-lucide="target"></i></div>
-                    <span>Quick Learner</span>
-                </div>
-                <div class="sp-badge-chip">
-                    <div class="sp-badge-icon purple"><i data-lucide="star"></i></div>
-                    <span>Honor Roll</span>
-                </div>
+            <div id="profileBadges" class="sp-badges-scroll">
+                <!-- Dynamic: loaded by loadStudentProfile() -->
             </div>
         </div>
     </div>
@@ -1319,17 +1269,17 @@
         <h3 class="header-title">Live Class</h3>
     </header>
     <div class="main-content" style="text-align:center;padding-top:40px">
-        <div class="live-teacher">R</div>
-        <h2 style="font-size:20px;font-weight:700;margin:12px 0 4px">Mr. Rahim</h2>
-        <p style="font-size:12px;color:var(--text3);margin-bottom:4px">Mathematics - Algebra</p>
-        <p style="font-size:11px;color:var(--text3);margin-bottom:20px">Class 8 - Live Session</p>
+        <div id="liveLobbyAvatar" class="live-teacher">T</div>
+        <h2 id="liveLobbyName" style="font-size:20px;font-weight:700;margin:12px 0 4px">Loading...</h2>
+        <p id="liveLobbySubject" style="font-size:12px;color:var(--text3);margin-bottom:4px">Loading...</p>
+        <p id="liveLobbyClass" style="font-size:11px;color:var(--text3);margin-bottom:20px">Loading...</p>
 
         <div style="background:var(--card);border-radius:14px;padding:20px;margin-bottom:20px;box-shadow:var(--shadow)">
             <p style="font-size:11px;color:var(--text3);margin-bottom:8px">Starting in</p>
             <div style="display:flex;justify-content:center;gap:12px">
-                <div style="text-align:center"><div style="font-size:28px;font-weight:700;color:var(--primary)">05</div><div style="font-size:9px;color:var(--text3)">Minutes</div></div>
+                <div style="text-align:center"><div id="liveLobbyMin" style="font-size:28px;font-weight:700;color:var(--primary)">05</div><div style="font-size:9px;color:var(--text3)">Minutes</div></div>
                 <div style="font-size:28px;color:var(--text3)">:</div>
-                <div style="text-align:center"><div style="font-size:28px;font-weight:700;color:var(--primary)">32</div><div style="font-size:9px;color:var(--text3)">Seconds</div></div>
+                <div style="text-align:center"><div id="liveLobbySec" style="font-size:28px;font-weight:700;color:var(--primary)">00</div><div style="font-size:9px;color:var(--text3)">Seconds</div></div>
             </div>
         </div>
 
@@ -1341,25 +1291,20 @@
 <div id="screen-live-class" class="screen">
     <header class="header">
         <button class="header-back" onclick="showScreen('screen-home')"><i data-lucide="arrow-left"></i></button>
-        <h3 class="header-title">Live: Math Algebra</h3>
+        <h3 id="liveClassTitle" class="header-title">Live Class</h3>
         <span class="live-badge"><span class="live-dot"></span> LIVE</span>
     </header>
     <div class="main-content" style="padding-bottom:100px">
         <div style="background:#1E1B4B;border-radius:14px;height:200px;display:flex;align-items:center;justify-content:center;margin-bottom:16px">
             <div style="text-align:center;color:white">
-                <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#F472B6,#EC4899);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:32px">R</div>
-                <p style="font-size:12px;font-weight:600">Mr. Rahim</p>
+                <div id="liveClassAvatar" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#F472B6,#EC4899);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:32px">T</div>
+                <p id="liveClassName" style="font-size:12px;font-weight:600">Loading...</p>
                 <p style="font-size:10px;opacity:0.7">Teaching</p>
             </div>
         </div>
-        <div class="section-header"><h2 class="section-title">Students (24)</h2></div>
-        <div class="live-grid">
-            <div class="live-student"><div class="live-student-avatar">A</div><h5>Arman</h5></div>
-            <div class="live-student"><div class="live-student-avatar" style="background:linear-gradient(135deg,#EC4899,#F472B6)">S</div><h5>Sara</h5></div>
-            <div class="live-student"><div class="live-student-avatar" style="background:linear-gradient(135deg,#22C55E,#4ADE80)">R</div><h5>Rahat</h5></div>
-            <div class="live-student"><div class="live-student-avatar" style="background:linear-gradient(135deg,#F59E0B,#F97316)">N</div><h5>Nafi</h5></div>
-            <div class="live-student"><div class="live-student-avatar" style="background:linear-gradient(135deg,#06B6D4,#22D3EE)">T</div><h5>Tanvir</h5></div>
-            <div class="live-student"><div class="live-student-avatar" style="background:linear-gradient(135deg,#8B5CF6,#A78BFA)">M</div><h5>Mira</h5></div>
+        <div class="section-header"><h2 id="liveStudentCount" class="section-title">Students (0)</h2></div>
+        <div id="liveStudentsGrid" class="live-grid">
+            <!-- Dynamic: loaded by loadLiveSchedule() -->
         </div>
     </div>
     <div class="live-controls">
@@ -1903,51 +1848,11 @@
             <input type="text" class="input-field glass-input" placeholder="Search students..." style="padding-left:36px">
             <i data-lucide="search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--text3)"></i>
         </div>
-        <div style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto">
-            <div class="glass-card-sm" style="padding:10px 16px;text-align:center;min-width:70px">
-                <div style="font-size:18px;font-weight:700;color:var(--primary)">120</div>
-                <div style="font-size:9px;color:var(--text3)">Total</div>
-            </div>
-            <div class="glass-card-sm" style="padding:10px 16px;text-align:center;min-width:70px">
-                <div style="font-size:18px;font-weight:700;color:var(--success)">98</div>
-                <div style="font-size:9px;color:var(--text3)">Active</div>
-            </div>
-            <div class="glass-card-sm" style="padding:10px 16px;text-align:center;min-width:70px">
-                <div style="font-size:18px;font-weight:700;color:var(--warning)">22</div>
-                <div style="font-size:9px;color:var(--text3)">Inactive</div>
-            </div>
+        <div id="myStudentsStat" style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto">
+            <!-- Dynamic: loaded by loadMyStudents() -->
         </div>
-        <div class="list-item" onclick="showScreen('screen-student-progress')">
-            <div class="chat-avatar" style="background:linear-gradient(135deg,#6366F1,#8B5CF6)">S</div>
-            <div class="list-item-content">
-                <h5>Sakib Hassan</h5>
-                <p>Class 8  Score: 85%</p>
-            </div>
-            <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--text3)"></i>
-        </div>
-        <div class="list-item" onclick="showScreen('screen-student-progress')">
-            <div class="chat-avatar" style="background:linear-gradient(135deg,#EC4899,#F472B6)">N</div>
-            <div class="list-item-content">
-                <h5>Nafi Rahman</h5>
-                <p>Class 8  Score: 78%</p>
-            </div>
-            <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--text3)"></i>
-        </div>
-        <div class="list-item" onclick="showScreen('screen-student-progress')">
-            <div class="chat-avatar" style="background:linear-gradient(135deg,#22C55E,#4ADE80)">M</div>
-            <div class="list-item-content">
-                <h5>Mira Akter</h5>
-                <p>Class 8  Score: 92%</p>
-            </div>
-            <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--text3)"></i>
-        </div>
-        <div class="list-item" onclick="showScreen('screen-student-progress')">
-            <div class="chat-avatar" style="background:linear-gradient(135deg,#F59E0B,#F97316)">T</div>
-            <div class="list-item-content">
-                <h5>Tanvir Hossain</h5>
-                <p>Class 8  Score: 71%</p>
-            </div>
-            <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--text3)"></i>
+        <div id="myStudentsList">
+            <!-- Dynamic: loaded by loadMyStudents() -->
         </div>
     </div>
 </div>
@@ -1961,44 +1866,31 @@
     </header>
     <div class="main-content">
         <div class="glass-card" style="padding:20px;text-align:center;margin-bottom:16px">
-            <div class="chat-avatar" style="width:64px;height:64px;font-size:24px;margin:0 auto 10px;background:linear-gradient(135deg,#6366F1,#8B5CF6)">S</div>
-            <h3 style="font-size:18px;font-weight:700">Sakib Hassan</h3>
-            <p style="font-size:11px;color:var(--text3)">Class 8 - Roll: 12</p>
+            <div id="spdAvatar" class="chat-avatar" style="width:64px;height:64px;font-size:24px;margin:0 auto 10px;background:linear-gradient(135deg,#6366F1,#8B5CF6)">S</div>
+            <h3 id="spdName" style="font-size:18px;font-weight:700">Loading...</h3>
+            <p id="spdClass" style="font-size:11px;color:var(--text3)">Loading...</p>
         </div>
         <div class="stats-grid">
             <div class="glass-stat purple">
-                <div style="font-size:20px;font-weight:800;color:var(--primary)">85%</div>
+                <div id="spdAvg" style="font-size:20px;font-weight:800;color:var(--primary)">0%</div>
                 <div style="font-size:10px;color:var(--text3)">Avg Score</div>
             </div>
             <div class="glass-stat green">
-                <div style="font-size:20px;font-weight:800;color:var(--success)">12</div>
+                <div id="spdHwDone" style="font-size:20px;font-weight:800;color:var(--success)">0</div>
                 <div style="font-size:10px;color:var(--text3)">HW Done</div>
             </div>
             <div class="glass-stat orange">
-                <div style="font-size:20px;font-weight:800;color:var(--warning)">3</div>
+                <div id="spdHwPending" style="font-size:20px;font-weight:800;color:var(--warning)">0</div>
                 <div style="font-size:10px;color:var(--text3)">Pending</div>
             </div>
             <div class="glass-stat blue">
-                <div style="font-size:20px;font-weight:800;color:var(--info)">7</div>
+                <div id="spdStreak" style="font-size:20px;font-weight:800;color:var(--info)">0</div>
                 <div style="font-size:10px;color:var(--text3)">Streak</div>
             </div>
         </div>
         <div class="section-header"><h2 class="section-title">Exam Results</h2></div>
-        <div class="list-item">
-            <div class="icon-box green sm"><i data-lucide="check-circle" class="icon-sm"></i></div>
-            <div class="list-item-content">
-                <h5>Science Test</h5>
-                <p>May 15, 2025</p>
-            </div>
-            <span style="font-size:16px;font-weight:700;color:var(--success)">82%</span>
-        </div>
-        <div class="list-item">
-            <div class="icon-box green sm"><i data-lucide="check-circle" class="icon-sm"></i></div>
-            <div class="list-item-content">
-                <h5>Math Quiz</h5>
-                <p>May 10, 2025</p>
-            </div>
-            <span style="font-size:16px;font-weight:700;color:var(--success)">88%</span>
+        <div id="spdExams">
+            <!-- Dynamic: loaded by loadStudentDetail() -->
         </div>
     </div>
 </div>
@@ -2017,88 +1909,21 @@
             <input type="text" placeholder="Search conversations..." id="msgSearchInput" oninput="filterMessages()">
         </div>
 
-        <!-- Unread Badge -->
+        <!-- Stats -->
         <div class="card-enter" style="animation-delay:0.1s;display:flex;gap:10px;margin-bottom:16px">
             <div style="flex:1;padding:12px;border-radius:14px;background:linear-gradient(135deg,#059669,#10B981);color:white;text-align:center;cursor:pointer">
-                <div style="font-size:22px;font-weight:800">5</div>
+                <div id="msgUnreadCount" style="font-size:22px;font-weight:800">0</div>
                 <div style="font-size:10px;opacity:0.85">Unread</div>
             </div>
             <div style="flex:1;padding:12px;border-radius:14px;background:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.4);text-align:center;cursor:pointer">
-                <div style="font-size:22px;font-weight:800;color:var(--text)">12</div>
+                <div id="msgTotalCount" style="font-size:22px;font-weight:800;color:var(--text)">0</div>
                 <div style="font-size:10px;color:var(--text3)">Total Chats</div>
             </div>
         </div>
 
-        <!-- Pinned -->
-        <div class="section-header card-enter" style="animation-delay:0.15s">
-            <h2 class="section-title"><i data-lucide="pin" style="width:14px;height:14px;color:var(--primary)"></i> Pinned</h2>
-        </div>
-        <div class="chat-item card-enter" style="animation-delay:0.2s;border-left:3px solid #22C55E">
-            <div class="chat-avatar" style="background:linear-gradient(135deg,#059669,#10B981)">C</div>
-            <div class="chat-content">
-                <h5>Class 10 Group</h5>
-                <p>Tanvir: Sir, when is the next exam?</p>
-            </div>
-            <div class="chat-meta">
-                <div class="time">5m ago</div>
-                <div class="unread">3</div>
-            </div>
-        </div>
-
-        <!-- Recent -->
-        <div class="section-header card-enter" style="animation-delay:0.25s">
-            <h2 class="section-title"><i data-lucide="clock" style="width:14px;height:14px;color:var(--text3)"></i> Recent</h2>
-        </div>
-        <div class="chat-item card-enter" style="animation-delay:0.3s">
-            <div class="chat-avatar" style="background:linear-gradient(135deg,#6366F1,#8B5CF6)">S</div>
-            <div class="chat-content">
-                <h5>Sakib Hassan</h5>
-                <p>Thank you sir for the help!</p>
-            </div>
-            <div class="chat-meta">
-                <div class="time">2m ago</div>
-                <div class="unread">2</div>
-            </div>
-        </div>
-        <div class="chat-item card-enter" style="animation-delay:0.35s">
-            <div class="chat-avatar" style="background:linear-gradient(135deg,#EC4899,#F472B6)">N</div>
-            <div class="chat-content">
-                <h5>Nafi Rahman</h5>
-                <p>Sir, I have a question about...</p>
-            </div>
-            <div class="chat-meta">
-                <div class="time">1h ago</div>
-            </div>
-        </div>
-        <div class="chat-item card-enter" style="animation-delay:0.4s">
-            <div class="chat-avatar" style="background:linear-gradient(135deg,#22C55E,#4ADE80)">M</div>
-            <div class="chat-content">
-                <h5>Mira Akter</h5>
-                <p>Homework submitted</p>
-            </div>
-            <div class="chat-meta">
-                <div class="time">3h ago</div>
-            </div>
-        </div>
-        <div class="chat-item card-enter" style="animation-delay:0.45s">
-            <div class="chat-avatar" style="background:linear-gradient(135deg,#F59E0B,#D97706)">T</div>
-            <div class="chat-content">
-                <h5>Tanvir Hossain</h5>
-                <p>Sir, can you explain chapter 4?</p>
-            </div>
-            <div class="chat-meta">
-                <div class="time">5h ago</div>
-            </div>
-        </div>
-        <div class="chat-item card-enter" style="animation-delay:0.5s">
-            <div class="chat-avatar" style="background:linear-gradient(135deg,#3B82F6,#2563EB)">A</div>
-            <div class="chat-content">
-                <h5>Admin Office</h5>
-                <p>Staff meeting tomorrow at 10 AM</p>
-            </div>
-            <div class="chat-meta">
-                <div class="time">Yesterday</div>
-            </div>
+        <!-- Conversations -->
+        <div id="messagesList">
+            <!-- Dynamic: loaded by loadMessages() -->
         </div>
     </div>
 </div>
@@ -2924,16 +2749,14 @@
     <div class="card-enter" style="background:linear-gradient(135deg,#059669,#10B981);margin:16px;border-radius:20px;padding:24px 20px;text-align:center;color:white;position:relative;overflow:hidden">
         <div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.1)"></div>
         <div style="position:absolute;bottom:-30px;left:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.08)"></div>
-        <div class="user-avatar" style="width:72px;height:72px;font-size:28px;margin:0 auto 10px;background:rgba(255,255,255,0.2);border:3px solid rgba(255,255,255,0.4)">R</div>
-        <h3 style="font-size:18px;font-weight:800;margin-bottom:2px">Mr. Rahim</h3>
-        <p style="font-size:12px;opacity:0.85">Mathematics Teacher</p>
-        <p style="font-size:10px;opacity:0.65;margin-top:2px">rahim@teacher.com</p>
+        <div id="earnAvatar" class="user-avatar" style="width:72px;height:72px;font-size:28px;margin:0 auto 10px;background:rgba(255,255,255,0.2);border:3px solid rgba(255,255,255,0.4)">T</div>
+        <h3 id="earnName" style="font-size:18px;font-weight:800;margin-bottom:2px">Loading...</h3>
+        <p id="earnSubject" style="font-size:12px;opacity:0.85">Loading...</p>
+        <p id="earnEmail" style="font-size:10px;opacity:0.65;margin-top:2px"></p>
         <div style="display:flex;justify-content:center;gap:20px;margin-top:14px">
-            <div style="text-align:center"><div style="font-size:20px;font-weight:800">48</div><div style="font-size:9px;opacity:0.7">Students</div></div>
+            <div style="text-align:center"><div id="earnStudents" style="font-size:20px;font-weight:800">0</div><div style="font-size:9px;opacity:0.7">Students</div></div>
             <div style="width:1px;background:rgba(255,255,255,0.3)"></div>
-            <div style="text-align:center"><div style="font-size:20px;font-weight:800">4.8</div><div style="font-size:9px;opacity:0.7">Rating</div></div>
-            <div style="width:1px;background:rgba(255,255,255,0.3)"></div>
-            <div style="text-align:center"><div style="font-size:20px;font-weight:800">124</div><div style="font-size:9px;opacity:0.7">Classes</div></div>
+            <div style="text-align:center"><div id="earnClasses" style="font-size:20px;font-weight:800">0</div><div style="font-size:9px;opacity:0.7">Classes</div></div>
         </div>
     </div>
 
@@ -2955,27 +2778,8 @@
                 <span style="font-size:9px;padding:3px 8px;border-radius:10px;background:rgba(255,255,255,0.2)">This Month</span>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:end">
-                <div><p style="font-size:26px;font-weight:800">৳12,400</p><p style="font-size:10px;opacity:0.7">+12% from last month</p></div>
-                <div style="text-align:right"><p style="font-size:10px;opacity:0.7">Total</p><p style="font-size:16px;font-weight:700">৳45,600</p></div>
-            </div>
-        </div>
-
-        <!-- Quick Stats -->
-        <div class="card-enter" style="animation-delay:0.15s;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
-            <div style="text-align:center;padding:12px 8px;border-radius:14px;background:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.4)">
-                <div class="icon-box green sm" style="margin:0 auto 6px"><i data-lucide="book-open" class="icon-sm"></i></div>
-                <div style="font-size:16px;font-weight:800;color:var(--text)">12</div>
-                <div style="font-size:9px;color:var(--text3)">Subjects</div>
-            </div>
-            <div style="text-align:center;padding:12px 8px;border-radius:14px;background:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.4)">
-                <div class="icon-box purple sm" style="margin:0 auto 6px"><i data-lucide="trophy" class="icon-sm"></i></div>
-                <div style="font-size:16px;font-weight:800;color:var(--text)">3</div>
-                <div style="font-size:9px;color:var(--text3)">Awards</div>
-            </div>
-            <div style="text-align:center;padding:12px 8px;border-radius:14px;background:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.4)">
-                <div class="icon-box orange sm" style="margin:0 auto 6px"><i data-lucide="star" class="icon-sm"></i></div>
-                <div style="font-size:16px;font-weight:800;color:var(--text)">8</div>
-                <div style="font-size:9px;color:var(--text3)">Reviews</div>
+                <div><p id="earnMonthly" style="font-size:26px;font-weight:800">৳0</p><p style="font-size:10px;opacity:0.7">This month</p></div>
+                <div style="text-align:right"><p style="font-size:10px;opacity:0.7">Total</p><p id="earnTotal" style="font-size:16px;font-weight:700">৳0</p></div>
             </div>
         </div>
 

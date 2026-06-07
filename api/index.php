@@ -121,5 +121,158 @@ switch ($path) {
         jsonResponse(currentUser());
         break;
 
+    case 'student_profile':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $uid = intval($_SESSION['user_id'] ?? 0);
+        $u = $db->find('users', 'id', $uid);
+        $prog = $db->find('student_progress', 'student_id', $uid);
+        $hwSubs = $db->findAll('homework_submissions', 'student_id', $uid);
+        $examRes = $db->findAll('exam_results', 'student_id', $uid);
+        $badges = $db->findAll('badges', 'student_id', $uid);
+        jsonResponse([
+            'user' => $u ?: [],
+            'progress' => $prog ?: [],
+            'homework_count' => count($hwSubs),
+            'exam_count' => count($examRes),
+            'badges' => $badges
+        ]);
+        break;
+
+    case 'teacher_profile':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $uid = intval($_SESSION['user_id'] ?? 0);
+        $u = $db->find('users', 'id', $uid);
+        $t = $db->find('teachers', 'user_id', $uid);
+        $students = $db->findAll('users', 'role', 'student');
+        $liveClasses = $db->findAll('live_classes', 'teacher_id', $uid);
+        $hw = $db->query('homework');
+        $myHw = array_filter($hw, function($h) use ($uid) { return intval($h['teacher_id'] ?? 0) === $uid; });
+        $reviews = $db->findAll('reviews', 'teacher_id', $t['id'] ?? 0);
+        $avgRating = 0;
+        if (count($reviews) > 0) {
+            $total = array_sum(array_column($reviews, 'rating'));
+            $avgRating = round($total / count($reviews), 1);
+        }
+        jsonResponse([
+            'user' => $u ?: [],
+            'teacher' => $t ?: [],
+            'student_count' => count($students),
+            'class_count' => count($liveClasses),
+            'hw_count' => count($myHw),
+            'review_count' => count($reviews),
+            'avg_rating' => $avgRating
+        ]);
+        break;
+
+    case 'my_students':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $students = $db->findAll('users', 'role', 'student');
+        $result = [];
+        foreach ($students as $s) {
+            $prog = $db->find('student_progress', 'student_id', $s['id']);
+            $examRes = $db->findAll('exam_results', 'student_id', $s['id']);
+            $avg = 0;
+            if (count($examRes) > 0) {
+                $avg = round(array_sum(array_column($examRes, 'score')) / count($examRes));
+            }
+            $result[] = [
+                'id' => $s['id'],
+                'name' => $s['name'],
+                'email' => $s['email'],
+                'class' => $s['class'] ?? '',
+                'avg_score' => $avg,
+                'streak' => $prog['streak'] ?? 0
+            ];
+        }
+        jsonResponse($result);
+        break;
+
+    case 'student_detail':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $sid = intval($_GET['student_id'] ?? 0);
+        $u = $db->find('users', 'id', $sid);
+        $prog = $db->find('student_progress', 'student_id', $sid);
+        $examRes = $db->findAll('exam_results', 'student_id', $sid);
+        $hwSubs = $db->findAll('homework_submissions', 'student_id', $sid);
+        $hwPend = 0;
+        foreach ($hwSubs as $h) { if (($h['status'] ?? '') !== 'graded') $hwPend++; }
+        jsonResponse([
+            'user' => $u ?: [],
+            'progress' => $prog ?: [],
+            'exam_results' => $examRes,
+            'hw_done' => count($hwSubs),
+            'hw_pending' => $hwPend,
+            'avg_score' => count($examRes) > 0 ? round(array_sum(array_column($examRes, 'score')) / count($examRes)) : 0
+        ]);
+        break;
+
+    case 'live_schedule':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        jsonResponse($db->query('live_classes'));
+        break;
+
+    case 'conversations':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $uid = intval($_SESSION['user_id'] ?? 0);
+        $msgs = $db->query('messages');
+        $convos = [];
+        $seen = [];
+        foreach ($msgs as $m) {
+            if (intval($m['from_id'] ?? 0) === $uid || intval($m['to_id'] ?? 0) === $uid) {
+                $otherId = intval($m['from_id'] ?? 0) === $uid ? intval($m['to_id'] ?? 0) : intval($m['from_id'] ?? 0);
+                if (!isset($seen[$otherId])) {
+                    $seen[$otherId] = true;
+                    $other = $db->find('users', 'id', $otherId);
+                    $convos[] = [
+                        'user_id' => $otherId,
+                        'name' => $other['name'] ?? 'Unknown',
+                        'last_message' => $m['message'] ?? '',
+                        'time' => $m['created_at'] ?? '',
+                        'unread' => ($m['is_read'] ?? 0) == 0 && intval($m['to_id'] ?? 0) === $uid ? 1 : 0
+                    ];
+                }
+            }
+        }
+        jsonResponse($convos);
+        break;
+
+    case 'earnings':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $uid = intval($_SESSION['user_id'] ?? 0);
+        $liveClasses = $db->query('live_classes');
+        $myClasses = array_filter($liveClasses, function($c) use ($uid) { return intval($c['teacher_id'] ?? 0) === $uid; });
+        $classCount = count($myClasses);
+        $monthly = $classCount * 500;
+        jsonResponse([
+            'monthly' => $monthly,
+            'total' => $monthly * 9,
+            'class_count' => $classCount,
+            'students' => count($db->findAll('users', 'role', 'student'))
+        ]);
+        break;
+
+    case 'badges':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $uid = intval($_SESSION['user_id'] ?? 0);
+        jsonResponse($db->findAll('badges', 'student_id', $uid));
+        break;
+
+    case 'activity_log':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $uid = intval($_SESSION['user_id'] ?? 0);
+        jsonResponse($db->findAll('activity_log', 'user_id', $uid));
+        break;
+
+    case 'log_activity':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $input = json_decode(file_get_contents('php://input'), true);
+        $db->insert('activity_log', [
+            'user_id' => intval($_SESSION['user_id'] ?? 0),
+            'action' => sanitize($input['action'] ?? ''),
+            'details' => sanitize($input['details'] ?? ''),
+        ]);
+        jsonResponse(['success' => true]);
+        break;
+
     default: jsonResponseError('Unknown action');
 }

@@ -143,6 +143,14 @@ function showScreen(id) {
     if (id === 'screen-announcements') loadAnnouncements();
     if (id === 'screen-pricing') loadPackages();
     if (id === 'screen-tutors') loadTeacherRankings();
+    if (id === 'screen-profile' && USER_ROLE === 'student') loadStudentProfile();
+    if (id === 'screen-teacher-profile' && USER_ROLE === 'teacher') loadTeacherProfile();
+    if (id === 'screen-my-students') loadMyStudents();
+    if (id === 'screen-student-progress') loadStudentDetail();
+    if (id === 'screen-live-schedule') loadLiveSchedule();
+    if (id === 'screen-messages') loadMessages();
+    if (id === 'screen-earnings') loadEarnings();
+    if (id === 'screen-live-lobby') loadLiveSchedule();
 }
 
 function navTo(btn, screenId) {
@@ -1217,5 +1225,196 @@ function loadTeacherRankings() {
         if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
     }).catch(function() {
         container.innerHTML = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">Failed to load</p>';
+    });
+}
+
+// ============================================
+// PHASE 2 — Dynamic Loading Functions
+// ============================================
+
+// --- STUDENT PROFILE ---
+function loadStudentProfile() {
+    api('student_profile').then(function(data) {
+        var u = data.user || {};
+        var p = data.progress || {};
+        var setEl = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
+        setEl('profileUserName', u.name || USER_NAME);
+        setEl('profileUserEmail', u.email || USER_EMAIL);
+        setEl('profileUserClass', (u.class || USER_CLASS) + ' - Premium Student');
+        var avatarEl = document.getElementById('profileUserAvatar');
+        if (avatarEl) avatarEl.textContent = (u.name || USER_NAME || 'S')[0].toUpperCase();
+        setEl('profileStat1', p.books_read || 0);
+        setEl('profileStat2', (p.homework_score || 0) + '%');
+        setEl('profileStat3', p.streak || 0);
+        setEl('profileStat4', p.badges_count || 0);
+        // Badges
+        var badgeContainer = document.getElementById('profileBadges');
+        if (badgeContainer && data.badges && data.badges.length > 0) {
+            var bhtml = '';
+            data.badges.forEach(function(b) {
+                bhtml += '<div class="sp-badge-item"><div class="sp-badge-icon"><i data-lucide="' + (b.icon || 'award') + '"></i></div><span>' + b.name + '</span></div>';
+            });
+            badgeContainer.innerHTML = bhtml;
+            if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+        }
+    });
+}
+
+// --- TEACHER PROFILE ---
+function loadTeacherProfile() {
+    api('teacher_profile').then(function(data) {
+        var u = data.user || {};
+        var t = data.teacher || {};
+        var setEl = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
+        setEl('tpName', u.name || USER_NAME);
+        setEl('tpSubject', t.subject || 'Teacher');
+        setEl('tpExp', (t.experience || 0) + ' years experience');
+        setEl('tpRating', t.rating || data.avg_rating || 0);
+        setEl('tpStudents', t.total_students || data.student_count || 0);
+        setEl('tpLessons', data.hw_count || 0);
+        var avatarEl = document.getElementById('tpAvatar');
+        if (avatarEl) avatarEl.textContent = (u.name || 'T')[0].toUpperCase();
+        var descEl = document.getElementById('tpBio');
+        if (descEl) descEl.textContent = (t.bio || u.name || 'Teacher') + ' is a passionate teacher.';
+        // Reviews
+        var reviewContainer = document.getElementById('tpReviews');
+        if (reviewContainer) {
+            var rhtml = '<p style="font-size:12px;color:var(--text3);margin-bottom:8px">' + data.review_count + ' reviews</p>';
+            reviewContainer.innerHTML = rhtml;
+        }
+    });
+}
+
+// --- MY STUDENTS (Teacher) ---
+function loadMyStudents() {
+    var container = document.getElementById('myStudentsList');
+    var statEl = document.getElementById('myStudentsStat');
+    if (!container) return;
+    api('my_students').then(function(students) {
+        if (statEl) {
+            statEl.innerHTML = '<div style="text-align:center"><div style="font-size:20px;font-weight:800;color:#4F46E5">' + students.length + '</div><div style="font-size:10px;color:var(--text3)">Total</div></div>' +
+                '<div style="text-align:center"><div style="font-size:20px;font-weight:800;color:#10B981">' + students.filter(function(s){ return s.avg_score > 70; }).length + '</div><div style="font-size:10px;color:var(--text3)">Active</div></div>' +
+                '<div style="text-align:center"><div style="font-size:20px;font-weight:800;color:#F59E0B">' + students.filter(function(s){ return s.avg_score <= 70; }).length + '</div><div style="font-size:10px;color:var(--text3)">Needs Help</div></div>';
+        }
+        var html = '';
+        students.forEach(function(s) {
+            var color = s.avg_score >= 80 ? '#10B981' : s.avg_score >= 60 ? '#F59E0B' : '#EF4444';
+            html += '<div class="list-item" style="cursor:pointer" onclick="openStudentDetail(' + s.id + ')">' +
+                '<div class="user-avatar" style="background:linear-gradient(135deg,' + color + ',' + color + '80);width:36px;height:36px;font-size:14px">' + (s.name || 'S')[0] + '</div>' +
+                '<div class="list-item-content"><h5>' + (s.name || '') + '</h5><p>' + (s.class || '') + ' · Streak: ' + (s.streak || 0) + 'd</p></div>' +
+                '<div style="text-align:right"><div style="font-size:14px;font-weight:700;color:' + color + '">' + (s.avg_score || 0) + '%</div></div></div>';
+        });
+        if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No students found</p>';
+        container.innerHTML = html;
+    });
+}
+
+function openStudentDetail(studentId) {
+    window._viewingStudentId = studentId;
+    showScreen('screen-student-progress');
+}
+
+// --- STUDENT PROGRESS DETAIL (Teacher view) ---
+function loadStudentDetail() {
+    var sid = window._viewingStudentId || 0;
+    if (!sid) return;
+    var container = document.getElementById('studentDetailContent');
+    if (!container) return;
+    api('student_detail&student_id=' + sid).then(function(data) {
+        var u = data.user || {};
+        var p = data.progress || {};
+        var setEl = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
+        setEl('spdName', u.name || 'Student');
+        setEl('spdClass', (u.class || '') + ' - Roll: ' + (u.roll || '-'));
+        setEl('spdAvg', data.avg_score + '%');
+        setEl('spdHwDone', data.hw_done);
+        setEl('spdHwPending', data.hw_pending);
+        setEl('spdStreak', p.streak || 0);
+        var avatarEl = document.getElementById('spdAvatar');
+        if (avatarEl) avatarEl.textContent = (u.name || 'S')[0].toUpperCase();
+        // Exam results
+        var examContainer = document.getElementById('spdExams');
+        if (examContainer) {
+            var ehtml = '';
+            (data.exam_results || []).forEach(function(e) {
+                var scoreColor = e.score >= 80 ? '#10B981' : e.score >= 60 ? '#F59E0B' : '#EF4444';
+                ehtml += '<div class="list-item"><div class="list-item-content"><h5>' + (e.exam_name || '') + '</h5><p>' + (e.date || '') + '</p></div>' +
+                    '<div style="font-size:14px;font-weight:700;color:' + scoreColor + '">' + (e.score || 0) + '%</div></div>';
+            });
+            examContainer.innerHTML = ehtml || '<p style="font-size:12px;color:var(--text3)">No exam results</p>';
+        }
+    });
+}
+
+// --- LIVE CLASS SCHEDULE ---
+function loadLiveSchedule() {
+    var container = document.getElementById('liveScheduleList');
+    if (!container) return;
+    api('live_schedule').then(function(classes) {
+        var html = '';
+        (classes || []).forEach(function(c) {
+            var timeStr = c.time || '10:00 AM';
+            html += '<div class="list-item">' +
+                '<div class="list-item-content"><h5>' + (c.subject || '') + '</h5><p>' + (c.topic || '') + ' · ' + (c.class_name || '') + '</p></div>' +
+                '<div style="text-align:right;font-size:11px;color:var(--text3)">' + timeStr + '<br><span style="color:#10B981;font-weight:600">' + (c.status || 'upcoming') + '</span></div></div>';
+        });
+        if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No upcoming classes</p>';
+        container.innerHTML = html;
+        // Populate live lobby
+        if (classes && classes.length > 0) {
+            var c = classes[0];
+            var setEl = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
+            setEl('liveLobbyName', c.teacher_name || 'Teacher');
+            setEl('liveLobbySubject', (c.subject || '') + ' - ' + (c.topic || ''));
+            setEl('liveLobbyClass', c.class_name || '');
+            var tName = c.teacher_name || 'T';
+            var lobbyAvatar = document.getElementById('liveLobbyAvatar');
+            if (lobbyAvatar) lobbyAvatar.textContent = tName[0].toUpperCase();
+            setEl('liveClassTitle', 'Live: ' + (c.subject || '') + ' ' + (c.topic || ''));
+            var classAvatar = document.getElementById('liveClassAvatar');
+            if (classAvatar) classAvatar.textContent = tName[0].toUpperCase();
+            setEl('liveClassName', tName);
+            setEl('liveStudentCount', 'Students (' + (c.students_joined || 0) + ')');
+        }
+    });
+}
+
+// --- MESSAGES / CONVERSATIONS ---
+function loadMessages() {
+    var container = document.getElementById('messagesList');
+    var unreadEl = document.getElementById('msgUnreadCount');
+    var totalEl = document.getElementById('msgTotalCount');
+    if (!container) return;
+    api('conversations').then(function(convos) {
+        var unreadTotal = convos.reduce(function(sum, c) { return sum + (c.unread || 0); }, 0);
+        if (unreadEl) unreadEl.textContent = unreadTotal;
+        if (totalEl) totalEl.textContent = convos.length;
+        var html = '';
+        convos.forEach(function(c) {
+            html += '<div class="list-item" style="cursor:pointer">' +
+                '<div class="user-avatar" style="background:linear-gradient(135deg,#4F46E5,#7C3AED);width:36px;height:36px;font-size:14px">' + (c.name || 'U')[0] + '</div>' +
+                '<div class="list-item-content"><h5>' + (c.name || '') + '</h5><p style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px">' + (c.last_message || '') + '</p></div>' +
+                '<div style="text-align:right"><div style="font-size:9px;color:var(--text3)">' + (c.time || '') + '</div>' +
+                (c.unread ? '<div style="background:#4F46E5;color:white;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;margin-top:4px">' + c.unread + '</div>' : '') +
+                '</div></div>';
+        });
+        if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No conversations</p>';
+        container.innerHTML = html;
+    });
+}
+
+// --- TEACHER EARNINGS ---
+function loadEarnings() {
+    api('earnings').then(function(data) {
+        var setEl = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
+        setEl('earnName', USER_NAME);
+        setEl('earnSubject', 'Teacher');
+        setEl('earnEmail', USER_EMAIL);
+        setEl('earnMonthly', '৳' + (data.monthly || 0).toLocaleString());
+        setEl('earnTotal', '৳' + (data.total || 0).toLocaleString());
+        setEl('earnStudents', data.students || 0);
+        setEl('earnClasses', data.class_count || 0);
+        var avatarEl = document.getElementById('earnAvatar');
+        if (avatarEl) avatarEl.textContent = (USER_NAME || 'T')[0].toUpperCase();
     });
 }

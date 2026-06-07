@@ -276,6 +276,31 @@ class JsonDB {
             ['id'=>1,'student_id'=>1,'books_read'=>12,'homework_score'=>85,'exam_score'=>84,'streak'=>7,'badges_count'=>5,'study_hours'=>86,'last_active'=>'2026-06-12'],
             ['id'=>2,'student_id'=>5,'books_read'=>8,'homework_score'=>72,'exam_score'=>73,'streak'=>3,'badges_count'=>2,'study_hours'=>45,'last_active'=>'2026-06-12'],
         ];
+
+        $this->data['badges'] = [
+            ['id'=>1,'student_id'=>1,'name'=>'Top Performer','icon'=>'trophy','description'=>'Scored above 90% in exams','earned_date'=>'2026-05-20'],
+            ['id'=>2,'student_id'=>1,'name'=>'Bookworm','icon'=>'book-open','description'=>'Read 10+ books','earned_date'=>'2026-05-15'],
+            ['id'=>3,'student_id'=>1,'name'=>'7 Day Streak','icon'=>'flame','description'=>'Maintained 7 day streak','earned_date'=>'2026-06-01'],
+            ['id'=>4,'student_id'=>1,'name'=>'Quick Learner','icon'=>'zap','description'=>'Completed 5 lessons in a day','earned_date'=>'2026-06-05'],
+            ['id'=>5,'student_id'=>1,'name'=>'Honor Roll','icon'=>'award','description'=>'Top 10% in class','earned_date'=>'2026-06-10'],
+            ['id'=>6,'student_id'=>5,'name'=>'Bookworm','icon'=>'book-open','description'=>'Read 5+ books','earned_date'=>'2026-06-01'],
+            ['id'=>7,'student_id'=>5,'name'=>'Quick Learner','icon'=>'zap','description'=>'Completed 3 lessons in a day','earned_date'=>'2026-06-10'],
+        ];
+
+        $this->data['reviews'] = [
+            ['id'=>1,'teacher_id'=>1,'student_id'=>1,'rating'=>5,'comment'=>'Best math teacher ever! Makes everything so easy to understand.','created_at'=>'2026-06-10'],
+            ['id'=>2,'teacher_id'=>1,'student_id'=>5,'rating'=>4,'comment'=>'Very helpful and explains concepts clearly.','created_at'=>'2026-06-08'],
+            ['id'=>3,'teacher_id'=>2,'student_id'=>1,'rating'=>5,'comment'=>'Excellent English teacher, really engaging classes.','created_at'=>'2026-06-09'],
+            ['id'=>4,'teacher_id'=>3,'student_id'=>5,'rating'=>4,'comment'=>'Great science teacher with fun experiments.','created_at'=>'2026-06-07'],
+        ];
+
+        $this->data['activity_log'] = [
+            ['id'=>1,'user_id'=>1,'action'=>'login','details'=>'Logged in from mobile','created_at'=>'2026-06-12 08:00:00'],
+            ['id'=>2,'user_id'=>1,'action'=>'view_homework','details'=>'Viewed Mathematics homework','created_at'=>'2026-06-12 08:15:00'],
+            ['id'=>3,'user_id'=>1,'action'=>'start_exam','details'=>'Started Science exam','created_at'=>'2026-06-12 09:00:00'],
+            ['id'=>4,'user_id'=>2,'action'=>'login','details'=>'Logged in from desktop','created_at'=>'2026-06-12 07:30:00'],
+            ['id'=>5,'user_id'=>2,'action'=>'create_homework','details'=>'Created new Mathematics homework','created_at'=>'2026-06-12 08:45:00'],
+        ];
     }
 }
 
