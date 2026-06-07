@@ -1,0 +1,345 @@
+{
+    "users": [
+        {
+            "id": 1,
+            "name": "Arman Khan",
+            "email": "arman@student.com",
+            "password": "$2y$10$gFUI\/at3EsyePsUhi8HiO.CAOf.p0wtvtyk9HtO3AB4bWhl.oroei",
+            "role": "student",
+            "avatar": "",
+            "class": "8",
+            "phone": "",
+            "school": "",
+            "is_premium": 1,
+            "created_at": "2025-06-01 10:00:00"
+        },
+        {
+            "id": 2,
+            "name": "Rahim Ahmed",
+            "email": "rahim@teacher.com",
+            "password": "$2y$10$gFUI\/at3EsyePsUhi8HiO.CAOf.p0wtvtyk9HtO3AB4bWhl.oroei",
+            "role": "teacher",
+            "avatar": "",
+            "class": "",
+            "phone": "",
+            "school": "",
+            "is_premium": 0,
+            "created_at": "2025-06-01 10:00:00"
+        },
+        {
+            "id": 3,
+            "name": "Admin User",
+            "email": "admin@school.com",
+            "password": "$2y$10$gFUI\/at3EsyePsUhi8HiO.CAOf.p0wtvtyk9HtO3AB4bWhl.oroei",
+            "role": "admin",
+            "avatar": "",
+            "class": "",
+            "phone": "",
+            "school": "",
+            "is_premium": 0,
+            "created_at": "2025-06-01 10:00:00"
+        },
+        {
+            "id": 4,
+            "name": "Sarah Khan",
+            "email": "sarah@teacher.com",
+            "password": "$2y$10$gFUI\/at3EsyePsUhi8HiO.CAOf.p0wtvtyk9HtO3AB4bWhl.oroei",
+            "role": "teacher",
+            "avatar": "",
+            "class": "",
+            "phone": "",
+            "school": "",
+            "is_premium": 0,
+            "created_at": "2025-06-01 10:00:00"
+        },
+        {
+            "id": 5,
+            "name": "Sakib Hasan",
+            "email": "sakib@student.com",
+            "password": "$2y$10$gFUI\/at3EsyePsUhi8HiO.CAOf.p0wtvtyk9HtO3AB4bWhl.oroei",
+            "role": "student",
+            "avatar": "",
+            "class": "8",
+            "phone": "",
+            "school": "",
+            "is_premium": 0,
+            "created_at": "2025-06-01 10:00:00"
+        }
+    ],
+    "teachers": [
+        {
+            "id": 1,
+            "user_id": 2,
+            "subject": "Mathematics",
+            "experience": 12,
+            "bio": "Passionate mathematics teacher.",
+            "rating": 4.8,
+            "total_students": 120,
+            "total_classes": 500,
+            "is_featured": 1,
+            "is_active": 1
+        },
+        {
+            "id": 2,
+            "user_id": 4,
+            "subject": "English Literature",
+            "experience": 8,
+            "bio": "English literature specialist.",
+            "rating": 4.9,
+            "total_students": 95,
+            "total_classes": 380,
+            "is_featured": 1,
+            "is_active": 1
+        }
+    ],
+    "subjects": [
+        {
+            "id": 1,
+            "name": "Mathematics",
+            "icon": "calculator",
+            "color": "#6366F1"
+        },
+        {
+            "id": 2,
+            "name": "English",
+            "icon": "book-open",
+            "color": "#EC4899"
+        },
+        {
+            "id": 3,
+            "name": "Science",
+            "icon": "flask-conical",
+            "color": "#22C55E"
+        },
+        {
+            "id": 4,
+            "name": "Bangla",
+            "icon": "languages",
+            "color": "#F59E0B"
+        },
+        {
+            "id": 5,
+            "name": "Physics",
+            "icon": "atom",
+            "color": "#3B82F6"
+        },
+        {
+            "id": 6,
+            "name": "Chemistry",
+            "icon": "flask-conical",
+            "color": "#06B6D4"
+        },
+        {
+            "id": 7,
+            "name": "Biology",
+            "icon": "leaf",
+            "color": "#10B981"
+        },
+        {
+            "id": 8,
+            "name": "ICT",
+            "icon": "monitor",
+            "color": "#8B5CF6"
+        },
+        {
+            "id": 9,
+            "name": "Geography",
+            "icon": "globe",
+            "color": "#F97316"
+        },
+        {
+            "id": 10,
+            "name": "Religion",
+            "icon": "landmark",
+            "color": "#14B8A6"
+        }
+    ],
+    "homework": [
+        {
+            "id": 1,
+            "title": "Quadratic Equations Practice",
+            "subject_id": 1,
+            "teacher_id": 1,
+            "description": "Solve exercises from Chapter 5, problems 1-20.",
+            "due_date": "2026-06-15",
+            "total_marks": 20,
+            "status": "pending",
+            "created_at": "2025-06-01 10:00:00"
+        },
+        {
+            "id": 2,
+            "title": "Essay Writing - My Village",
+            "subject_id": 2,
+            "teacher_id": 2,
+            "description": "Write a 500 word essay about your village.",
+            "due_date": "2026-06-12",
+            "total_marks": 15,
+            "status": "pending",
+            "created_at": "2025-06-01 10:00:00"
+        },
+        {
+            "id": 3,
+            "title": "Physics Lab Report",
+            "subject_id": 5,
+            "teacher_id": 1,
+            "description": "Complete lab report on Newton's Laws experiment.",
+            "due_date": "2026-06-18",
+            "total_marks": 25,
+            "status": "pending",
+            "created_at": "2025-06-01 10:00:00"
+        },
+        {
+            "id": 4,
+            "title": "Bangla Grammar Worksheet",
+            "subject_id": 4,
+            "teacher_id": 2,
+            "description": "Complete worksheet on verb conjugation.",
+            "due_date": "2026-06-10",
+            "total_marks": 10,
+            "status": "submitted",
+            "created_at": "2025-06-01 10:00:00"
+        }
+    ],
+    "exams": [
+        {
+            "id": 1,
+            "title": "Mid-term Math Test",
+            "subject_id": 1,
+            "teacher_id": 1,
+            "exam_date": "2026-06-20",
+            "total_marks": 100,
+            "duration": 60,
+            "type": "mcq",
+            "status": "upcoming",
+            "created_at": "2025-06-01 10:00:00"
+        },
+        {
+            "id": 2,
+            "title": "English Grammar Quiz",
+            "subject_id": 2,
+            "teacher_id": 2,
+            "exam_date": "2026-06-25",
+            "total_marks": 50,
+            "duration": 30,
+            "type": "mcq",
+            "status": "upcoming",
+            "created_at": "2025-06-01 10:00:00"
+        },
+        {
+            "id": 3,
+            "title": "Physics Chapter Test",
+            "subject_id": 5,
+            "teacher_id": 1,
+            "exam_date": "2026-06-28",
+            "total_marks": 75,
+            "duration": 45,
+            "type": "written",
+            "status": "upcoming",
+            "created_at": "2025-06-01 10:00:00"
+        }
+    ],
+    "live_classes": [
+        {
+            "id": 1,
+            "title": "Math - Algebra Chapter 5",
+            "subject_id": 1,
+            "teacher_id": 1,
+            "class_date": "2026-06-07",
+            "start_time": "10:00",
+            "end_time": "11:00",
+            "status": "live",
+            "meeting_link": "#"
+        },
+        {
+            "id": 2,
+            "title": "English - Grammar Rules",
+            "subject_id": 2,
+            "teacher_id": 2,
+            "class_date": "2026-06-07",
+            "start_time": "14:00",
+            "end_time": "15:00",
+            "status": "scheduled",
+            "meeting_link": "#"
+        },
+        {
+            "id": 3,
+            "title": "Physics - Newton Laws",
+            "subject_id": 5,
+            "teacher_id": 1,
+            "class_date": "2026-06-07",
+            "start_time": "16:30",
+            "end_time": "17:30",
+            "status": "scheduled",
+            "meeting_link": "#"
+        }
+    ],
+    "announcements": [
+        {
+            "id": 1,
+            "title": "Mid-term Exam Schedule",
+            "message": "Mid-term exams will start from June 20. Prepare well!",
+            "category": "exam",
+            "target_class": "all",
+            "teacher_id": 1,
+            "created_at": "2025-06-01 10:00:00"
+        },
+        {
+            "id": 2,
+            "title": "New Physics Lab Equipment",
+            "message": "New lab equipment has arrived. Lab sessions starting next week.",
+            "category": "general",
+            "target_class": "8",
+            "teacher_id": 2,
+            "created_at": "2025-06-01 10:00:00"
+        },
+        {
+            "id": 3,
+            "title": "Math Competition",
+            "message": "School math competition on June 30. Register with your math teacher.",
+            "category": "event",
+            "target_class": "all",
+            "teacher_id": 1,
+            "created_at": "2025-06-01 10:00:00"
+        }
+    ],
+    "packages": [
+        {
+            "id": 1,
+            "name": "Monthly Basic",
+            "price": 299,
+            "duration": 30,
+            "features": "AI Tutor, Homework Help",
+            "is_active": 1
+        },
+        {
+            "id": 2,
+            "name": "Monthly Pro",
+            "price": 499,
+            "duration": 30,
+            "features": "AI Tutor, Live Classes, Homework Review",
+            "is_active": 1
+        },
+        {
+            "id": 3,
+            "name": "Yearly Premium",
+            "price": 4999,
+            "duration": 365,
+            "features": "All Features, Priority Support, Analytics",
+            "is_active": 1
+        }
+    ],
+    "messages": [],
+    "homework_submissions": [],
+    "exam_results": [],
+    "chapters": [],
+    "library": [
+        {"id":1,"title":"Mathematics Textbook Class 8","subject_id":1,"class":"Class 8","type":"textbook","description":"Complete mathematics textbook for class 8 students.","file_url":"","cover_url":"","uploader_id":0,"uploader_type":"admin","downloads":245,"is_active":1,"created_at":"2025-06-01 10:00:00"},
+        {"id":2,"title":"English Grammar Guide","subject_id":2,"class":"Class 8","type":"guide","description":"Comprehensive English grammar reference guide.","file_url":"","cover_url":"","uploader_id":0,"uploader_type":"admin","downloads":189,"is_active":1,"created_at":"2025-06-01 10:00:00"},
+        {"id":3,"title":"Physics Formula Sheet","subject_id":5,"class":"Class 9 Science","type":"reference","description":"Quick reference sheet for all physics formulas.","file_url":"","cover_url":"","uploader_id":0,"uploader_type":"admin","downloads":312,"is_active":1,"created_at":"2025-06-01 10:00:00"},
+        {"id":4,"title":"Bangla Grammar Class 8","subject_id":4,"class":"Class 8","type":"textbook","description":"Bangla grammar rules and exercises.","file_url":"","cover_url":"","uploader_id":0,"uploader_type":"admin","downloads":120,"is_active":1,"created_at":"2025-06-01 10:00:00"},
+        {"id":5,"title":"Science Lab Manual","subject_id":3,"class":"Class 8","type":"guide","description":"Science practical lab manual for class 8.","file_url":"","cover_url":"","uploader_id":0,"uploader_type":"admin","downloads":95,"is_active":1,"created_at":"2025-06-01 10:00:00"},
+        {"id":6,"title":"ICT Fundamentals","subject_id":8,"class":"Class 8","type":"textbook","description":"ICT basics and computer fundamentals.","file_url":"","cover_url":"","uploader_id":0,"uploader_type":"admin","downloads":80,"is_active":1,"created_at":"2025-06-01 10:00:00"},
+        {"id":7,"title":"Algebra Tutorial Video","subject_id":1,"class":"Class 8","type":"video","description":"Video tutorial on algebra basics.","file_url":"","cover_url":"","uploader_id":0,"uploader_type":"admin","downloads":200,"is_active":1,"created_at":"2025-06-01 10:00:00"},
+        {"id":8,"title":"English Essay Guide","subject_id":2,"class":"Class 8","type":"notes","description":"Essay writing techniques and samples.","file_url":"","cover_url":"","uploader_id":0,"uploader_type":"admin","downloads":150,"is_active":1,"created_at":"2025-06-01 10:00:00"}
+    ]
+}

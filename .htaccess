@@ -1,0 +1,9 @@
+RewriteEngine On
+
+# If not a directory or existing file, route to index.php
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.php [L]
+
+# Block direct access to index.html (use index.php router instead)
+RewriteRule ^index\.html$ - [R=404,L]
