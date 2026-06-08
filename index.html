@@ -1027,17 +1027,13 @@
         </div>
 
         <div class="section-header"><h2 class="section-title">Your Submission</h2></div>
-        <div style="border:2px dashed var(--border);border-radius:14px;padding:24px;text-align:center;margin-bottom:12px">
-            <i data-lucide="upload-cloud" style="font-size:32px;color:var(--primary);margin-bottom:8px"></i>
-            <p style="font-size:12px;color:var(--text2)">Tap to upload images or PDF</p>
-            <p style="font-size:10px;color:var(--text3)">Max 10MB per file</p>
+        <textarea id="hwAnswerInput" rows="4" placeholder="Type your answer here..." style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:13px;background:var(--card);color:var(--text);resize:vertical;margin-bottom:12px;line-height:1.6"></textarea>
+        <div style="border:2px dashed var(--border);border-radius:14px;padding:20px;text-align:center;margin-bottom:12px;cursor:pointer" onclick="showToast('File upload coming soon!','info')">
+            <i data-lucide="upload-cloud" style="font-size:28px;color:var(--primary);margin-bottom:6px"></i>
+            <p style="font-size:11px;color:var(--text2)">Or attach images/PDF (optional)</p>
         </div>
-        <div style="display:flex;gap:8px">
-            <button class="btn-outline" style="flex:1" onclick="showToast('Image picker opening...','info')"><i data-lucide="image"></i> Image</button>
-            <button class="btn-outline" style="flex:1" onclick="showToast('PDF picker opening...','info')"><i data-lucide="file-text"></i> PDF</button>
-            <button class="btn-outline" style="flex:1" onclick="showToast('Camera opening...','info')"><i data-lucide="camera"></i> Camera</button>
-        </div>
-        <button class="btn-primary" style="margin-top:16px;padding:14px" onclick="showToast('Homework submitted!');showScreen('screen-homework')">Submit Homework</button>
+        <button class="btn-primary" id="hwSubmitBtn" style="margin-top:8px;padding:14px" onclick="submitHomework()">Submit Homework</button>
+        <div id="hwSubmissionStatus" style="display:none;margin-top:12px;padding:12px;border-radius:12px;text-align:center;font-size:12px;font-weight:600"></div>
     </div>
 </div>
 
@@ -2056,33 +2052,44 @@
 
 <!-- ========== 20E. MESSAGES ========== -->
 <div id="screen-messages" class="screen">
-    <header class="header glass-header">
-        <button class="header-back" onclick="showScreen('screen-teacher-dash')"><i data-lucide="arrow-left"></i></button>
-        <h3 class="header-title">Messages</h3>
-        <button class="icon-btn glass-card-sm" onclick="showToast('New message coming soon!','info')"><i data-lucide="edit"></i></button>
-    </header>
-    <div class="main-content">
-        <!-- Search -->
-        <div class="search-bar card-enter">
-            <i data-lucide="search" style="width:18px;height:18px;color:var(--text3);flex-shrink:0"></i>
-            <input type="text" placeholder="Search conversations..." id="msgSearchInput" oninput="filterMessages()">
-        </div>
-
-        <!-- Stats -->
-        <div class="card-enter" style="animation-delay:0.1s;display:flex;gap:10px;margin-bottom:16px">
-            <div style="flex:1;padding:12px;border-radius:14px;background:linear-gradient(135deg,#059669,#10B981);color:white;text-align:center;cursor:pointer">
-                <div id="msgUnreadCount" style="font-size:22px;font-weight:800">0</div>
-                <div style="font-size:10px;opacity:0.85">Unread</div>
+    <!-- Conversation List View -->
+    <div id="msgListView">
+        <header class="header glass-header">
+            <button class="header-back" onclick="showScreen('screen-teacher-dash')"><i data-lucide="arrow-left"></i></button>
+            <h3 class="header-title">Messages</h3>
+            <button class="icon-btn glass-card-sm" onclick="showToast('New message coming soon!','info')"><i data-lucide="edit"></i></button>
+        </header>
+        <div class="main-content">
+            <div class="search-bar card-enter">
+                <i data-lucide="search" style="width:18px;height:18px;color:var(--text3);flex-shrink:0"></i>
+                <input type="text" placeholder="Search conversations..." id="msgSearchInput" oninput="filterMessages()">
             </div>
-            <div style="flex:1;padding:12px;border-radius:14px;background:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.4);text-align:center;cursor:pointer">
-                <div id="msgTotalCount" style="font-size:22px;font-weight:800;color:var(--text)">0</div>
-                <div style="font-size:10px;color:var(--text3)">Total Chats</div>
+            <div class="card-enter" style="animation-delay:0.1s;display:flex;gap:10px;margin-bottom:16px">
+                <div style="flex:1;padding:12px;border-radius:14px;background:linear-gradient(135deg,#059669,#10B981);color:white;text-align:center;cursor:pointer">
+                    <div id="msgUnreadCount" style="font-size:22px;font-weight:800">0</div>
+                    <div style="font-size:10px;opacity:0.85">Unread</div>
+                </div>
+                <div style="flex:1;padding:12px;border-radius:14px;background:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.4);text-align:center;cursor:pointer">
+                    <div id="msgTotalCount" style="font-size:22px;font-weight:800;color:var(--text)">0</div>
+                    <div style="font-size:10px;color:var(--text3)">Total Chats</div>
+                </div>
             </div>
+            <div id="messagesList"></div>
         </div>
-
-        <!-- Conversations -->
-        <div id="messagesList">
-            <!-- Dynamic: loaded by loadMessages() -->
+    </div>
+    <!-- Chat Detail View -->
+    <div id="msgChatView" style="display:none">
+        <header class="header glass-header" style="display:flex;align-items:center;gap:10px">
+            <button class="header-back" onclick="showChatList()"><i data-lucide="arrow-left"></i></button>
+            <div class="user-avatar" id="chatAvatar" style="background:linear-gradient(135deg,#4F46E5,#7C3AED);width:32px;height:32px;font-size:12px;flex-shrink:0">U</div>
+            <div style="flex:1"><h3 class="header-title" id="chatUserName" style="font-size:14px;text-align:left">Loading...</h3><p style="font-size:10px;color:var(--text3)">Online</p></div>
+        </header>
+        <div id="chatMessages" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;max-height:calc(100vh - 130px)">
+            <!-- Dynamic: chat bubbles -->
+        </div>
+        <div style="display:flex;gap:8px;padding:10px 12px;background:var(--card);border-top:1px solid var(--border);position:sticky;bottom:0">
+            <input type="text" id="chatInput" placeholder="Type a message..." style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:20px;font-size:13px;background:var(--bg);color:var(--text);outline:none" onkeydown="if(event.key==='Enter')sendChatMessage()">
+            <button onclick="sendChatMessage()" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-dark));border:none;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(99,102,241,0.3)"><i data-lucide="send" style="width:18px;height:18px"></i></button>
         </div>
     </div>
 </div>

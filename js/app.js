@@ -663,7 +663,7 @@ function startExamTimer() {
     if (examTimerInterval) clearInterval(examTimerInterval);
     examTimerInterval = setInterval(function() {
         total--;
-        if (total <= 0) { clearInterval(examTimerInterval); showToast('Time up! Submitting...', 'error'); showScreen('screen-exam-result'); return; }
+        if (total <= 0) { clearInterval(examTimerInterval); logActivity('quiz', 'Completed exam (time up)'); showToast('Time up! Submitting...', 'error'); showScreen('screen-exam-result'); return; }
         var m = Math.floor(total / 60), s = total % 60;
         timerEl.innerHTML = '<i data-lucide="clock"></i> ' + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
         if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -902,6 +902,15 @@ function api(action, params) {
     var url = '/api/index.php?action=' + action;
     if (params) { Object.keys(params).forEach(function(k) { url += '&' + k + '=' + encodeURIComponent(params[k]); }); }
     return fetch(url).then(function(r) { return r.json(); });
+}
+
+function logActivity(type, details) {
+    fetch('/api/index.php?action=log_activity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: type, details: details }),
+        credentials: 'same-origin'
+    }).catch(function() {});
 }
 
 // Helper: get subject name by id
@@ -1526,13 +1535,14 @@ function loadMessages() {
     var unreadEl = document.getElementById('msgUnreadCount');
     var totalEl = document.getElementById('msgTotalCount');
     if (!container) return;
+    showChatList();
     api('conversations').then(function(convos) {
         var unreadTotal = convos.reduce(function(sum, c) { return sum + (c.unread || 0); }, 0);
         if (unreadEl) unreadEl.textContent = unreadTotal;
         if (totalEl) totalEl.textContent = convos.length;
         var html = '';
         convos.forEach(function(c) {
-            html += '<div class="list-item" style="cursor:pointer">' +
+            html += '<div class="list-item" style="cursor:pointer" onclick="openChat(' + (c.user_id || c.id) + ',\'' + (c.name || '').replace(/'/g, "\\'") + '\')">' +
                 '<div class="user-avatar" style="background:linear-gradient(135deg,#4F46E5,#7C3AED);width:36px;height:36px;font-size:14px">' + (c.name || 'U')[0] + '</div>' +
                 '<div class="list-item-content"><h5>' + (c.name || '') + '</h5><p style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px">' + (c.last_message || '') + '</p></div>' +
                 '<div style="text-align:right"><div style="font-size:9px;color:var(--text3)">' + (c.time || '') + '</div>' +
@@ -1542,6 +1552,77 @@ function loadMessages() {
         if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No conversations</p>';
         container.innerHTML = html;
     });
+}
+
+var _chatUserId = null;
+function showChatList() {
+    var lv = document.getElementById('msgListView');
+    var cv = document.getElementById('msgChatView');
+    if (lv) lv.style.display = '';
+    if (cv) cv.style.display = 'none';
+    _chatUserId = null;
+}
+
+function openChat(userId, userName) {
+    _chatUserId = userId;
+    var lv = document.getElementById('msgListView');
+    var cv = document.getElementById('msgChatView');
+    if (lv) lv.style.display = 'none';
+    if (cv) cv.style.display = 'flex';
+    cv.style.flexDirection = 'column';
+    cv.style.height = 'calc(100vh - 0px)';
+    var nameEl = document.getElementById('chatUserName');
+    if (nameEl) nameEl.textContent = userName;
+    var avatarEl = document.getElementById('chatAvatar');
+    if (avatarEl) avatarEl.textContent = (userName || 'U')[0].toUpperCase();
+    loadChatMessages(userId);
+}
+
+function loadChatMessages(userId) {
+    var container = document.getElementById('chatMessages');
+    if (!container) return;
+    container.innerHTML = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">Loading...</p>';
+    api('chat_messages&user_id=' + userId).then(function(msgs) {
+        var html = '';
+        (msgs || []).forEach(function(m) {
+            var isMine = String(m.from_id) === String(window.__USER_ID || '');
+            var align = isMine ? 'flex-end' : 'flex-start';
+            var bg = isMine ? 'linear-gradient(135deg,var(--primary),var(--primary-dark))' : 'var(--card)';
+            var color = isMine ? 'white' : 'var(--text)';
+            var time = m.created_at ? m.created_at.split(' ')[1] || '' : '';
+            html += '<div style="display:flex;flex-direction:column;align-items:' + align + ';max-width:80%">' +
+                '<div style="padding:10px 14px;border-radius:16px;background:' + bg + ';color:' + color + ';font-size:13px;line-height:1.5;box-shadow:var(--shadow-sm)">' + (m.message || '') + '</div>' +
+                '<span style="font-size:9px;color:var(--text3);margin-top:2px">' + time + '</span></div>';
+        });
+        if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No messages yet. Say hello!</p>';
+        container.innerHTML = html;
+        container.scrollTop = container.scrollHeight;
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    });
+}
+
+function sendChatMessage() {
+    var input = document.getElementById('chatInput');
+    var msg = input ? input.value.trim() : '';
+    if (!msg || !_chatUserId) return;
+    input.value = '';
+    var container = document.getElementById('chatMessages');
+    var isMine = true;
+    var html = '<div style="display:flex;flex-direction:column;align-items:flex-end;max-width:80%">' +
+        '<div style="padding:10px 14px;border-radius:16px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white;font-size:13px;line-height:1.5;box-shadow:var(--shadow-sm)">' + msg.replace(/</g, '&lt;') + '</div>' +
+        '<span style="font-size:9px;color:var(--text3);margin-top:2px">Just now</span></div>';
+    if (container) {
+        container.insertAdjacentHTML('beforeend', html);
+        container.scrollTop = container.scrollHeight;
+    }
+    fetch('/api/index.php?action=send_message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to_id: parseInt(_chatUserId), message: msg }),
+        credentials: 'same-origin'
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        if (!data.success) showToast('Failed to send', 'error');
+    }).catch(function() { showToast('Network error', 'error'); });
 }
 
 // --- TEACHER EARNINGS ---
@@ -1628,8 +1709,16 @@ function renderMyStudyStats(p) {
 }
 
 // --- HOMEWORK DETAIL ---
+var _currentHwId = null;
 function loadHomeworkDetail(id) {
     if (!id) return;
+    _currentHwId = id;
+    var answerEl = document.getElementById('hwAnswerInput');
+    if (answerEl) answerEl.value = '';
+    var statusEl = document.getElementById('hwSubmissionStatus');
+    if (statusEl) statusEl.style.display = 'none';
+    var submitBtn = document.getElementById('hwSubmitBtn');
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Homework'; }
     api('homework').then(function(list) {
         var hw = null;
         (list || []).forEach(function(h) { if (String(h.id) === String(id)) hw = h; });
@@ -1643,6 +1732,39 @@ function loadHomeworkDetail(id) {
         var iconEl = document.getElementById('hwDetailIcon');
         if (iconEl) iconEl.setAttribute('data-lucide', getSubjectIcon(hw.subject_id));
         if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    });
+}
+
+function submitHomework() {
+    var answer = (document.getElementById('hwAnswerInput') || {}).value || '';
+    if (!answer.trim()) { showToast('Please write your answer before submitting', 'error'); return; }
+    if (!_currentHwId) { showToast('No homework selected', 'error'); return; }
+    var submitBtn = document.getElementById('hwSubmitBtn');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting...'; }
+    fetch('/api/index.php?action=submit_homework', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ homework_id: parseInt(_currentHwId), answer: answer.trim() }),
+        credentials: 'same-origin'
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.success) {
+            showToast('Homework submitted successfully!', 'success');
+            var statusEl = document.getElementById('hwSubmissionStatus');
+            if (statusEl) {
+                statusEl.style.display = 'block';
+                statusEl.style.background = '#DCFCE7';
+                statusEl.style.color = '#16A34A';
+                statusEl.textContent = 'Submitted! Waiting for teacher to grade.';
+            }
+            if (submitBtn) submitBtn.textContent = 'Submitted';
+            logActivity('homework', 'Submitted homework');
+        } else {
+            showToast(data.error || 'Failed to submit', 'error');
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Homework'; }
+        }
+    }).catch(function() {
+        showToast('Network error. Please try again.', 'error');
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Homework'; }
     });
 }
 
@@ -1687,13 +1809,33 @@ function showExamQuestion(idx) {
 // --- EXAM RESULT ---
 function loadExamResult() {
     var data = window._examResult;
-    if (!data) return;
-    var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
-    setText('examResultScore', (data.score || 0) + '%');
-    setText('examResultCorrect', data.correct || 0);
-    setText('examResultWrong', data.wrong || 0);
-    setText('examResultRank', '#' + (data.rank || 1));
-    setText('examResultTitle', data.title || 'Exam Result');
+    if (data) {
+        var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
+        setText('examResultScore', (data.score || 0) + '%');
+        setText('examResultCorrect', data.correct || 0);
+        setText('examResultWrong', data.wrong || 0);
+        setText('examResultRank', '#' + (data.rank || 1));
+        setText('examResultTitle', data.title || 'Exam Result');
+        return;
+    }
+    api('exam_results').then(function(results) {
+        if (!results || !results.length) {
+            var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
+            setText('examResultScore', '0%');
+            setText('examResultTitle', 'No exam results yet');
+            setText('examResultCorrect', '0');
+            setText('examResultWrong', '0');
+            setText('examResultRank', '-');
+            return;
+        }
+        var latest = results[results.length - 1];
+        var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
+        setText('examResultScore', (latest.score || 0) + '%');
+        setText('examResultCorrect', latest.correct || 0);
+        setText('examResultWrong', latest.wrong || 0);
+        setText('examResultRank', '#' + (latest.rank || results.length));
+        setText('examResultTitle', latest.exam_name || 'Exam Result');
+    });
 }
 
 // --- SUBJECT CHAPTERS ---
@@ -1722,6 +1864,7 @@ function loadBookContent(chapterId) {
     if (!chapterId) return;
     api('book_content&chapter_id=' + chapterId).then(function(book) {
         if (!book || !book.content) return;
+        logActivity('read', 'Read ' + (book.title || 'chapter'));
         var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
         setText('bookTitle', book.title || '');
         setText('bookProgress', Math.round((book.pages_read || 0) / (book.pages_total || 1) * 100) + '% complete');
@@ -2025,11 +2168,28 @@ function loadLibraryMgmt() {
         (items || []).forEach(function(item) {
             var statusColor = item.is_active ? '#10B981' : '#9CA3AF';
             html += '<div class="list-item"><div class="list-item-content"><h5>' + (item.title || '') + '</h5><p>' + (item.type || '') + ' · ' + (item.class || '') + '</p></div>' +
-                '<span style="font-size:10px;padding:2px 8px;border-radius:8px;background:' + statusColor + '20;color:' + statusColor + '">' + (item.is_active ? 'Active' : 'Draft') + '</span></div>';
+                '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;padding:2px 8px;border-radius:8px;background:' + statusColor + '20;color:' + statusColor + '">' + (item.is_active ? 'Active' : 'Draft') + '</span>' +
+                '<button onclick="deleteLibraryItem(' + item.id + ')" style="background:none;border:none;cursor:pointer;padding:4px" title="Delete"><i data-lucide="trash-2" style="width:14px;height:14px;color:#EF4444"></i></button></div></div>';
         });
         if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No library items</p>';
         c.innerHTML = html;
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
     });
+}
+
+function deleteLibraryItem(id) {
+    if (!confirm('Are you sure you want to delete this library item?')) return;
+    fetch('/api/index.php?action=library_delete&id=' + id, {
+        method: 'GET',
+        credentials: 'same-origin'
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.success) {
+            showToast('Library item deleted', 'success');
+            loadLibraryMgmt();
+        } else {
+            showToast(data.error || 'Failed to delete', 'error');
+        }
+    }).catch(function() { showToast('Network error', 'error'); });
 }
 
 // --- STUDENT EVALUATION ---
