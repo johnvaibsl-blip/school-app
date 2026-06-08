@@ -208,8 +208,20 @@ switch ($path) {
         if (!empty($input['school'])) $updates['school'] = sanitize($input['school']);
         if (isset($input['avatar'])) $updates['avatar'] = sanitize($input['avatar']);
         if (!empty($input['password'])) $updates['password'] = password_hash($input['password'], PASSWORD_DEFAULT);
-        if (empty($updates)) jsonResponseError('No data to update');
-        $db->update('users', $uid, $updates);
+        if (!empty($updates)) $db->update('users', $uid, $updates);
+        // Teacher-specific fields
+        $user = $db->find('users', 'id', $uid);
+        if ($user && ($user['role'] ?? '') === 'teacher') {
+            $teacher = $db->find('teachers', 'user_id', $uid);
+            if ($teacher) {
+                $tUpdates = [];
+                if (isset($input['subject'])) $tUpdates['subject'] = sanitize($input['subject']);
+                if (isset($input['experience'])) $tUpdates['experience'] = intval($input['experience']);
+                if (isset($input['hourly_rate'])) $tUpdates['hourly_rate'] = intval($input['hourly_rate']);
+                if (isset($input['bio'])) $tUpdates['bio'] = sanitize($input['bio']);
+                if (!empty($tUpdates)) $db->update('teachers', $teacher['id'], $tUpdates);
+            }
+        }
         $user = $db->find('users', 'id', $uid);
         jsonResponse(['success' => true, 'user' => $user]);
         break;

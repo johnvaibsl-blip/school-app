@@ -1469,6 +1469,158 @@
     </div>
 </div>
 
+<!-- ========== TEACHER PROFILE VIEW ========== -->
+<div id="screen-teacher-profile-view" class="screen">
+    <div class="profile-hero-new">
+        <div class="profile-cover"></div>
+        <div class="profile-avatar-wrap">
+            <div class="profile-avatar-large" id="tpvAvatar">T</div>
+            <div class="profile-avatar-ring"></div>
+            <div class="profile-badge-pro">PRO</div>
+        </div>
+        <div class="profile-name-section">
+            <h2 id="tpvName">Loading...</h2>
+            <div class="profile-role" id="tpvSubject">Loading...</div>
+            <div class="profile-tags">
+                <span class="ptag ptag-green" id="tpvExp">0 yrs exp</span>
+                <span class="ptag ptag-blue" id="tpvRating">★ 0</span>
+                <span class="ptag ptag-orange">Teacher</span>
+            </div>
+        </div>
+        <div class="profile-quick-stats">
+            <div class="pstat"><div class="pstat-num" id="tpvStudents">0</div><div class="pstat-lbl">Students</div></div>
+            <div class="pstat-divider"></div>
+            <div class="pstat"><div class="pstat-num" id="tpvClasses">0</div><div class="pstat-lbl">Classes</div></div>
+            <div class="pstat-divider"></div>
+            <div class="pstat"><div class="pstat-num" id="tpvHomework">0</div><div class="pstat-lbl">Homework</div></div>
+        </div>
+    </div>
+    <div class="main-content">
+        <div style="display:flex;gap:10px;padding:0 16px;margin-bottom:16px">
+            <button class="sp-action-btn" style="flex:1" onclick="showScreen('screen-teacher-edit-profile');loadTeacherEditProfile()">
+                <div class="sp-action-icon purple"><i data-lucide="pencil"></i></div>
+                <span>Edit Profile</span>
+            </button>
+            <button class="sp-action-btn" style="flex:1" onclick="showScreen('screen-earnings')">
+                <div class="sp-action-icon green"><i data-lucide="wallet"></i></div>
+                <span>Earnings</span>
+            </button>
+            <button class="sp-action-btn" style="flex:1" onclick="showScreen('screen-class-schedule')">
+                <div class="sp-action-icon orange"><i data-lucide="calendar"></i></div>
+                <span>Schedule</span>
+            </button>
+        </div>
+        <div class="section-header"><h2 class="section-title">About</h2></div>
+        <p id="tpvBio" style="font-size:13px;color:var(--text2);line-height:1.7;margin:0 16px 16px;padding:12px 16px;background:var(--card);border-radius:12px;box-shadow:var(--shadow-sm)">Loading...</p>
+        <div class="section-header"><h2 class="section-title">Reviews</h2></div>
+        <div id="tpvReviews" style="margin:0 16px 16px;padding:12px 16px;background:var(--card);border-radius:12px;box-shadow:var(--shadow-sm)"></div>
+        <div class="profile-menu" style="padding:0 16px">
+            <div class="profile-section">
+                <h4>Account</h4>
+                <div class="menu-item" onclick="showScreen('screen-teacher-edit-profile');loadTeacherEditProfile()">
+                    <div class="menu-icon purple"><i data-lucide="user"></i></div>
+                    <div class="menu-text"><h5>Edit Profile</h5><p>Name, bio, subject</p></div>
+                    <span class="menu-arrow"><i data-lucide="chevron-right"></i></span>
+                </div>
+                <div class="menu-item" onclick="showScreen('screen-messages')">
+                    <div class="menu-icon green"><i data-lucide="message-circle"></i></div>
+                    <div class="menu-text"><h5>Messages</h5><p>Chat with students</p></div>
+                    <span class="menu-arrow"><i data-lucide="chevron-right"></i></span>
+                </div>
+                <div class="menu-item" onclick="showScreen('screen-class-schedule')">
+                    <div class="menu-icon orange"><i data-lucide="calendar"></i></div>
+                    <div class="menu-text"><h5>My Schedule</h5><p>Classes & timetable</p></div>
+                    <span class="menu-arrow"><i data-lucide="chevron-right"></i></span>
+                </div>
+            </div>
+            <div class="profile-section">
+                <h4>Insights</h4>
+                <div class="menu-item" onclick="showScreen('screen-earnings')">
+                    <div class="menu-icon blue"><i data-lucide="wallet"></i></div>
+                    <div class="menu-text"><h5>Earnings</h5><p>Revenue & payments</p></div>
+                    <span class="menu-arrow"><i data-lucide="chevron-right"></i></span>
+                </div>
+                <div class="menu-item" onclick="showScreen('screen-exam-analytics')">
+                    <div class="menu-icon red"><i data-lucide="bar-chart-3"></i></div>
+                    <div class="menu-text"><h5>Analytics</h5><p>Exam & homework stats</p></div>
+                    <span class="menu-arrow"><i data-lucide="chevron-right"></i></span>
+                </div>
+            </div>
+            <div class="profile-section">
+                <h4>Settings</h4>
+                <div class="menu-item" onclick="showScreen('screen-settings')">
+                    <div class="menu-icon red"><i data-lucide="settings"></i></div>
+                    <div class="menu-text"><h5>Settings</h5><p>Password, notifications</p></div>
+                    <span class="menu-arrow"><i data-lucide="chevron-right"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== TEACHER EDIT PROFILE ========== -->
+<div id="screen-teacher-edit-profile" class="screen">
+    <header class="header glass-header">
+        <button class="header-back" onclick="showScreen('screen-teacher-profile-view')"><i data-lucide="arrow-left"></i></button>
+        <h3 class="header-title">Edit Profile</h3>
+        <button class="icon-btn glass-card-sm" onclick="saveTeacherProfile()"><i data-lucide="check"></i></button>
+    </header>
+    <div class="main-content">
+        <div style="text-align:center;padding:24px 0 16px">
+            <div id="tepAvatar" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:inline-flex;align-items:center;justify-content:center;color:white;font-size:32px;font-weight:700;box-shadow:0 4px 16px rgba(99,102,241,0.3)">T</div>
+            <p style="font-size:12px;color:var(--text3);margin-top:8px">Tap avatar to change</p>
+        </div>
+        <div class="card" style="border-radius:16px">
+            <h4 style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px"><i data-lucide="user" style="width:16px;height:16px;color:var(--primary)"></i>Basic Info</h4>
+            <div class="form-group">
+                <label style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;display:block">Full Name</label>
+                <input type="text" id="tepName" placeholder="Your full name" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;background:var(--card);color:var(--text)">
+            </div>
+            <div class="form-group">
+                <label style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;display:block">Email</label>
+                <input type="email" id="tepEmail" disabled style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;background:var(--bg);color:var(--text3);opacity:0.6">
+            </div>
+            <div class="form-group">
+                <label style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;display:block">Phone</label>
+                <input type="tel" id="tepPhone" placeholder="017XXXXXXXX" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;background:var(--card);color:var(--text)">
+            </div>
+            <div class="form-group">
+                <label style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;display:block">School</label>
+                <input type="text" id="tepSchool" placeholder="Your school name" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;background:var(--card);color:var(--text)">
+            </div>
+        </div>
+        <div class="card" style="border-radius:16px;margin-top:12px">
+            <h4 style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px"><i data-lucide="briefcase" style="width:16px;height:16px;color:var(--primary)"></i>Teaching Info</h4>
+            <div class="form-group">
+                <label style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;display:block">Subject</label>
+                <input type="text" id="tepSubject" placeholder="e.g. Mathematics" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;background:var(--card);color:var(--text)">
+            </div>
+            <div class="form-group">
+                <label style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;display:block">Experience (years)</label>
+                <input type="number" id="tepExperience" placeholder="e.g. 5" min="0" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;background:var(--card);color:var(--text)">
+            </div>
+            <div class="form-group">
+                <label style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;display:block">Hourly Rate (৳)</label>
+                <input type="number" id="tepRate" placeholder="e.g. 500" min="0" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;background:var(--card);color:var(--text)">
+            </div>
+            <div class="form-group">
+                <label style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;display:block">Bio</label>
+                <textarea id="tepBio" rows="3" placeholder="Tell students about yourself..." style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;background:var(--card);color:var(--text);resize:vertical"></textarea>
+            </div>
+        </div>
+        <div class="card" style="border-radius:16px;margin-top:12px">
+            <h4 style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px"><i data-lucide="lock" style="width:16px;height:16px;color:var(--primary)"></i>Change Password</h4>
+            <div class="form-group">
+                <label style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;display:block">New Password</label>
+                <input type="password" id="tepPassword" placeholder="Leave blank to keep current" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;background:var(--card);color:var(--text)">
+            </div>
+        </div>
+        <button onclick="saveTeacherProfile()" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;margin-top:16px;margin-bottom:24px;box-shadow:0 4px 12px rgba(99,102,241,0.3)">
+            Save Changes
+        </button>
+    </div>
+</div>
+
 <!-- ========== 19. SETTINGS ========== -->
 <div id="screen-settings" class="screen">
     <header class="header">

@@ -19,7 +19,8 @@ var ROLE_SCREENS = {
         'screen-announcements','screen-create-announcement','screen-class-schedule',
         'screen-calendar','screen-exam-analytics','screen-hw-analytics',
         'screen-create-hw','screen-create-exam','screen-evaluate','screen-earnings',
-        'screen-reports','screen-give-report','screen-edit-profile'
+        'screen-reports','screen-give-report','screen-edit-profile',
+        'screen-teacher-profile-view','screen-teacher-edit-profile'
     ],
     admin: [
         'screen-admin','screen-library-mgmt','screen-chapter-mgmt',
@@ -38,7 +39,7 @@ var ROLE_NAV = {
     teacher: [
         {id:'screen-teacher-dash',icon:'layout-dashboard',label:'Home'},
         {id:'screen-messages',icon:'message-circle',label:'Messages'},
-        {id:'screen-earnings',icon:'user',label:'Profile'}
+        {id:'screen-teacher-profile-view',icon:'user',label:'Profile'}
     ],
     admin: []
 };
@@ -146,6 +147,8 @@ function showScreen(id) {
     if (id === 'screen-tutors') loadTeacherRankings();
     if (id === 'screen-profile' && USER_ROLE === 'student') loadStudentProfile();
     if (id === 'screen-teacher-profile' && USER_ROLE === 'teacher') loadTeacherProfile();
+    if (id === 'screen-teacher-profile-view') loadTeacherOwnProfile();
+    if (id === 'screen-teacher-edit-profile') loadTeacherEditProfile();
     if (id === 'screen-my-students') loadMyStudents();
     if (id === 'screen-student-progress') loadStudentDetail();
     if (id === 'screen-messages') loadMessages();
@@ -1335,6 +1338,91 @@ function loadTeacherProfile() {
             var rhtml = '<p style="font-size:12px;color:var(--text3);margin-bottom:8px">' + data.review_count + ' reviews</p>';
             reviewContainer.innerHTML = rhtml;
         }
+    });
+}
+
+// --- TEACHER OWN PROFILE ---
+function loadTeacherOwnProfile() {
+    api('teacher_profile').then(function(data) {
+        var u = data.user || {};
+        var t = data.teacher || {};
+        var setEl = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
+        setEl('tpvName', u.name || USER_NAME);
+        setEl('tpvSubject', t.subject || 'Teacher');
+        setEl('tpvExp', (t.experience || 0) + ' yrs exp');
+        setEl('tpvRating', '\u2605 ' + (t.rating || data.avg_rating || 0));
+        setEl('tpvStudents', t.total_students || data.student_count || 0);
+        setEl('tpvClasses', data.hw_count || 0);
+        setEl('tpvHomework', data.hw_count || 0);
+        var avatarEl = document.getElementById('tpvAvatar');
+        if (avatarEl) avatarEl.textContent = (u.name || 'T')[0].toUpperCase();
+        var descEl = document.getElementById('tpvBio');
+        if (descEl) descEl.textContent = t.bio || (u.name || 'Teacher') + ' is a passionate teacher dedicated to helping students succeed.';
+        var reviewContainer = document.getElementById('tpvReviews');
+        if (reviewContainer) {
+            var rhtml = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:24px;font-weight:800;color:var(--text)">' + (t.rating || data.avg_rating || 0) + '</span><div><div style="font-size:12px;font-weight:600;color:var(--text)">Average Rating</div><div style="font-size:11px;color:var(--text3)">' + (data.review_count || 0) + ' reviews</div></div></div>';
+            reviewContainer.innerHTML = rhtml;
+        }
+    });
+}
+
+// --- TEACHER EDIT PROFILE ---
+function loadTeacherEditProfile() {
+    api('profile').then(function(u) {
+        if (!u) return;
+        var setVal = function(id, val) { var el = document.getElementById(id); if (el) el.value = val || ''; };
+        setVal('tepName', u.name);
+        setVal('tepEmail', u.email);
+        setVal('tepPhone', u.phone);
+        setVal('tepSchool', u.school);
+        var avatarEl = document.getElementById('tepAvatar');
+        if (avatarEl) avatarEl.textContent = (u.name || 'T')[0].toUpperCase();
+    });
+    api('teacher_profile').then(function(data) {
+        var t = data.teacher || {};
+        var setVal = function(id, val) { var el = document.getElementById(id); if (el) el.value = val || ''; };
+        setVal('tepSubject', t.subject);
+        setVal('tepExperience', t.experience);
+        setVal('tepRate', t.hourly_rate);
+        setVal('tepBio', t.bio);
+    });
+}
+
+function saveTeacherProfile() {
+    var name = (document.getElementById('tepName') || {}).value || '';
+    var phone = (document.getElementById('tepPhone') || {}).value || '';
+    var school = (document.getElementById('tepSchool') || {}).value || '';
+    var password = (document.getElementById('tepPassword') || {}).value || '';
+    var subject = (document.getElementById('tepSubject') || {}).value || '';
+    var experience = (document.getElementById('tepExperience') || {}).value || '';
+    var rate = (document.getElementById('tepRate') || {}).value || '';
+    var bio = (document.getElementById('tepBio') || {}).value || '';
+    if (!name.trim()) { showToast('Name is required', 'error'); return; }
+    var body = { name: name.trim(), phone: phone.trim(), school: school.trim() };
+    if (password.trim()) body.password = password.trim();
+    if (subject.trim()) body.subject = subject.trim();
+    if (experience) body.experience = parseInt(experience) || 0;
+    if (rate) body.hourly_rate = parseInt(rate) || 0;
+    if (bio.trim()) body.bio = bio.trim();
+    fetch('/api/index.php?action=edit_profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        credentials: 'same-origin'
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.success) {
+            showToast('Profile updated successfully!', 'success');
+            USER_NAME = name.trim();
+            var nameEl = document.getElementById('tpvName');
+            if (nameEl) nameEl.textContent = name.trim();
+            var avatarEl = document.getElementById('tpvAvatar');
+            if (avatarEl) avatarEl.textContent = name.trim()[0].toUpperCase();
+            setTimeout(function() { showScreen('screen-teacher-profile-view'); loadTeacherOwnProfile(); }, 800);
+        } else {
+            showToast(data.error || 'Failed to update profile', 'error');
+        }
+    }).catch(function() {
+        showToast('Network error. Please try again.', 'error');
     });
 }
 
