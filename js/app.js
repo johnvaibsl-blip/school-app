@@ -20,7 +20,8 @@ var ROLE_SCREENS = {
         'screen-calendar','screen-exam-analytics','screen-hw-analytics',
         'screen-create-hw','screen-create-exam','screen-evaluate','screen-earnings',
         'screen-reports','screen-give-report','screen-edit-profile',
-        'screen-teacher-profile-view','screen-teacher-edit-profile'
+        'screen-teacher-profile-view','screen-teacher-edit-profile',
+        'screen-settings'
     ],
     admin: [
         'screen-admin','screen-library-mgmt','screen-chapter-mgmt',
@@ -168,6 +169,7 @@ function showScreen(id) {
     if (id === 'screen-question-bank') loadQuestionBankScreen();
     if (id === 'screen-chapter-mgmt') loadChapterManager();
     if (id === 'screen-library-mgmt') loadLibraryMgmt();
+    if (id === 'screen-evaluate') loadStudentEvaluation();
     if (id === 'screen-give-report') loadGiveReportStudents();
     if (id === 'screen-pricing') loadPricingDynamic();
 }
@@ -961,9 +963,9 @@ function loadStudentHome() {
             var levelEl = document.getElementById('homeLevel');
             var xpEl = document.getElementById('homeXP');
             var xpBar = document.getElementById('homeXPBar');
-            var booksEl = document.getElementById('homeBooks');
-            var hwScoreEl = document.getElementById('homeHWScore');
-            var examScoreEl = document.getElementById('homeExamScore');
+            var booksEl = document.getElementById('homeBooksVal');
+            var hwScoreEl = document.getElementById('homeHwScoreVal');
+            var examScoreEl = document.getElementById('homeExamScoreVal');
             var streakBadge = document.getElementById('homeStreakBadge');
             if (streakEl) streakEl.textContent = prog.streak || 0;
             if (streakBadge) streakBadge.textContent = prog.streak || 0;
@@ -1498,18 +1500,19 @@ function loadStudentDetail() {
 
 // --- LIVE CLASS SCHEDULE ---
 function loadLiveSchedule() {
-    var container = document.getElementById('liveScheduleList');
-    if (!container) return;
     api('live_schedule').then(function(classes) {
-        var html = '';
-        (classes || []).forEach(function(c) {
-            var timeStr = c.time || '10:00 AM';
-            html += '<div class="list-item">' +
-                '<div class="list-item-content"><h5>' + (c.subject || '') + '</h5><p>' + (c.topic || '') + ' · ' + (c.class_name || '') + '</p></div>' +
-                '<div style="text-align:right;font-size:11px;color:var(--text3)">' + timeStr + '<br><span style="color:#10B981;font-weight:600">' + (c.status || 'upcoming') + '</span></div></div>';
-        });
-        if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No upcoming classes</p>';
-        container.innerHTML = html;
+        var container = document.getElementById('liveScheduleList');
+        if (container) {
+            var html = '';
+            (classes || []).forEach(function(c) {
+                var timeStr = c.time || '10:00 AM';
+                html += '<div class="list-item">' +
+                    '<div class="list-item-content"><h5>' + (c.subject || '') + '</h5><p>' + (c.topic || '') + ' · ' + (c.class_name || '') + '</p></div>' +
+                    '<div style="text-align:right;font-size:11px;color:var(--text3)">' + timeStr + '<br><span style="color:#10B981;font-weight:600">' + (c.status || 'upcoming') + '</span></div></div>';
+            });
+            if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No upcoming classes</p>';
+            container.innerHTML = html;
+        }
         // Populate live lobby
         if (classes && classes.length > 0) {
             var c = classes[0];
@@ -1771,16 +1774,20 @@ function submitHomework() {
 // --- EXAM INTERFACE ---
 function loadExamQuestions(examId) {
     if (!examId) return;
-    api('exams').then(function(list) {
+    Promise.all([api('exams'), api('question_bank')]).then(function(results) {
+        var list = results[0], allQs = results[1];
         var exam = null;
         (list || []).forEach(function(e) { if (String(e.id) === String(examId)) exam = e; });
         if (!exam) return;
         window._examData = exam;
         window._examQIndex = 0;
-        window._examAnswers = [];
+        window._examAnswers = {};
+        var examQs = (allQs || []).filter(function(q) { return String(q.subject_id) === String(exam.subject_id); });
+        if (examQs.length === 0) examQs = (allQs || []).slice(0, 5);
+        exam.questions = examQs;
         var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
         setText('examIfaceTitle', exam.title || 'Exam');
-        setText('examIfaceTimer', exam.duration || '45:00');
+        setText('examIfaceTimer', (exam.duration || 45) + ':00');
         showExamQuestion(0);
     });
 }
@@ -1804,6 +1811,24 @@ function showExamQuestion(idx) {
     });
     var optsEl = document.getElementById('examOptions');
     if (optsEl) optsEl.innerHTML = optsHtml;
+}
+
+var _examAnswers = {};
+function selectExamAnswer(qIdx, optIdx) {
+    _examAnswers[qIdx] = optIdx;
+    var btns = document.querySelectorAll('#examOptions .btn-outline');
+    btns.forEach(function(btn, i) {
+        if (i === optIdx) {
+            btn.style.background = 'var(--primary)';
+            btn.style.color = 'white';
+            btn.style.borderColor = 'var(--primary)';
+        } else {
+            btn.style.background = '';
+            btn.style.color = '';
+            btn.style.borderColor = ['#4F46E5','#10B981','#F59E0B','#EF4444'][i % 4];
+        }
+    });
+    showToast('Answer selected: Option ' + (optIdx + 1), 'info');
 }
 
 // --- EXAM RESULT ---

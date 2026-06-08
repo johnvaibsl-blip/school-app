@@ -313,7 +313,28 @@ switch ($path) {
 
     case 'live_schedule':
         if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
-        jsonResponse($db->query('live_classes'));
+        $classes = $db->query('live_classes');
+        $teachers = $db->query('teachers');
+        $users = $db->query('users');
+        $subjects = $db->query('subjects');
+        $teacherMap = [];
+        foreach ($teachers as $t) { $teacherMap[$t['user_id']] = $t; }
+        $userMap = [];
+        foreach ($users as $u) { $userMap[$u['id']] = $u; }
+        $subjectMap = [];
+        foreach ($subjects as $s) { $subjectMap[$s['id']] = $s['name'] ?? ''; }
+        $result = [];
+        foreach ($classes as $c) {
+            $tid = intval($c['teacher_id'] ?? 0);
+            $sid = intval($c['subject_id'] ?? 0);
+            $tUser = $userMap[$tid] ?? [];
+            $c['teacher_name'] = $tUser['name'] ?? 'Teacher';
+            $c['subject'] = $subjectMap[$sid] ?? ($c['title'] ?? '');
+            $c['time'] = $c['start_time'] ?? $c['time'] ?? '';
+            $c['class_name'] = $c['class_name'] ?? '';
+            $result[] = $c;
+        }
+        jsonResponse($result);
         break;
 
     case 'conversations':

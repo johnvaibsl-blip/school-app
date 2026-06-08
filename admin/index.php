@@ -81,7 +81,7 @@ $allReports=$db->queryAll('SELECT * FROM reports ORDER BY id DESC');
 $allBadges=$db->queryAll('SELECT * FROM badges ORDER BY id DESC');
 $students=count($db->findAll('users','role','student'));
 $teachersCount=count($db->findAll('users','role','teacher'));
-$premiumUsers=count($db->findAll('users','is_pinned',1));
+$premiumUsers=count($db->findAll('users','is_premium',1));
 
 $sidebar=[
 ['s'=>'Main','i'=>[['dashboard','layout-dashboard','Dashboard']]],
