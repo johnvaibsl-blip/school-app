@@ -17,19 +17,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($a === 'edit_user') { $d = ['name'=>sanitize($_POST['name']),'email'=>sanitize($_POST['email']),'role'=>sanitize($_POST['role']),'class'=>sanitize($_POST['class']??''),'is_premium'=>intval($_POST['is_premium']??0)]; if(!empty($_POST['password'])) $d['password']=password_hash($_POST['password'],PASSWORD_DEFAULT); $db->update('users',intval($_POST['id']),$d); header('Location: ?page=users&msg=updated'); exit; }
     if ($a === 'add_subject') { $db->insert('subjects', ['name'=>sanitize($_POST['name']),'icon'=>sanitize($_POST['icon']),'color'=>sanitize($_POST['color'])]); header('Location: ?page=subjects&msg=added'); exit; }
     if ($a === 'edit_subject') { $db->update('subjects',intval($_POST['id']),['name'=>sanitize($_POST['name']),'icon'=>sanitize($_POST['icon']),'color'=>sanitize($_POST['color'])]); header('Location: ?page=subjects&msg=updated'); exit; }
-    if ($a === 'add_homework') { $db->insert('homework', ['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'teacher_id'=>1,'description'=>sanitize($_POST['description']??''),'due_date'=>sanitize($_POST['due_date']),'total_marks'=>intval($_POST['total_marks']),'status'=>sanitize($_POST['status']??'pending')]); header('Location: ?page=homework&msg=added'); exit; }
+    if ($a === 'add_homework') { $db->insert('homework', ['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'teacher_id'=>intval($_POST['teacher_id']??1),'description'=>sanitize($_POST['description']??''),'due_date'=>sanitize($_POST['due_date']),'total_marks'=>intval($_POST['total_marks']),'status'=>sanitize($_POST['status']??'pending')]); header('Location: ?page=homework&msg=added'); exit; }
     if ($a === 'edit_homework') { $db->update('homework',intval($_POST['id']),['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'description'=>sanitize($_POST['description']??''),'due_date'=>sanitize($_POST['due_date']),'total_marks'=>intval($_POST['total_marks']),'status'=>sanitize($_POST['status'])]); header('Location: ?page=homework&msg=updated'); exit; }
-    if ($a === 'add_exam') { $db->insert('exams', ['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'teacher_id'=>1,'exam_date'=>sanitize($_POST['exam_date']),'total_marks'=>intval($_POST['total_marks']),'duration'=>intval($_POST['duration']),'type'=>sanitize($_POST['type']),'status'=>sanitize($_POST['status']??'upcoming')]); header('Location: ?page=exams&msg=added'); exit; }
+    if ($a === 'add_exam') { $db->insert('exams', ['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'teacher_id'=>intval($_POST['teacher_id']??1),'exam_date'=>sanitize($_POST['exam_date']),'total_marks'=>intval($_POST['total_marks']),'duration'=>intval($_POST['duration']),'type'=>sanitize($_POST['type']),'status'=>sanitize($_POST['status']??'upcoming')]); header('Location: ?page=exams&msg=added'); exit; }
     if ($a === 'edit_exam') { $db->update('exams',intval($_POST['id']),['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'exam_date'=>sanitize($_POST['exam_date']),'total_marks'=>intval($_POST['total_marks']),'duration'=>intval($_POST['duration']),'type'=>sanitize($_POST['type']),'status'=>sanitize($_POST['status'])]); header('Location: ?page=exams&msg=updated'); exit; }
-    if ($a === 'add_announcement') { $db->insert('announcements', ['title'=>sanitize($_POST['title']),'message'=>sanitize($_POST['message']),'category'=>sanitize($_POST['category']),'target_class'=>sanitize($_POST['target_class']),'is_pinned'=>intval($_POST['is_pinned']??0),'teacher_id'=>1]); header('Location: ?page=announcements&msg=added'); exit; }
+    if ($a === 'add_announcement') { $db->insert('announcements', ['title'=>sanitize($_POST['title']),'message'=>sanitize($_POST['message']),'category'=>sanitize($_POST['category']),'target_class'=>sanitize($_POST['target_class']),'is_pinned'=>intval($_POST['is_pinned']??0),'teacher_id'=>intval($_POST['teacher_id']??1)]); header('Location: ?page=announcements&msg=added'); exit; }
     if ($a === 'edit_announcement') { $db->update('announcements',intval($_POST['id']),['title'=>sanitize($_POST['title']),'message'=>sanitize($_POST['message']),'category'=>sanitize($_POST['category']),'target_class'=>sanitize($_POST['target_class']),'is_pinned'=>intval($_POST['is_pinned']??0)]); header('Location: ?page=announcements&msg=updated'); exit; }
     if ($a === 'add_package') { $db->insert('packages', ['name'=>sanitize($_POST['name']),'price'=>floatval($_POST['price']),'duration'=>intval($_POST['duration']),'features'=>sanitize($_POST['features']),'is_active'=>1]); header('Location: ?page=packages&msg=added'); exit; }
     if ($a === 'edit_package') { $db->update('packages',intval($_POST['id']),['name'=>sanitize($_POST['name']),'price'=>floatval($_POST['price']),'duration'=>intval($_POST['duration']),'features'=>sanitize($_POST['features']),'is_active'=>intval($_POST['is_active']??1)]); header('Location: ?page=packages&msg=updated'); exit; }
-    if ($a === 'add_chapter') { $db->insert('chapters', ['subject_id'=>intval($_POST['subject_id']),'title'=>sanitize($_POST['title']),'chapter_no'=>intval($_POST['chapter_no']),'description'=>sanitize($_POST['description']??''),'is_active'=>1]); header('Location: ?page=chapters&msg=added'); exit; }
-    if ($a === 'edit_chapter') { $db->update('chapters',intval($_POST['id']),['subject_id'=>intval($_POST['subject_id']),'title'=>sanitize($_POST['title']),'chapter_no'=>intval($_POST['chapter_no']),'description'=>sanitize($_POST['description']??''),'is_active'=>intval($_POST['is_active']??1)]); header('Location: ?page=chapters&msg=updated'); exit; }
-    if ($a === 'toggle_chapter') { $ch = $db->find('chapters','id',intval($_POST['id'])); $db->update('chapters',intval($_POST['id']),['is_active'=>$ch['is_active']?0:1]); header('Location: ?page=chapters&msg=toggled'); exit; }
-    if ($a === 'add_question') { $opts=[]; for($i=1;$i<=6;$i++){if(!empty($_POST['opt_'.$i]))$opts[]=sanitize($_POST['opt_'.$i]);} $db->insert('questions', ['subject_id'=>intval($_POST['subject_id']),'chapter_id'=>intval($_POST['chapter_id']??0),'type'=>sanitize($_POST['type']),'question'=>sanitize($_POST['question']),'options'=>json_encode($opts),'correct_answer'=>sanitize($_POST['correct_answer']),'marks'=>intval($_POST['marks']??1),'difficulty'=>sanitize($_POST['difficulty']??'easy'),'is_active'=>1]); header('Location: ?page=questions&msg=added'); exit; }
-    if ($a === 'edit_question') { $opts=[]; for($i=1;$i<=6;$i++){if(!empty($_POST['opt_'.$i]))$opts[]=sanitize($_POST['opt_'.$i]);} $db->update('questions',intval($_POST['id']),['subject_id'=>intval($_POST['subject_id']),'chapter_id'=>intval($_POST['chapter_id']??0),'type'=>sanitize($_POST['type']),'question'=>sanitize($_POST['question']),'options'=>json_encode($opts),'correct_answer'=>sanitize($_POST['correct_answer']),'marks'=>intval($_POST['marks']??1),'difficulty'=>sanitize($_POST['difficulty']??'easy')]); header('Location: ?page=questions&msg=updated'); exit; }
+    if ($a === 'add_chapter') { $db->insert('chapters', ['subject_id'=>intval($_POST['subject_id']),'title'=>sanitize($_POST['title']),'status'=>sanitize($_POST['status']??'not_started'),'pages'=>intval($_POST['pages']??10),'order'=>intval($_POST['order']??1)]); header('Location: ?page=chapters&msg=added'); exit; }
+    if ($a === 'edit_chapter') { $db->update('chapters',intval($_POST['id']),['subject_id'=>intval($_POST['subject_id']),'title'=>sanitize($_POST['title']),'status'=>sanitize($_POST['status']??'not_started'),'pages'=>intval($_POST['pages']??10),'order'=>intval($_POST['order']??1)]); header('Location: ?page=chapters&msg=updated'); exit; }
+    if ($a === 'toggle_chapter') { $ch = $db->find('chapters','id',intval($_POST['id'])); $newStatus = ($ch['status'] ?? 'not_started') === 'completed' ? 'not_started' : 'completed'; $db->update('chapters',intval($_POST['id']),['status'=>$newStatus]); header('Location: ?page=chapters&msg=toggled'); exit; }
+    if ($a === 'add_question') { $opts=[]; for($i=1;$i<=6;$i++){if(!empty($_POST['opt_'.$i]))$opts[]=sanitize($_POST['opt_'.$i]);} $db->insert('question_bank', ['subject_id'=>intval($_POST['subject_id']),'chapter'=>sanitize($_POST['chapter']),'type'=>sanitize($_POST['type']),'question'=>sanitize($_POST['question']),'options'=>$opts,'correct'=>intval($_POST['correct_answer']??0),'marks'=>intval($_POST['marks']??1),'difficulty'=>sanitize($_POST['difficulty']??'easy')]); header('Location: ?page=questions&msg=added'); exit; }
+    if ($a === 'edit_question') { $opts=[]; for($i=1;$i<=6;$i++){if(!empty($_POST['opt_'.$i]))$opts[]=sanitize($_POST['opt_'.$i]);} $db->update('question_bank',intval($_POST['id']),['subject_id'=>intval($_POST['subject_id']),'chapter'=>sanitize($_POST['chapter']),'type'=>sanitize($_POST['type']),'question'=>sanitize($_POST['question']),'options'=>$opts,'correct'=>intval($_POST['correct_answer']??0),'marks'=>intval($_POST['marks']??1),'difficulty'=>sanitize($_POST['difficulty']??'easy')]); header('Location: ?page=questions&msg=updated'); exit; }
     if ($a === 'add_library') { $db->insert('library', ['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'class'=>sanitize($_POST['class']??'Class 8'),'type'=>sanitize($_POST['type']),'description'=>sanitize($_POST['description']??''),'file_url'=>sanitize($_POST['file_url']??''),'cover_url'=>sanitize($_POST['cover_url']??''),'uploader_id'=>0,'uploader_type'=>'admin','downloads'=>0,'is_active'=>1]); header('Location: ?page=library&msg=added'); exit; }
     if ($a === 'edit_library') { $db->update('library',intval($_POST['id']),['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'class'=>sanitize($_POST['class']??'Class 8'),'type'=>sanitize($_POST['type']),'description'=>sanitize($_POST['description']??''),'file_url'=>sanitize($_POST['file_url']??''),'cover_url'=>sanitize($_POST['cover_url']??''),'is_active'=>intval($_POST['is_active']??1)]); header('Location: ?page=library&msg=updated'); exit; }
     if ($a === 'add_live_class') { $db->insert('live_classes', ['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'teacher_id'=>intval($_POST['teacher_id']??1),'class_date'=>sanitize($_POST['class_date']),'start_time'=>sanitize($_POST['start_time']),'end_time'=>sanitize($_POST['end_time']),'status'=>'scheduled','meeting_link'=>sanitize($_POST['meeting_link']??'#')]); header('Location: ?page=live_classes&msg=added'); exit; }
@@ -40,6 +40,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($a === 'grade_submission') { $db->update('homework_submissions',intval($_POST['id']),['marks_obtained'=>intval($_POST['marks_obtained']),'comments'=>sanitize($_POST['comments']??''),'status'=>sanitize($_POST['status']??'graded'),'graded_at'=>date('Y-m-d H:i:s')]); header('Location: ?page=submissions&msg=updated'); exit; }
     if ($a === 'add_notification') { $db->insert('notifications', ['title'=>sanitize($_POST['title']),'message'=>sanitize($_POST['message']),'type'=>sanitize($_POST['type']),'target_role'=>sanitize($_POST['target_role']),'is_read'=>0]); header('Location: ?page=notifications&msg=added'); exit; }
     if ($a === 'send_broadcast') { foreach($db->findAll('users','role',$_POST['target_role']??'student') as $u){$db->insert('notifications',['title'=>sanitize($_POST['title']),'message'=>sanitize($_POST['message']),'type'=>'broadcast','target_role'=>$u['role'],'is_read'=>0]);} header('Location: ?page=notifications&msg=broadcast'); exit; }
+    if ($a === 'add_calendar_event') { $db->insert('calendar_events', ['title'=>sanitize($_POST['title']),'date'=>sanitize($_POST['date']),'type'=>sanitize($_POST['type']),'color'=>sanitize($_POST['color']??'#4F46E5')]); header('Location: ?page=calendar_events&msg=added'); exit; }
+    if ($a === 'edit_calendar_event') { $db->update('calendar_events',intval($_POST['id']),['title'=>sanitize($_POST['title']),'date'=>sanitize($_POST['date']),'type'=>sanitize($_POST['type']),'color'=>sanitize($_POST['color']??'#4F46E5')]); header('Location: ?page=calendar_events&msg=updated'); exit; }
+    if ($a === 'add_class_schedule') { $db->insert('class_schedule', ['subject'=>sanitize($_POST['subject']),'topic'=>sanitize($_POST['topic']),'class_name'=>sanitize($_POST['class_name']),'time'=>sanitize($_POST['time']),'day'=>sanitize($_POST['day']),'teacher_name'=>sanitize($_POST['teacher_name']),'teacher_id'=>intval($_POST['teacher_id']??0),'students_count'=>intval($_POST['students_count']??0),'status'=>sanitize($_POST['status']??'upcoming')]); header('Location: ?page=class_schedule&msg=added'); exit; }
+    if ($a === 'edit_class_schedule') { $db->update('class_schedule',intval($_POST['id']),['subject'=>sanitize($_POST['subject']),'topic'=>sanitize($_POST['topic']),'class_name'=>sanitize($_POST['class_name']),'time'=>sanitize($_POST['time']),'day'=>sanitize($_POST['day']),'teacher_name'=>sanitize($_POST['teacher_name']),'teacher_id'=>intval($_POST['teacher_id']??0),'students_count'=>intval($_POST['students_count']??0),'status'=>sanitize($_POST['status']??'upcoming')]); header('Location: ?page=class_schedule&msg=updated'); exit; }
+    if ($a === 'add_report') { $db->insert('reports', ['student_id'=>intval($_POST['student_id']),'teacher_id'=>intval($_POST['teacher_id']??0),'subject'=>sanitize($_POST['subject']),'class'=>sanitize($_POST['class']),'grade'=>sanitize($_POST['grade']),'score'=>intval($_POST['score']),'behavior'=>sanitize($_POST['behavior']??'Good'),'comment'=>sanitize($_POST['comment']??''),'date'=>sanitize($_POST['date']??date('Y-m-d'))]); header('Location: ?page=reports&msg=added'); exit; }
+    if ($a === 'edit_report') { $db->update('reports',intval($_POST['id']),['student_id'=>intval($_POST['student_id']),'teacher_id'=>intval($_POST['teacher_id']??0),'subject'=>sanitize($_POST['subject']),'class'=>sanitize($_POST['class']),'grade'=>sanitize($_POST['grade']),'score'=>intval($_POST['score']),'behavior'=>sanitize($_POST['behavior']??'Good'),'comment'=>sanitize($_POST['comment']??''),'date'=>sanitize($_POST['date']??date('Y-m-d'))]); header('Location: ?page=reports&msg=updated'); exit; }
+    if ($a === 'add_badge') { $db->insert('badges', ['student_id'=>intval($_POST['student_id']),'name'=>sanitize($_POST['name']),'icon'=>sanitize($_POST['icon']??'award'),'description'=>sanitize($_POST['description']??''),'earned_date'=>date('Y-m-d')]); header('Location: ?page=student_progress&msg=badge_added'); exit; }
 }
 
 // Fetch data
@@ -50,15 +57,28 @@ $allExams=$db->queryAll('SELECT * FROM exams ORDER BY id DESC');
 $allAnnouncements=$db->queryAll('SELECT * FROM announcements ORDER BY id DESC');
 $allPackages=$db->queryAll('SELECT * FROM packages ORDER BY id');
 $allChapters=$db->queryAll('SELECT * FROM chapters ORDER BY id DESC');
-$allQuestions=$db->queryAll('SELECT * FROM questions ORDER BY id DESC');
+$allQuestions=$db->queryAll('SELECT * FROM question_bank ORDER BY id DESC');
 $allLibrary=$db->queryAll('SELECT * FROM library ORDER BY id DESC');
 $allLiveClasses=$db->queryAll('SELECT * FROM live_classes ORDER BY id DESC');
-$allTeachers=$db->queryAll('SELECT t.*, u.name, u.email FROM teachers t JOIN users u ON t.user_id = u.id');
+$allTeachersRaw=$db->query('teachers');
+$allUsersForT=$db->query('users');
+$tUserMap=[];
+foreach($allUsersForT as $tu)$tUserMap[$tu['id']]=$tu;
+$allTeachers=[];
+foreach($allTeachersRaw as $t){
+    $t['name']=$tUserMap[$t['user_id']]['name']??'';
+    $t['email']=$tUserMap[$t['user_id']]['email']??'';
+    $allTeachers[]=$t;
+}
 $allSettings=$db->queryAll('SELECT * FROM settings ORDER BY id');
 $allSubmissions=$db->queryAll('SELECT * FROM homework_submissions ORDER BY id DESC');
 $allExamResults=$db->queryAll('SELECT * FROM exam_results ORDER BY id DESC');
 $allMessages=$db->queryAll('SELECT * FROM messages ORDER BY id DESC');
 $allNotifications=$db->queryAll('SELECT * FROM notifications ORDER BY id DESC');
+$allCalendarEvents=$db->queryAll('SELECT * FROM calendar_events ORDER BY date');
+$allClassSchedule=$db->queryAll('SELECT * FROM class_schedule ORDER BY FIELD(day,"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"), time');
+$allReports=$db->queryAll('SELECT * FROM reports ORDER BY id DESC');
+$allBadges=$db->queryAll('SELECT * FROM badges ORDER BY id DESC');
 $students=count($db->findAll('users','role','student'));
 $teachersCount=count($db->findAll('users','role','teacher'));
 $premiumUsers=count($db->findAll('users','is_pinned',1));
@@ -66,10 +86,10 @@ $premiumUsers=count($db->findAll('users','is_pinned',1));
 $sidebar=[
 ['s'=>'Main','i'=>[['dashboard','layout-dashboard','Dashboard']]],
 ['s'=>'User Management','i'=>[['users','users','All Users'],['teachers','user-check','Teachers'],['student_progress','bar-chart-3','Student Progress'],['rankings','trophy','Teacher Rankings']]],
-['s'=>'Academics','i'=>[['subjects','book-open','Subjects'],['chapters','layers','Chapters']]],
+['s'=>'Academics','i'=>[['subjects','book-open','Subjects'],['chapters','layers','Chapters'],['class_schedule','clock','Class Schedule']]],
 ['s'=>'Content','i'=>[['homework','file-text','Homework'],['exams','calendar','Exams'],['library','library','Library']]],
-['s'=>'Assessment','i'=>[['questions','help-circle','Question Bank'],['submissions','inbox','Submissions'],['results','award','Exam Results'],['exam_analytics','bar-chart','Exam Analytics'],['hw_analytics','pie-chart','Homework Analytics']]],
-['s'=>'Communication','i'=>[['live_classes','tv','Live Classes'],['announcements','megaphone','Announcements'],['messages','message-square','Messages'],['notifications','bell','Notifications'],['calendar','calendar-days','Calendar']]],
+['s'=>'Assessment','i'=>[['questions','help-circle','Question Bank'],['submissions','inbox','Submissions'],['results','award','Exam Results'],['exam_analytics','bar-chart','Exam Analytics'],['hw_analytics','pie-chart','Homework Analytics'],['reports','file-bar-chart','Reports']]],
+['s'=>'Communication','i'=>[['live_classes','tv','Live Classes'],['announcements','megaphone','Announcements'],['messages','message-square','Messages'],['notifications','bell','Notifications'],['calendar','calendar-days','Calendar'],['calendar_events','calendar-range','Calendar Events']]],
 ['s'=>'Business','i'=>[['packages','credit-card','Packages'],['revenue','dollar-sign','Revenue']]],
 ['s'=>'System','i'=>[['settings','settings','General Settings'],['ai_settings','brain','AI Settings']]]
 ];
@@ -303,21 +323,6 @@ $et=$edit>0?$db->find('teachers','id',$edit):null; ?>
 <td class="actions"><a href="?page=teachers&edit=<?php echo $t['id']; ?>" class="btn btn-primary btn-sm"><i data-lucide="edit-2" style="width:12px;height:12px"></i></a><a href="?page=teachers&edit=<?php echo $t['id']; ?>&del_table=teachers" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
 <?php endforeach; ?></table></div>
 
-<?php /* === STUDENT PROGRESS === */ ?>
-<?php elseif($page==='student_progress'):
-$progress=$db->queryAll('SELECT sp.*, u.name, u.email, u.class FROM student_progress sp JOIN users u ON sp.student_id=u.id');
-?>
-<div class="card"><h3><i data-lucide="bar-chart-3"></i>Student Learning Progress</h3>
-<div class="search-bar"><i data-lucide="search"></i><input type="text" placeholder="Search students..." oninput="filterTable(this,'prog-table')"></div>
-<table id="prog-table"><tr><th>Student</th><th>Class</th><th>Books</th><th>HW Score</th><th>Exam Score</th><th>Streak</th><th>Badges</th><th>Hours</th><th>Last Active</th></tr>
-<?php foreach($progress as $p): ?>
-<tr><td><strong><?php echo htmlspecialchars($p['name']); ?></strong></td><td><?php echo $p['class']; ?></td><td><?php echo $p['books_read']; ?></td>
-<td><span class="badge <?php echo $p['homework_score']>=80?'bg':($p['homework_score']>=60?'bo':'br'); ?>"><?php echo $p['homework_score']; ?>%</span></td>
-<td><span class="badge <?php echo $p['exam_score']>=80?'bg':($p['exam_score']>=60?'bo':'br'); ?>"><?php echo $p['exam_score']; ?>%</span></td>
-<td><span class="badge bp"><?php echo $p['streak']; ?> days</span></td><td><?php echo $p['badges_count']; ?></td><td><?php echo $p['study_hours']; ?>h</td>
-<td style="font-size:11px;color:#9CA3AF"><?php echo $p['last_active']; ?></td></tr>
-<?php endforeach; ?></table></div>
-
 <?php /* === RANKINGS === */ ?>
 <?php elseif($page==='rankings'):
 $featured=array_filter($allTeachers,fn($t)=>$t['is_featured']);
@@ -364,18 +369,16 @@ $ec=$edit>0?$db->find('chapters','id',$edit):null; ?>
 <div class="card"><h3><i data-lucide="<?php echo $ec?'edit':'plus-circle'; ?>"></i><?php echo $ec?'Edit Chapter':'Add Chapter'; ?></h3>
 <form method="POST"><input type="hidden" name="action" value="<?php echo $ec?'edit_chapter':'add_chapter'; ?>">
 <?php if($ec): ?><input type="hidden" name="id" value="<?php echo $ec['id']; ?>"><?php endif; ?>
-<div class="form-row"><div class="form-group"><label>Subject</label><select name="subject_id"><?php foreach($allSubjects as $s): ?><option value="<?php echo $s['id']; ?>" <?php echo $ec&&$ec['subject_id']==$s['id']?'selected':''; ?>><?php echo htmlspecialchars($s['name']); ?></option><?php endforeach; ?></select></div><div class="form-group"><label>Chapter No</label><input type="number" name="chapter_no" value="<?php echo $ec?$ec['chapter_no']:1; ?>" required></div></div>
+<div class="form-row"><div class="form-group"><label>Subject</label><select name="subject_id"><?php foreach($allSubjects as $s): ?><option value="<?php echo $s['id']; ?>" <?php echo $ec&&$ec['subject_id']==$s['id']?'selected':''; ?>><?php echo htmlspecialchars($s['name']); ?></option><?php endforeach; ?></select></div><div class="form-group"><label>Order</label><input type="number" name="order" value="<?php echo $ec?($ec['order']??1):1; ?>" min="1" required></div></div>
 <div class="form-group"><label>Title</label><input type="text" name="title" value="<?php echo $ec?htmlspecialchars($ec['title']):''; ?>" required></div>
-<div class="form-group"><label>Description</label><textarea name="description" rows="2"><?php echo $ec?htmlspecialchars($ec['description']):''; ?></textarea></div>
-<?php if($ec): ?><div class="form-group"><label>Status</label><select name="is_active"><option value="1" <?php echo $ec['is_active']?'selected':''; ?>>Active</option><option value="0" <?php echo !$ec['is_active']?'selected':''; ?>>Inactive</option></select></div><?php endif; ?>
+<div class="form-row"><div class="form-group"><label>Status</label><select name="status"><?php foreach(['not_started'=>'Not Started','in_progress'=>'In Progress','completed'=>'Completed','locked'=>'Locked'] as $sv=>$sl): ?><option value="<?php echo $sv; ?>" <?php echo $ec&&($ec['status']??'not_started')===$sv?'selected':''; ?>><?php echo $sl; ?></option><?php endforeach; ?></select></div><div class="form-group"><label>Pages</label><input type="number" name="pages" value="<?php echo $ec?($ec['pages']??10):10; ?>" min="1" required></div></div>
 <div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary"><?php echo $ec?'Update':'Add'; ?></button><?php if($ec): ?><a href="?page=chapters" class="btn btn-outline">Cancel</a><?php endif; ?></div></form></div>
 <div class="card"><h3><i data-lucide="layers"></i>All Chapters (<?php echo count($allChapters); ?>)</h3>
-<table><tr><th>#</th><th>Subject</th><th>Title</th><th>Status</th><th>Lock</th><th>Actions</th></tr>
+<table><tr><th>#</th><th>Subject</th><th>Title</th><th>Pages</th><th>Status</th><th>Actions</th></tr>
 <?php foreach($allChapters as $ch): $subj=$db->find('subjects','id',$ch['subject_id']); ?>
-<tr><td><?php echo $ch['chapter_no']; ?></td><td><?php echo $subj?htmlspecialchars($subj['name']):''; ?></td>
-<td><strong><?php echo htmlspecialchars($ch['title']); ?></strong></td>
-<td><span class="badge <?php echo $ch['is_active']?'bg':'br'; ?>"><?php echo $ch['is_active']?'Active':'Locked'; ?></span></td>
-<td><form method="POST" style="display:inline"><input type="hidden" name="action" value="toggle_chapter"><input type="hidden" name="id" value="<?php echo $ch['id']; ?>"><button type="submit" class="toggle <?php echo $ch['is_active']?'on':''; ?>"></button></form></td>
+<tr><td><?php echo $ch['order'] ?? $ch['id']; ?></td><td><?php echo $subj?htmlspecialchars($subj['name']):''; ?></td>
+<td><strong><?php echo htmlspecialchars($ch['title']); ?></strong></td><td><?php echo $ch['pages'] ?? 0; ?></td>
+<td><span class="badge <?php echo ($ch['status']??'not_started')==='completed'?'bg':(($ch['status']??'')==='in_progress'?'bo':(($ch['status']??'')==='locked'?'br':'bb')); ?>"><?php echo ucfirst(str_replace('_',' ',$ch['status']??'not_started')); ?></span></td>
 <td class="actions"><a href="?page=chapters&edit=<?php echo $ch['id']; ?>" class="btn btn-primary btn-sm"><i data-lucide="edit-2" style="width:12px;height:12px"></i></a><a href="?page=chapters&edit=<?php echo $ch['id']; ?>&del_table=chapters" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
 <?php endforeach; ?></table></div>
 
@@ -386,6 +389,7 @@ $eh=$edit>0?$db->find('homework','id',$edit):null; ?>
 <form method="POST"><input type="hidden" name="action" value="<?php echo $eh?'edit_homework':'add_homework'; ?>">
 <?php if($eh): ?><input type="hidden" name="id" value="<?php echo $eh['id']; ?>"><?php endif; ?>
 <div class="form-row"><div class="form-group"><label>Title</label><input type="text" name="title" value="<?php echo $eh?htmlspecialchars($eh['title']):''; ?>" required></div><div class="form-group"><label>Subject</label><select name="subject_id"><?php foreach($allSubjects as $s): ?><option value="<?php echo $s['id']; ?>" <?php echo $eh&&$eh['subject_id']==$s['id']?'selected':''; ?>><?php echo htmlspecialchars($s['name']); ?></option><?php endforeach; ?></select></div></div>
+<div class="form-row"><div class="form-group"><label>Teacher</label><select name="teacher_id"><?php foreach($allTeachers as $t): ?><option value="<?php echo $t['user_id']; ?>" <?php echo $eh&&$eh['teacher_id']==$t['user_id']?'selected':''; ?>><?php echo htmlspecialchars($t['name']); ?></option><?php endforeach; ?></select></div><div class="form-group"><label>Due Date</label><input type="date" name="due_date" value="<?php echo $eh?$eh['due_date']:''; ?>" required></div></div>
 <div class="form-group"><label>Description</label><textarea name="description" rows="2"><?php echo $eh?htmlspecialchars($eh['description']):''; ?></textarea></div>
 <div class="form-row"><div class="form-group"><label>Due Date</label><input type="date" name="due_date" value="<?php echo $eh?$eh['due_date']:''; ?>" required></div><div class="form-group"><label>Total Marks</label><input type="number" name="total_marks" value="<?php echo $eh?$eh['total_marks']:10; ?>"></div></div>
 <?php if($eh): ?><div class="form-group"><label>Status</label><select name="status"><option value="pending" <?php echo $eh['status']==='pending'?'selected':''; ?>>Pending</option><option value="completed" <?php echo $eh['status']==='completed'?'selected':''; ?>>Completed</option></select></div><?php endif; ?>
@@ -406,8 +410,9 @@ $ex=$edit>0?$db->find('exams','id',$edit):null; ?>
 <form method="POST"><input type="hidden" name="action" value="<?php echo $ex?'edit_exam':'add_exam'; ?>">
 <?php if($ex): ?><input type="hidden" name="id" value="<?php echo $ex['id']; ?>"><?php endif; ?>
 <div class="form-row"><div class="form-group"><label>Title</label><input type="text" name="title" value="<?php echo $ex?htmlspecialchars($ex['title']):''; ?>" required></div><div class="form-group"><label>Subject</label><select name="subject_id"><?php foreach($allSubjects as $s): ?><option value="<?php echo $s['id']; ?>" <?php echo $ex&&$ex['subject_id']==$s['id']?'selected':''; ?>><?php echo htmlspecialchars($s['name']); ?></option><?php endforeach; ?></select></div></div>
-<div class="form-row"><div class="form-group"><label>Date</label><input type="date" name="exam_date" value="<?php echo $ex?$ex['exam_date']:''; ?>" required></div><div class="form-group"><label>Type</label><select name="type"><option value="mcq" <?php echo $ex&&$ex['type']==='mcq'?'selected':''; ?>>MCQ</option><option value="written" <?php echo $ex&&$ex['type']==='written'?'selected':''; ?>>Written</option><option value="cq" <?php echo $ex&&$ex['type']==='cq'?'selected':''; ?>>CQ</option><option value="board" <?php echo $ex&&$ex['type']==='board'?'selected':''; ?>>Board</option></select></div></div>
-<div class="form-row"><div class="form-group"><label>Total Marks</label><input type="number" name="total_marks" value="<?php echo $ex?$ex['total_marks']:100; ?>"></div><div class="form-group"><label>Duration (min)</label><input type="number" name="duration" value="<?php echo $ex?$ex['duration']:60; ?>"></div></div>
+<div class="form-row"><div class="form-group"><label>Teacher</label><select name="teacher_id"><?php foreach($allTeachers as $t): ?><option value="<?php echo $t['user_id']; ?>" <?php echo $ex&&$ex['teacher_id']==$t['user_id']?'selected':''; ?>><?php echo htmlspecialchars($t['name']); ?></option><?php endforeach; ?></select></div><div class="form-group"><label>Type</label><select name="type"><option value="mcq" <?php echo $ex&&$ex['type']==='mcq'?'selected':''; ?>>MCQ</option><option value="written" <?php echo $ex&&$ex['type']==='written'?'selected':''; ?>>Written</option><option value="cq" <?php echo $ex&&$ex['type']==='cq'?'selected':''; ?>>CQ</option><option value="board" <?php echo $ex&&$ex['type']==='board'?'selected':''; ?>>Board</option></select></div></div>
+<div class="form-row"><div class="form-group"><label>Date</label><input type="date" name="exam_date" value="<?php echo $ex?$ex['exam_date']:''; ?>" required></div><div class="form-group"><label>Total Marks</label><input type="number" name="total_marks" value="<?php echo $ex?$ex['total_marks']:100; ?>"></div></div>
+<div class="form-row"><div class="form-group"><label>Duration (min)</label><input type="number" name="duration" value="<?php echo $ex?$ex['duration']:60; ?>"></div></div>
 <?php if($ex): ?><div class="form-group"><label>Status</label><select name="status"><option value="upcoming" <?php echo $ex['status']==='upcoming'?'selected':''; ?>>Upcoming</option><option value="ongoing" <?php echo $ex['status']==='ongoing'?'selected':''; ?>>Ongoing</option><option value="completed" <?php echo $ex['status']==='completed'?'selected':''; ?>>Completed</option></select></div><?php endif; ?>
 <div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary"><?php echo $ex?'Update':'Add'; ?></button><?php if($ex): ?><a href="?page=exams" class="btn btn-outline">Cancel</a><?php endif; ?></div></form></div>
 <div class="card"><h3><i data-lucide="calendar"></i>All Exams (<?php echo count($allExams); ?>)</h3>
@@ -421,31 +426,31 @@ $ex=$edit>0?$db->find('exams','id',$edit):null; ?>
 
 <?php /* === QUESTIONS === */ ?>
 <?php elseif($page==='questions'):
-$eq=$edit>0?$db->find('questions','id',$edit):null;
-$eo=$eq?json_decode($eq['options'],true):[]; ?>
+$eq=$edit>0?$db->find('question_bank','id',$edit):null;
+$eo=is_array($eq['options'] ?? null) ? ($eq['options'] ?? []) : json_decode($eq['options'] ?? '[]', true); ?>
 <div class="card"><h3><i data-lucide="<?php echo $eq?'edit':'plus-circle'; ?>"></i><?php echo $eq?'Edit Question':'Add Question'; ?></h3>
 <form method="POST"><input type="hidden" name="action" value="<?php echo $eq?'edit_question':'add_question'; ?>">
 <?php if($eq): ?><input type="hidden" name="id" value="<?php echo $eq['id']; ?>"><?php endif; ?>
-<div class="form-row"><div class="form-group"><label>Subject</label><select name="subject_id"><?php foreach($allSubjects as $s): ?><option value="<?php echo $s['id']; ?>" <?php echo $eq&&$eq['subject_id']==$s['id']?'selected':''; ?>><?php echo htmlspecialchars($s['name']); ?></option><?php endforeach; ?></select></div><div class="form-group"><label>Chapter</label><select name="chapter_id"><option value="0">None</option><?php foreach($allChapters as $ch): ?><option value="<?php echo $ch['id']; ?>" <?php echo $eq&&$eq['chapter_id']==$ch['id']?'selected':''; ?>><?php echo htmlspecialchars($ch['title']); ?></option><?php endforeach; ?></select></div></div>
-<div class="form-row"><div class="form-group"><label>Type</label><select name="type"><option value="mcq" <?php echo $eq&&$eq['type']==='mcq'?'selected':''; ?>>MCQ</option><option value="written" <?php echo $eq&&$eq['type']==='written'?'selected':''; ?>>Written</option><option value="cq" <?php echo $eq&&$eq['type']==='cq'?'selected':''; ?>>CQ</option><option value="board" <?php echo $eq&&$eq['type']==='board'?'selected':''; ?>>Board</option></select></div><div class="form-group"><label>Difficulty</label><select name="difficulty"><option value="easy" <?php echo $eq&&$eq['difficulty']==='easy'?'selected':''; ?>>Easy</option><option value="medium" <?php echo $eq&&$eq['difficulty']==='medium'?'selected':''; ?>>Medium</option><option value="hard" <?php echo $eq&&$eq['difficulty']==='hard'?'selected':''; ?>>Hard</option></select></div></div>
+<div class="form-row"><div class="form-group"><label>Subject</label><select name="subject_id"><?php foreach($allSubjects as $s): ?><option value="<?php echo $s['id']; ?>" <?php echo $eq&&$eq['subject_id']==$s['id']?'selected':''; ?>><?php echo htmlspecialchars($s['name']); ?></option><?php endforeach; ?></select></div><div class="form-group"><label>Chapter</label><input type="text" name="chapter" value="<?php echo $eq?htmlspecialchars($eq['chapter']):''; ?>" placeholder="e.g. Algebra" required></div></div>
+<div class="form-row"><div class="form-group"><label>Type</label><select name="type"><option value="mcq" <?php echo $eq&&$eq['type']==='mcq'?'selected':''; ?>>MCQ</option><option value="written" <?php echo $eq&&$eq['type']==='written'?'selected':''; ?>>Written</option><option value="cq" <?php echo $eq&&$eq['type']==='cq'?'selected':''; ?>>CQ</option></select></div><div class="form-group"><label>Difficulty</label><select name="difficulty"><option value="easy" <?php echo $eq&&$eq['difficulty']==='easy'?'selected':''; ?>>Easy</option><option value="medium" <?php echo $eq&&$eq['difficulty']==='medium'?'selected':''; ?>>Medium</option><option value="hard" <?php echo $eq&&$eq['difficulty']==='hard'?'selected':''; ?>>Hard</option></select></div></div>
 <div class="form-group"><label>Question</label><textarea name="question" rows="2" required><?php echo $eq?htmlspecialchars($eq['question']):''; ?></textarea></div>
 <div class="form-row"><div class="form-group"><label>Option 1</label><input type="text" name="opt_1" value="<?php echo isset($eo[0])?htmlspecialchars($eo[0]):''; ?>" required></div><div class="form-group"><label>Option 2</label><input type="text" name="opt_2" value="<?php echo isset($eo[1])?htmlspecialchars($eo[1]):''; ?>" required></div></div>
 <div class="form-row"><div class="form-group"><label>Option 3</label><input type="text" name="opt_3" value="<?php echo isset($eo[2])?htmlspecialchars($eo[2]):''; ?>"></div><div class="form-group"><label>Option 4</label><input type="text" name="opt_4" value="<?php echo isset($eo[3])?htmlspecialchars($eo[3]):''; ?>"></div></div>
 <div class="form-row"><div class="form-group"><label>Option 5</label><input type="text" name="opt_5" value="<?php echo isset($eo[4])?htmlspecialchars($eo[4]):''; ?>"></div><div class="form-group"><label>Option 6</label><input type="text" name="opt_6" value="<?php echo isset($eo[5])?htmlspecialchars($eo[5]):''; ?>"></div></div>
-<div class="form-row"><div class="form-group"><label>Correct Answer (0-indexed)</label><input type="number" name="correct_answer" min="0" max="5" value="<?php echo $eq?$eq['correct_answer']:0; ?>" required></div><div class="form-group"><label>Marks</label><input type="number" name="marks" value="<?php echo $eq?$eq['marks']:1; ?>"></div></div>
+<div class="form-row"><div class="form-group"><label>Correct Answer (0-indexed)</label><input type="number" name="correct_answer" min="0" max="5" value="<?php echo $eq?($eq['correct']??0):0; ?>" required></div><div class="form-group"><label>Marks</label><input type="number" name="marks" value="<?php echo $eq?($eq['marks']??1):1; ?>"></div></div>
 <div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary"><?php echo $eq?'Update':'Add'; ?></button><?php if($eq): ?><a href="?page=questions" class="btn btn-outline">Cancel</a><?php endif; ?></div></form></div>
 <div class="card">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
 <h3 style="margin-bottom:0"><i data-lucide="help-circle"></i>Question Bank (<?php echo count($allQuestions); ?>)</h3>
-<div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="exportTable('q-table','questions.csv')"><i data-lucide="download" style="width:12px;height:12px"></i>Export</button><button class="btn btn-primary btn-sm" disabled title="Coming soon"><i data-lucide="sparkles" style="width:12px;height:12px"></i>AI Generate</button></div></div>
+<div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="exportTable('q-table','questions.csv')"><i data-lucide="download" style="width:12px;height:12px"></i>Export</button></div></div>
 <div class="search-bar"><i data-lucide="search"></i><input type="text" placeholder="Search questions..." oninput="filterTable(this,'q-table')"></div>
-<table id="q-table"><tr><th>ID</th><th>Subject</th><th>Type</th><th>Question</th><th>Diff</th><th>Marks</th><th>Actions</th></tr>
+<table id="q-table"><tr><th>ID</th><th>Subject</th><th>Chapter</th><th>Type</th><th>Question</th><th>Diff</th><th>Marks</th><th>Actions</th></tr>
 <?php foreach($allQuestions as $q): $subj=$db->find('subjects','id',$q['subject_id']); ?>
-<tr><td><?php echo $q['id']; ?></td><td><?php echo $subj?htmlspecialchars($subj['name']):''; ?></td>
+<tr><td><?php echo $q['id']; ?></td><td><?php echo $subj?htmlspecialchars($subj['name']):''; ?></td><td><?php echo htmlspecialchars($q['chapter']??''); ?></td>
 <td><span class="badge bp"><?php echo strtoupper($q['type']); ?></span></td>
 <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?php echo htmlspecialchars($q['question']); ?></td>
 <td><span class="badge <?php echo $q['difficulty']==='easy'?'bg':($q['difficulty']==='medium'?'bo':'br'); ?>"><?php echo ucfirst($q['difficulty']); ?></span></td><td><?php echo $q['marks']; ?></td>
-<td class="actions"><a href="?page=questions&edit=<?php echo $q['id']; ?>" class="btn btn-primary btn-sm"><i data-lucide="edit-2" style="width:12px;height:12px"></i></a><a href="?page=questions&edit=<?php echo $q['id']; ?>&del_table=questions" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
+<td class="actions"><a href="?page=questions&edit=<?php echo $q['id']; ?>" class="btn btn-primary btn-sm"><i data-lucide="edit-2" style="width:12px;height:12px"></i></a><a href="?page=questions&edit=<?php echo $q['id']; ?>&del_table=question_bank" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
 <?php endforeach; ?></table></div>
 
 <?php /* === SUBMISSIONS === */ ?>
@@ -603,7 +608,7 @@ $ea=$edit>0?$db->find('announcements','id',$edit):null; ?>
 <?php if($ea): ?><input type="hidden" name="id" value="<?php echo $ea['id']; ?>"><?php endif; ?>
 <div class="form-row"><div class="form-group"><label>Title</label><input type="text" name="title" value="<?php echo $ea?htmlspecialchars($ea['title']):''; ?>" required></div><div class="form-group"><label>Category</label><select name="category"><option value="general" <?php echo $ea&&$ea['category']==='general'?'selected':''; ?>>General</option><option value="exam" <?php echo $ea&&$ea['category']==='exam'?'selected':''; ?>>Exam</option><option value="event" <?php echo $ea&&$ea['category']==='event'?'selected':''; ?>>Event</option><option value="urgent" <?php echo $ea&&$ea['category']==='urgent'?'selected':''; ?>>Urgent</option></select></div></div>
 <div class="form-group"><label>Message</label><textarea name="message" rows="3" required><?php echo $ea?htmlspecialchars($ea['message']):''; ?></textarea></div>
-<div class="form-row"><div class="form-group"><label>Target Class</label><input type="text" name="target_class" value="<?php echo $ea?htmlspecialchars($ea['target_class']):'all'; ?>"></div><div class="form-group"><label>Pinned</label><select name="is_pinned"><option value="0" <?php echo !$ea||!$ea['is_pinned']?'selected':''; ?>>No</option><option value="1" <?php echo $ea&&$ea['is_pinned']?'selected':''; ?>>Yes</option></select></div></div>
+<div class="form-row"><div class="form-group"><label>Target Class</label><input type="text" name="target_class" value="<?php echo $ea?htmlspecialchars($ea['target_class']):'all'; ?>"></div><div class="form-group"><label>Teacher</label><select name="teacher_id"><?php foreach($allTeachers as $t): ?><option value="<?php echo $t['user_id']; ?>" <?php echo $ea&&$ea['teacher_id']==$t['user_id']?'selected':''; ?>><?php echo htmlspecialchars($t['name']); ?></option><?php endforeach; ?></select></div><div class="form-group"><label>Pinned</label><select name="is_pinned"><option value="0" <?php echo !$ea||!$ea['is_pinned']?'selected':''; ?>>No</option><option value="1" <?php echo $ea&&$ea['is_pinned']?'selected':''; ?>>Yes</option></select></div></div>
 <div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary"><?php echo $ea?'Update':'Publish'; ?></button><?php if($ea): ?><a href="?page=announcements" class="btn btn-outline">Cancel</a><?php endif; ?></div></form></div>
 <div class="card"><h3><i data-lucide="megaphone"></i>All Announcements (<?php echo count($allAnnouncements); ?>)</h3>
 <?php foreach($allAnnouncements as $a): ?>
@@ -749,6 +754,111 @@ foreach($allPackages as $p){$c=rand(5,25);$pc[$p['name']]=$c;$tr+=$p['price']*$c
 <div class="sc"><div class="si g"><i data-lucide="check-circle"></i></div><div class="st"><h3><?php echo rand(85,95); ?>%</h3><p>Success Rate</p></div></div>
 <div class="sc"><div class="si o"><i data-lucide="clock"></i></div><div class="st"><h3><?php echo rand(1,3); ?>s</h3><p>Avg Response</p></div></div>
 <div class="sc"><div class="si b"><i data-lucide="zap"></i></div><div class="st"><h3><?php echo rand(50,120); ?>K</h3><p>Tokens Used</p></div></div></div></div>
+
+<?php /* === CALENDAR EVENTS === */ ?>
+<?php elseif($page==='calendar_events'):
+$ece=$edit>0?$db->find('calendar_events','id',$edit):null; ?>
+<div class="card"><h3><i data-lucide="<?php echo $ece?'edit':'plus-circle'; ?>"></i><?php echo $ece?'Edit Event':'Add Calendar Event'; ?></h3>
+<form method="POST"><input type="hidden" name="action" value="<?php echo $ece?'edit_calendar_event':'add_calendar_event'; ?>">
+<?php if($ece): ?><input type="hidden" name="id" value="<?php echo $ece['id']; ?>"><?php endif; ?>
+<div class="form-row"><div class="form-group"><label>Title</label><input type="text" name="title" value="<?php echo $ece?htmlspecialchars($ece['title']):''; ?>" required></div><div class="form-group"><label>Date</label><input type="date" name="date" value="<?php echo $ece?$ece['date']:''; ?>" required></div></div>
+<div class="form-row"><div class="form-group"><label>Type</label><select name="type"><?php foreach(['exam','homework','class','holiday','event'] as $tv): ?><option value="<?php echo $tv; ?>" <?php echo $ece&&$ece['type']===$tv?'selected':''; ?>><?php echo ucfirst($tv); ?></option><?php endforeach; ?></select></div><div class="form-group"><label>Color</label><input type="color" name="color" value="<?php echo $ece?($ece['color']??'#4F46E5'):'#4F46E5'; ?>"></div></div>
+<div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary"><?php echo $ece?'Update':'Add'; ?></button><?php if($ece): ?><a href="?page=calendar_events" class="btn btn-outline">Cancel</a><?php endif; ?></div></form></div>
+<div class="card"><h3><i data-lucide="calendar-range"></i>All Events (<?php echo count($allCalendarEvents); ?>)</h3>
+<table><tr><th>Title</th><th>Date</th><th>Type</th><th>Color</th><th>Actions</th></tr>
+<?php foreach($allCalendarEvents as $ev): ?>
+<tr><td><strong><?php echo htmlspecialchars($ev['title']); ?></strong></td><td><?php echo $ev['date']; ?></td>
+<td><span class="badge <?php echo $ev['type']==='exam'?'br':($ev['type']==='homework'?'bo':($ev['type']==='holiday'?'bg':'bb')); ?>"><?php echo ucfirst($ev['type']); ?></span></td>
+<td><div style="width:24px;height:24px;border-radius:6px;background:<?php echo $ev['color']??'#4F46E5'; ?>;border:1px solid #E5E7EB"></div></td>
+<td class="actions"><a href="?page=calendar_events&edit=<?php echo $ev['id']; ?>" class="btn btn-primary btn-sm"><i data-lucide="edit-2" style="width:12px;height:12px"></i></a><a href="?page=calendar_events&edit=<?php echo $ev['id']; ?>&del_table=calendar_events" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
+<?php endforeach; ?></table></div>
+
+<?php /* === CLASS SCHEDULE === */ ?>
+<?php elseif($page==='class_schedule'):
+$cs=$edit>0?$db->find('class_schedule','id',$edit):null; ?>
+<div class="card"><h3><i data-lucide="<?php echo $cs?'edit':'plus-circle'; ?>"></i><?php echo $cs?'Edit Schedule':'Add Class Schedule'; ?></h3>
+<form method="POST"><input type="hidden" name="action" value="<?php echo $cs?'edit_class_schedule':'add_class_schedule'; ?>">
+<?php if($cs): ?><input type="hidden" name="id" value="<?php echo $cs['id']; ?>"><?php endif; ?>
+<div class="form-row"><div class="form-group"><label>Subject</label><input type="text" name="subject" value="<?php echo $cs?htmlspecialchars($cs['subject']):''; ?>" required></div><div class="form-group"><label>Topic</label><input type="text" name="topic" value="<?php echo $cs?htmlspecialchars($cs['topic']):''; ?>" required></div></div>
+<div class="form-row"><div class="form-group"><label>Class Name</label><input type="text" name="class_name" value="<?php echo $cs?htmlspecialchars($cs['class_name']):'Class 8'; ?>" required></div><div class="form-group"><label>Day</label><select name="day"><?php foreach(['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] as $dv): ?><option value="<?php echo $dv; ?>" <?php echo $cs&&$cs['day']===$dv?'selected':''; ?>><?php echo $dv; ?></option><?php endforeach; ?></select></div></div>
+<div class="form-row"><div class="form-group"><label>Time</label><input type="text" name="time" value="<?php echo $cs?htmlspecialchars($cs['time']):'09:00 - 10:00'; ?>" placeholder="09:00 - 10:00" required></div><div class="form-group"><label>Teacher Name</label><input type="text" name="teacher_name" value="<?php echo $cs?htmlspecialchars($cs['teacher_name']):''; ?>"></div></div>
+<div class="form-row"><div class="form-group"><label>Teacher ID</label><input type="number" name="teacher_id" value="<?php echo $cs?$cs['teacher_id']:1; ?>"></div><div class="form-group"><label>Students Count</label><input type="number" name="students_count" value="<?php echo $cs?$cs['students_count']:25; ?>"></div></div>
+<div class="form-group"><label>Status</label><select name="status"><?php foreach(['upcoming','ongoing','completed'] as $sv): ?><option value="<?php echo $sv; ?>" <?php echo $cs&&$cs['status']===$sv?'selected':''; ?>><?php echo ucfirst($sv); ?></option><?php endforeach; ?></select></div>
+<div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary"><?php echo $cs?'Update':'Add'; ?></button><?php if($cs): ?><a href="?page=class_schedule" class="btn btn-outline">Cancel</a><?php endif; ?></div></form></div>
+<div class="card"><h3><i data-lucide="clock"></i>All Schedules (<?php echo count($allClassSchedule); ?>)</h3>
+<table><tr><th>Subject</th><th>Topic</th><th>Day</th><th>Time</th><th>Teacher</th><th>Status</th><th>Actions</th></tr>
+<?php foreach($allClassSchedule as $cs2): ?>
+<tr><td><strong><?php echo htmlspecialchars($cs2['subject']); ?></strong></td><td><?php echo htmlspecialchars($cs2['topic']); ?></td><td><?php echo $cs2['day']; ?></td>
+<td><?php echo $cs2['time']; ?></td><td><?php echo htmlspecialchars($cs2['teacher_name']); ?></td>
+<td><span class="badge <?php echo $cs2['status']==='completed'?'bg':($cs2['status']==='ongoing'?'bo':'bb'); ?>"><?php echo ucfirst($cs2['status']); ?></span></td>
+<td class="actions"><a href="?page=class_schedule&edit=<?php echo $cs2['id']; ?>" class="btn btn-primary btn-sm"><i data-lucide="edit-2" style="width:12px;height:12px"></i></a><a href="?page=class_schedule&edit=<?php echo $cs2['id']; ?>&del_table=class_schedule" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
+<?php endforeach; ?></table></div>
+
+<?php /* === REPORTS === */ ?>
+<?php elseif($page==='reports'):
+$er2=$edit>0?$db->find('reports','id',$edit):null; ?>
+<div class="card"><h3><i data-lucide="<?php echo $er2?'edit':'plus-circle'; ?>"></i><?php echo $er2?'Edit Report':'Add Report'; ?></h3>
+<form method="POST"><input type="hidden" name="action" value="<?php echo $er2?'edit_report':'add_report'; ?>">
+<?php if($er2): ?><input type="hidden" name="id" value="<?php echo $er2['id']; ?>"><?php endif; ?>
+<div class="form-row"><div class="form-group"><label>Student</label><select name="student_id"><?php foreach($allUsers as $u): if($u['role']==='student'): ?><option value="<?php echo $u['id']; ?>" <?php echo $er2&&$er2['student_id']==$u['id']?'selected':''; ?>><?php echo htmlspecialchars($u['name']); ?></option><?php endif; endforeach; ?></select></div><div class="form-group"><label>Teacher</label><select name="teacher_id"><?php foreach($allTeachers as $t): ?><option value="<?php echo $t['user_id']; ?>" <?php echo $er2&&$er2['teacher_id']==$t['user_id']?'selected':''; ?>><?php echo htmlspecialchars($t['name']); ?></option><?php endforeach; ?></select></div></div>
+<div class="form-row"><div class="form-group"><label>Subject</label><input type="text" name="subject" value="<?php echo $er2?htmlspecialchars($er2['subject']):''; ?>" required></div><div class="form-group"><label>Class</label><input type="text" name="class" value="<?php echo $er2?htmlspecialchars($er2['class']):'Class 8'; ?>"></div></div>
+<div class="form-row"><div class="form-group"><label>Grade</label><select name="grade"><?php foreach(['A+','A','B+','B','C','D','F'] as $gv): ?><option value="<?php echo $gv; ?>" <?php echo $er2&&$er2['grade']===$gv?'selected':''; ?>><?php echo $gv; ?></option><?php endforeach; ?></select></div><div class="form-group"><label>Score</label><input type="number" name="score" value="<?php echo $er2?$er2['score']:0; ?>" min="0" max="100"></div></div>
+<div class="form-row"><div class="form-group"><label>Behavior</label><select name="behavior"><?php foreach(['Excellent','Good','Satisfactory','Needs Improvement','Poor'] as $bv): ?><option value="<?php echo $bv; ?>" <?php echo $er2&&$er2['behavior']===$bv?'selected':''; ?>><?php echo $bv; ?></option><?php endforeach; ?></select></div><div class="form-group"><label>Date</label><input type="date" name="date" value="<?php echo $er2?$er2['date']:date('Y-m-d'); ?>"></div></div>
+<div class="form-group"><label>Comment</label><textarea name="comment" rows="2"><?php echo $er2?htmlspecialchars($er2['comment']):''; ?></textarea></div>
+<div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary"><?php echo $er2?'Update':'Add'; ?></button><?php if($er2): ?><a href="?page=reports" class="btn btn-outline">Cancel</a><?php endif; ?></div></form></div>
+<div class="card"><h3><i data-lucide="file-bar-chart"></i>All Reports (<?php echo count($allReports); ?>)</h3>
+<div class="search-bar"><i data-lucide="search"></i><input type="text" placeholder="Search reports..." oninput="filterTable(this,'rep-table')"></div>
+<table id="rep-table"><tr><th>Student</th><th>Subject</th><th>Grade</th><th>Score</th><th>Behavior</th><th>Date</th><th>Actions</th></tr>
+<?php foreach($allReports as $rpt): $rptSt=$db->find('users','id',$rpt['student_id']); ?>
+<tr><td><strong><?php echo $rptSt?htmlspecialchars($rptSt['name']):'N/A'; ?></strong></td><td><?php echo htmlspecialchars($rpt['subject']); ?></td>
+<td><span class="badge <?php echo in_array($rpt['grade'],['A+','A'])?'bg':($rpt['grade']==='B+'?'bo':'bb'); ?>"><?php echo $rpt['grade']; ?></span></td>
+<td><strong style="color:#4F46E5"><?php echo $rpt['score']; ?>%</strong></td><td><?php echo $rpt['behavior']; ?></td>
+<td style="font-size:11px;color:#9CA3AF"><?php echo $rpt['date']; ?></td>
+<td class="actions"><a href="?page=reports&edit=<?php echo $rpt['id']; ?>" class="btn btn-primary btn-sm"><i data-lucide="edit-2" style="width:12px;height:12px"></i></a><a href="?page=reports&edit=<?php echo $rpt['id']; ?>&del_table=reports" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
+<?php endforeach; ?></table></div>
+
+<?php /* === BADGES (in student_progress page) === */ ?>
+<?php elseif($page==='student_progress'):
+$progressRaw=$db->query('student_progress');
+$progress=[];
+foreach($progressRaw as $sp){
+    $su=$db->find('users','id',$sp['student_id']);
+    $sp['name']=$su['name']??'N/A';
+    $sp['email']=$su['email']??'';
+    $sp['class']=$su['class']??'';
+    $progress[]=$sp;
+}
+$allBadgesRaw=$db->query('badges');
+$allBadgesWithNames=[];
+foreach($allBadgesRaw as $b){
+    $bu=$db->find('users','id',$b['student_id']);
+    $b['student_name']=$bu['name']??'N/A';
+    $allBadgesWithNames[]=$b;
+} ?>
+<div class="card"><h3><i data-lucide="bar-chart-3"></i>Student Learning Progress</h3>
+<div class="search-bar"><i data-lucide="search"></i><input type="text" placeholder="Search students..." oninput="filterTable(this,'prog-table')"></div>
+<table id="prog-table"><tr><th>Student</th><th>Class</th><th>Books</th><th>HW Score</th><th>Exam Score</th><th>Streak</th><th>Badges</th><th>Hours</th><th>Last Active</th></tr>
+<?php foreach($progress as $p): ?>
+<tr><td><strong><?php echo htmlspecialchars($p['name']); ?></strong></td><td><?php echo $p['class']; ?></td><td><?php echo $p['books_read']; ?></td>
+<td><span class="badge <?php echo $p['homework_score']>=80?'bg':($p['homework_score']>=60?'bo':'br'); ?>"><?php echo $p['homework_score']; ?>%</span></td>
+<td><span class="badge <?php echo $p['exam_score']>=80?'bg':($p['exam_score']>=60?'bo':'br'); ?>"><?php echo $p['exam_score']; ?>%</span></td>
+<td><span class="badge bp"><?php echo $p['streak']; ?> days</span></td><td><?php echo $p['badges_count']; ?></td><td><?php echo $p['study_hours']; ?>h</td>
+<td style="font-size:11px;color:#9CA3AF"><?php echo $p['last_active']; ?></td></tr>
+<?php endforeach; ?></table></div>
+<div class="card"><h3><i data-lucide="award"></i>Add Badge</h3>
+<form method="POST"><input type="hidden" name="action" value="add_badge">
+<div class="form-row"><div class="form-group"><label>Student</label><select name="student_id"><?php foreach($allUsers as $u): if($u['role']==='student'): ?><option value="<?php echo $u['id']; ?>"><?php echo htmlspecialchars($u['name']); ?></option><?php endif; endforeach; ?></select></div><div class="form-group"><label>Badge Name</label><input type="text" name="name" placeholder="e.g. Top Performer" required></div></div>
+<div class="form-row"><div class="form-group"><label>Icon</label><input type="text" name="icon" placeholder="e.g. trophy" value="award"></div><div class="form-group"><label>Description</label><input type="text" name="description" placeholder="Badge description"></div></div>
+<button type="submit" class="btn btn-primary">Add Badge</button></form></div>
+<div class="card"><h3><i data-lucide="award"></i>All Badges (<?php echo count($allBadgesWithNames); ?>)</h3>
+<table><tr><th>Student</th><th>Badge</th><th>Icon</th><th>Description</th><th>Earned</th><th>Actions</th></tr>
+<?php foreach($allBadgesWithNames as $b): ?>
+<tr><td><strong><?php echo htmlspecialchars($b['student_name']); ?></strong></td><td><?php echo htmlspecialchars($b['name']); ?></td>
+<td><i data-lucide="<?php echo $b['icon']??'award'; ?>" style="width:16px;height:16px;color:#F59E0B"></i></td>
+<td style="font-size:12px"><?php echo htmlspecialchars($b['description']); ?></td>
+<td style="font-size:11px;color:#9CA3AF"><?php echo $b['earned_date']; ?></td>
+<td class="actions"><a href="?page=student_progress&edit=<?php echo $b['id']; ?>&del_table=badges" class="btn btn-danger btn-sm" onclick="return confirm('Delete badge?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
+<?php endforeach; ?></table></div>
 
 <?php endif; ?>
 </div></div>

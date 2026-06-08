@@ -637,6 +637,7 @@
             <span class="tt-section-title">New Teachers</span>
         </div>
         <div id="tutorNewList" class="tt-hscroll">
+        </div>
 
         <!-- 9. Popular Subjects -->
         <div class="tt-section-header" style="margin-top:6px">
@@ -848,7 +849,7 @@
         <div class="section-header card-enter" style="animation-delay:0.15s">
             <h2 class="section-title"><i data-lucide="zap" style="width:16px;height:16px;color:var(--warning)"></i> Quick Access</h2>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px" class="card-enter" style="animation-delay:0.2s">
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px;animation-delay:0.2s" class="card-enter">
             <div class="glass-card" style="padding:16px;text-align:center;cursor:pointer" onclick="showScreen('screen-homework')">
                 <div class="icon-box orange" style="margin:0 auto 8px"><i data-lucide="file-text" class="icon-md"></i></div>
                 <h5 style="font-size:13px;font-weight:600">Homework</h5>
@@ -891,7 +892,7 @@
 
             <!-- Quick Actions -->
             <div class="sp-actions">
-                <button class="sp-action-btn" onclick="showScreen('screen-settings')">
+                <button class="sp-action-btn" onclick="showScreen('screen-edit-profile');loadEditProfile()">
                     <div class="sp-action-icon purple"><i data-lucide="pencil"></i></div>
                     <span>Edit Profile</span>
                 </button>
@@ -942,7 +943,7 @@
     <div class="profile-menu">
         <div class="profile-section">
             <h4>Account</h4>
-            <div class="menu-item" onclick="showToast('Profile editing coming soon!','info')">
+            <div class="menu-item" onclick="showScreen('screen-edit-profile');loadEditProfile()">
                 <div class="menu-icon purple"><i data-lucide="user"></i></div>
                 <div class="menu-text"><h5>Edit Profile</h5><p>Name, email, phone</p></div>
                 <span class="menu-arrow"><i data-lucide="chevron-right"></i></span>
@@ -1418,6 +1419,56 @@
     </div>
 </div>
 
+<!-- ========== 18B. EDIT PROFILE ========== -->
+<div id="screen-edit-profile" class="screen">
+    <header class="header glass-header">
+        <button class="header-back" onclick="showScreen('screen-profile')"><i data-lucide="arrow-left"></i></button>
+        <h3 class="header-title">Edit Profile</h3>
+        <button class="icon-btn glass-card-sm" onclick="saveProfile()"><i data-lucide="check"></i></button>
+    </header>
+    <div class="main-content">
+        <!-- Avatar -->
+        <div style="text-align:center;padding:24px 0 16px">
+            <div id="epAvatar" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:inline-flex;align-items:center;justify-content:center;color:white;font-size:32px;font-weight:700;box-shadow:0 4px 16px rgba(99,102,241,0.3)">A</div>
+            <p style="font-size:12px;color:var(--text3);margin-top:8px">Tap avatar to change</p>
+        </div>
+
+        <!-- Form -->
+        <div class="card" style="border-radius:16px">
+            <div class="form-group">
+                <label style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;display:block">Full Name</label>
+                <input type="text" id="epName" placeholder="Your full name" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;background:var(--card);color:var(--text)">
+            </div>
+            <div class="form-group">
+                <label style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;display:block">Email</label>
+                <input type="email" id="epEmail" disabled style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;background:var(--bg);color:var(--text3);opacity:0.6">
+            </div>
+            <div class="form-group">
+                <label style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;display:block">Phone</label>
+                <input type="tel" id="epPhone" placeholder="017XXXXXXXX" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;background:var(--card);color:var(--text)">
+            </div>
+            <div class="form-group">
+                <label style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;display:block">School</label>
+                <input type="text" id="epSchool" placeholder="Your school name" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;background:var(--card);color:var(--text)">
+            </div>
+        </div>
+
+        <!-- Change Password -->
+        <div class="card" style="border-radius:16px;margin-top:12px">
+            <h4 style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px"><i data-lucide="lock" style="width:16px;height:16px;color:var(--primary)"></i>Change Password</h4>
+            <div class="form-group">
+                <label style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;display:block">New Password</label>
+                <input type="password" id="epPassword" placeholder="Leave blank to keep current" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;background:var(--card);color:var(--text)">
+            </div>
+        </div>
+
+        <!-- Save Button -->
+        <button onclick="saveProfile()" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;margin-top:16px;box-shadow:0 4px 12px rgba(99,102,241,0.3)">
+            Save Changes
+        </button>
+    </div>
+</div>
+
 <!-- ========== 19. SETTINGS ========== -->
 <div id="screen-settings" class="screen">
     <header class="header">
@@ -1436,7 +1487,7 @@
             <div class="settings-text"><h5>Language</h5><p>English</p></div>
             <i data-lucide="chevron-right" style="color:var(--text3)"></i>
         </div>
-        <div class="settings-item" onclick="showToast('Edit Profile screen coming soon','info')">
+        <div class="settings-item" onclick="showScreen('screen-edit-profile');loadEditProfile()">
             <div class="settings-icon" style="background:#DCFCE7;color:#16A34A"><i data-lucide="user"></i></div>
             <div class="settings-text"><h5>Edit Profile</h5><p>Update your name, photo, bio</p></div>
             <i data-lucide="chevron-right" style="color:var(--text3)"></i>

@@ -7,7 +7,7 @@ var ROLE_SCREENS = {
     landing: ['screen-landing'],
     student: [
         'screen-home','screen-chat','screen-tutors','screen-teacher-profile',
-        'screen-profile','screen-homework','screen-hw-detail','screen-exam',
+        'screen-profile','screen-edit-profile','screen-homework','screen-hw-detail','screen-exam',
         'screen-exam-interface','screen-exam-result','screen-subject',
         'screen-reader','screen-live-lobby','screen-live-class','screen-search',
         'screen-pricing','screen-payment','screen-payment-success','screen-settings','screen-notif',
@@ -19,7 +19,7 @@ var ROLE_SCREENS = {
         'screen-announcements','screen-create-announcement','screen-class-schedule',
         'screen-calendar','screen-exam-analytics','screen-hw-analytics',
         'screen-create-hw','screen-create-exam','screen-evaluate','screen-earnings',
-        'screen-reports','screen-give-report'
+        'screen-reports','screen-give-report','screen-edit-profile'
     ],
     admin: [
         'screen-admin','screen-library-mgmt','screen-chapter-mgmt',
@@ -45,6 +45,7 @@ var ROLE_NAV = {
 
 // === INIT ===
 document.addEventListener('DOMContentLoaded', function() {
+    _loadSubjectsCache();
     // Auth check: if logged in but no role, redirect to login
     if (!USER_ROLE && window.location.hash && window.location.hash !== '#screen-landing') {
         window.location.href = '/login.php';
@@ -147,7 +148,6 @@ function showScreen(id) {
     if (id === 'screen-teacher-profile' && USER_ROLE === 'teacher') loadTeacherProfile();
     if (id === 'screen-my-students') loadMyStudents();
     if (id === 'screen-student-progress') loadStudentDetail();
-    if (id === 'screen-live-schedule') loadLiveSchedule();
     if (id === 'screen-messages') loadMessages();
     if (id === 'screen-earnings') loadEarnings();
     if (id === 'screen-live-lobby') loadLiveSchedule();
@@ -163,11 +163,10 @@ function showScreen(id) {
     if (id === 'screen-admin') loadAdminDashboard();
     if (id === 'screen-teacher-ranking') loadAdminRankings();
     if (id === 'screen-question-bank') loadQuestionBankScreen();
-    if (id === 'screen-chapter-manager') loadChapterManager();
+    if (id === 'screen-chapter-mgmt') loadChapterManager();
     if (id === 'screen-library-mgmt') loadLibraryMgmt();
     if (id === 'screen-give-report') loadGiveReportStudents();
     if (id === 'screen-pricing') loadPricingDynamic();
-    if (id === 'screen-ai-tutor') loadAiChatGreeting();
 }
 
 function navTo(btn, screenId) {
@@ -332,30 +331,16 @@ function loadLibraryGrid() {
                 subjects[sid].types[t] = (subjects[sid].types[t] || 0) + 1;
             });
             var html = '';
-            var subjectMap = {
-                1: { key:'mathematics', name:'Mathematics', icon:'calculator', color:'#3B82F6' },
-                2: { key:'english', name:'English', icon:'book-text', color:'#8B5CF6' },
-                3: { key:'science', name:'Science', icon:'flask-conical', color:'#22C55E' },
-                4: { key:'bangla', name:'Bangla', icon:'pen-tool', color:'#F59E0B' },
-                5: { key:'physics', name:'Physics', icon:'atom', color:'#3B82F6' },
-                6: { key:'chemistry', name:'Chemistry', icon:'test-tubes', color:'#06B6D4' },
-                7: { key:'biology', name:'Biology', icon:'bug', color:'#10B981' },
-                8: { key:'ict', name:'ICT', icon:'laptop', color:'#06B6D4' },
-                9: { key:'geography', name:'Geography', icon:'globe', color:'#F97316' },
-                10: { key:'religion', name:'Religion', icon:'landmark', color:'#EC4899' },
-                11: { key:'accounting', name:'Accounting', icon:'calculator', color:'#F59E0B' },
-                12: { key:'finance', name:'Finance', icon:'wallet', color:'#06B6D4' },
-                13: { key:'history', name:'History', icon:'landmark', color:'#8B5CF6' }
-            };
             var allowed = CLASS_SUBJECTS[USER_CLASS] || CLASS_SUBJECTS['Class 8'];
             Object.keys(subjects).forEach(function(sid) {
-                var info = subjectMap[sid];
+                var info = _subjectsCache ? _subjectsCache[sid] : null;
                 if (!info) return;
-                if (allowed.indexOf(info.key) === -1) return;
+                var key = (info.name || '').toLowerCase().replace(/\s+/g, '');
+                if (allowed.indexOf(key) === -1) return;
                 var s = subjects[sid];
                 var pct = Math.min(s.count * 25, 100);
-                html += '<div class="material-card" onclick="openSubjectFolderDynamic(' + sid + ',\'' + info.key + '\')">' +
-                    '<div class="material-icon ' + info.key + '"><i data-lucide="' + info.icon + '" style="width:18px;height:18px"></i></div>' +
+                html += '<div class="material-card" onclick="openSubjectFolderDynamic(' + sid + ',\'' + key + '\')">' +
+                    '<div class="material-icon ' + key + '"><i data-lucide="' + (info.icon || 'book-open') + '" style="width:18px;height:18px"></i></div>' +
                     '<h5>' + info.name + '</h5>' +
                     '<div class="material-bar"><div class="material-bar-fill progress-green" style="width:' + pct + '%"></div></div>' +
                     '</div>';
@@ -917,21 +902,26 @@ function api(action, params) {
 }
 
 // Helper: get subject name by id
+var _subjectsCache = null;
+function _loadSubjectsCache() {
+    if (_subjectsCache) return Promise.resolve(_subjectsCache);
+    return api('subjects').then(function(items) {
+        _subjectsCache = {};
+        (items || []).forEach(function(s) { _subjectsCache[s.id] = s; });
+        return _subjectsCache;
+    }).catch(function() { _subjectsCache = {}; return _subjectsCache; });
+}
 function getSubjectName(id) {
-    var map = {1:'Mathematics',2:'English',3:'Science',4:'Bangla',5:'Physics',6:'Chemistry',7:'Biology',8:'ICT',9:'Geography',10:'Religion',11:'Accounting',12:'Finance',13:'History'};
-    return map[id] || 'General';
+    if (_subjectsCache && _subjectsCache[id]) return _subjectsCache[id].name;
+    return 'General';
 }
-
-// Helper: get subject icon by id
 function getSubjectIcon(id) {
-    var map = {1:'calculator',2:'book-text',3:'flask-conical',4:'pen-tool',5:'atom',6:'test-tubes',7:'bug',8:'laptop',9:'globe',10:'landmark',11:'calculator',12:'wallet',13:'landmark'};
-    return map[id] || 'book-open';
+    if (_subjectsCache && _subjectsCache[id]) return _subjectsCache[id].icon || 'book-open';
+    return 'book-open';
 }
-
-// Helper: get subject color by id
 function getSubjectColor(id) {
-    var map = {1:'#3B82F6',2:'#8B5CF6',3:'#22C55E',4:'#F59E0B',5:'#3B82F6',6:'#06B6D4',7:'#10B981',8:'#06B6D4',9:'#F97316',10:'#EC4899',11:'#F59E0B',12:'#06B6D4',13:'#8B5CF6'};
-    return map[id] || '#6366F1';
+    if (_subjectsCache && _subjectsCache[id]) return _subjectsCache[id].color || '#6366F1';
+    return '#6366F1';
 }
 
 // Helper: format date
@@ -1267,13 +1257,59 @@ function loadStudentProfile() {
         // Badges
         var badgeContainer = document.getElementById('profileBadges');
         if (badgeContainer && data.badges && data.badges.length > 0) {
+            var colors = ['gold','green','blue','purple','red'];
             var bhtml = '';
-            data.badges.forEach(function(b) {
-                bhtml += '<div class="sp-badge-item"><div class="sp-badge-icon"><i data-lucide="' + (b.icon || 'award') + '"></i></div><span>' + b.name + '</span></div>';
+            data.badges.forEach(function(b, i) {
+                var c = colors[i % colors.length];
+                bhtml += '<div class="sp-badge-chip"><div class="sp-badge-icon ' + c + '"><i data-lucide="' + (b.icon || 'award') + '"></i></div><div class="sp-badge-info"><span class="sp-badge-name">' + b.name + '</span><span class="sp-badge-desc">' + (b.description || '') + '</span></div></div>';
             });
             badgeContainer.innerHTML = bhtml;
             if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
         }
+    });
+}
+
+// --- EDIT PROFILE ---
+function loadEditProfile() {
+    api('profile').then(function(u) {
+        if (!u) return;
+        var setVal = function(id, val) { var el = document.getElementById(id); if (el) el.value = val || ''; };
+        setVal('epName', u.name);
+        setVal('epEmail', u.email);
+        setVal('epPhone', u.phone);
+        setVal('epSchool', u.school);
+        var avatarEl = document.getElementById('epAvatar');
+        if (avatarEl) avatarEl.textContent = (u.name || 'U')[0].toUpperCase();
+    });
+}
+
+function saveProfile() {
+    var name = (document.getElementById('epName') || {}).value || '';
+    var phone = (document.getElementById('epPhone') || {}).value || '';
+    var school = (document.getElementById('epSchool') || {}).value || '';
+    var password = (document.getElementById('epPassword') || {}).value || '';
+    if (!name.trim()) { showToast('Name is required', 'error'); return; }
+    var body = { name: name.trim(), phone: phone.trim(), school: school.trim() };
+    if (password.trim()) body.password = password.trim();
+    fetch('/api/index.php?action=edit_profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        credentials: 'same-origin'
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.success) {
+            showToast('Profile updated successfully!', 'success');
+            USER_NAME = name.trim();
+            var nameEl = document.getElementById('profileUserName');
+            if (nameEl) nameEl.textContent = name.trim();
+            var avatarEl = document.getElementById('profileUserAvatar');
+            if (avatarEl) avatarEl.textContent = name.trim()[0].toUpperCase();
+            setTimeout(function() { showScreen('screen-profile'); }, 800);
+        } else {
+            showToast(data.error || 'Failed to update profile', 'error');
+        }
+    }).catch(function() {
+        showToast('Network error. Please try again.', 'error');
     });
 }
 
@@ -1652,8 +1688,11 @@ function loadTutorsScreen() {
         sorted.slice(0, 3).forEach(function(t) {
             popHtml += '<div class="tt-popular-card" onclick="showScreen(\'screen-teacher-profile\')">' +
                 '<div class="tt-popular-avatar" style="background:linear-gradient(135deg,#4F46E5,#7C3AED)">' + (t.name || 'T')[0] + '</div>' +
-                '<h5>' + t.name + '</h5><p>' + (t.subject || '') + ' - ' + (t.experience || '5') + ' years exp</p>' +
-                '<div style="font-size:11px;color:#F59E0B">⭐ ' + (t.rating || 0) + '</div></div>';
+                '<div class="tt-popular-info"><h4>' + (t.name || '') + '</h4>' +
+                '<div class="tt-pop-subject">' + (t.subject || '') + ' - ' + (t.experience || '5') + ' years exp</div>' +
+                '<div class="tt-pop-meta"><span><i data-lucide="star" style="color:#F59E0B"></i> ' + (t.rating || 0) + '</span>' +
+                '<span><i data-lucide="users" style="color:#6366F1"></i> ' + (t.total_students || 0) + '</span></div></div>' +
+                '<button class="tt-pop-subscribe">Subscribe</button></div>';
         });
         setHtml('tutorPopularList', popHtml);
         // New teachers
@@ -1661,7 +1700,7 @@ function loadTutorsScreen() {
         sorted.slice(-3).forEach(function(t) {
             newHtml += '<div class="tt-top-card" onclick="showScreen(\'screen-teacher-profile\')">' +
                 '<div class="tt-top-avatar" style="background:linear-gradient(135deg,#06B6D4,#22D3EE)">' + (t.name || 'T')[0] + '</div>' +
-                '<h4>' + t.name + '</h4><p>' + (t.subject || '') + '</p>' +
+                '<h4>' + (t.name || '') + '</h4><p>' + (t.subject || '') + '</p>' +
                 '<div style="font-size:11px;color:#F59E0B">⭐ ' + (t.rating || 0) + '</div></div>';
         });
         setHtml('tutorNewList', newHtml);

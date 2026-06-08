@@ -34,9 +34,27 @@ switch ($path) {
         break;
 
     case 'subjects': jsonResponse($db->query('subjects')); break;
+    case 'settings':
+        $settings = $db->query('settings');
+        $map = [];
+        foreach ($settings as $s) $map[$s['key']] = $s['value'];
+        jsonResponse($map);
+        break;
     case 'homework': jsonResponse($db->queryAll('SELECT * FROM homework ORDER BY id DESC')); break;
     case 'exams': jsonResponse($db->queryAll('SELECT * FROM exams ORDER BY id DESC')); break;
-    case 'teachers': jsonResponse($db->queryAll('SELECT t.*, u.name, u.email FROM teachers t JOIN users u ON t.user_id = u.id')); break;
+    case 'teachers':
+        $teachers = $db->query('teachers');
+        $users = $db->query('users');
+        $userMap = [];
+        foreach ($users as $u) $userMap[$u['id']] = $u;
+        $result = [];
+        foreach ($teachers as $t) {
+            $t['name'] = $userMap[$t['user_id']]['name'] ?? '';
+            $t['email'] = $userMap[$t['user_id']]['email'] ?? '';
+            $result[] = $t;
+        }
+        jsonResponse($result);
+        break;
     case 'live_classes': jsonResponse($db->query('live_classes')); break;
     case 'announcements': jsonResponse($db->queryAll('SELECT * FROM announcements ORDER BY id DESC')); break;
     case 'packages': jsonResponse($db->query('packages')); break;
@@ -106,6 +124,65 @@ switch ($path) {
         else jsonResponseError('Invalid ID');
         break;
 
+    case 'submit_homework':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        if (($_SESSION['role'] ?? '') !== 'student') jsonResponseError('Students only', 403);
+        $input = json_decode(file_get_contents('php://input'), true);
+        $hwId = intval($input['homework_id'] ?? 0);
+        $answer = sanitize($input['answer'] ?? '');
+        if (!$hwId || !$answer) jsonResponseError('homework_id and answer required');
+        $id = $db->insert('homework_submissions', [
+            'homework_id' => $hwId,
+            'student_id' => intval($_SESSION['user_id']),
+            'answer' => $answer,
+            'marks_obtained' => 0,
+            'status' => 'submitted',
+            'comments' => '',
+            'submitted_at' => date('Y-m-d H:i:s'),
+            'graded_at' => ''
+        ]);
+        jsonResponse(['success' => true, 'id' => $id]);
+        break;
+
+    case 'send_message':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $input = json_decode(file_get_contents('php://input'), true);
+        $toId = intval($input['to_id'] ?? 0);
+        $msg = sanitize($input['message'] ?? '');
+        if (!$toId || !$msg) jsonResponseError('to_id and message required');
+        $id = $db->insert('messages', [
+            'sender_id' => intval($_SESSION['user_id']),
+            'receiver_id' => $toId,
+            'message' => $msg,
+            'is_read' => 0
+        ]);
+        jsonResponse(['success' => true, 'id' => $id]);
+        break;
+
+    case 'chat_messages':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $uid = intval($_SESSION['user_id']);
+        $otherId = intval($_GET['user_id'] ?? 0);
+        if (!$otherId) jsonResponseError('user_id required');
+        $allMsgs = $db->query('messages');
+        $chat = [];
+        foreach ($allMsgs as $m) {
+            $sid = intval($m['sender_id'] ?? $m['from_id'] ?? 0);
+            $rid = intval($m['receiver_id'] ?? $m['to_id'] ?? 0);
+            if (($sid === $uid && $rid === $otherId) || ($sid === $otherId && $rid === $uid)) {
+                $chat[] = [
+                    'id' => $m['id'],
+                    'from_id' => $sid,
+                    'message' => $m['message'] ?? '',
+                    'is_read' => $m['is_read'] ?? 0,
+                    'created_at' => $m['created_at'] ?? ''
+                ];
+            }
+        }
+        usort($chat, fn($a, $b) => strcmp($a['created_at'], $b['created_at']));
+        jsonResponse($chat);
+        break;
+
     case 'stats':
         jsonResponse([
             'students' => count($db->findAll('users','role','student')),
@@ -119,6 +196,22 @@ switch ($path) {
     case 'profile':
         if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
         jsonResponse(currentUser());
+        break;
+
+    case 'edit_profile':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $uid = intval($_SESSION['user_id']);
+        $input = json_decode(file_get_contents('php://input'), true);
+        $updates = [];
+        if (!empty($input['name'])) $updates['name'] = sanitize($input['name']);
+        if (!empty($input['phone'])) $updates['phone'] = sanitize($input['phone']);
+        if (!empty($input['school'])) $updates['school'] = sanitize($input['school']);
+        if (isset($input['avatar'])) $updates['avatar'] = sanitize($input['avatar']);
+        if (!empty($input['password'])) $updates['password'] = password_hash($input['password'], PASSWORD_DEFAULT);
+        if (empty($updates)) jsonResponseError('No data to update');
+        $db->update('users', $uid, $updates);
+        $user = $db->find('users', 'id', $uid);
+        jsonResponse(['success' => true, 'user' => $user]);
         break;
 
     case 'student_profile':
@@ -218,8 +311,10 @@ switch ($path) {
         $convos = [];
         $seen = [];
         foreach ($msgs as $m) {
-            if (intval($m['from_id'] ?? 0) === $uid || intval($m['to_id'] ?? 0) === $uid) {
-                $otherId = intval($m['from_id'] ?? 0) === $uid ? intval($m['to_id'] ?? 0) : intval($m['from_id'] ?? 0);
+            $senderId = intval($m['sender_id'] ?? $m['from_id'] ?? 0);
+            $receiverId = intval($m['receiver_id'] ?? $m['to_id'] ?? 0);
+            if ($senderId === $uid || $receiverId === $uid) {
+                $otherId = $senderId === $uid ? $receiverId : $senderId;
                 if (!isset($seen[$otherId])) {
                     $seen[$otherId] = true;
                     $other = $db->find('users', 'id', $otherId);
@@ -228,7 +323,7 @@ switch ($path) {
                         'name' => $other['name'] ?? 'Unknown',
                         'last_message' => $m['message'] ?? '',
                         'time' => $m['created_at'] ?? '',
-                        'unread' => ($m['is_read'] ?? 0) == 0 && intval($m['to_id'] ?? 0) === $uid ? 1 : 0
+                        'unread' => ($m['is_read'] ?? 0) == 0 && $receiverId === $uid ? 1 : 0
                     ];
                 }
             }
