@@ -151,6 +151,23 @@ function showScreen(id) {
     if (id === 'screen-messages') loadMessages();
     if (id === 'screen-earnings') loadEarnings();
     if (id === 'screen-live-lobby') loadLiveSchedule();
+    if (id === 'screen-home' && USER_ROLE === 'student') { loadStudentHomeProgress(); loadActivityFeed(); }
+    if (id === 'screen-my-study') { loadMyStudyStats(); loadSubjectChapters(1); }
+    if (id === 'screen-tutors' && USER_ROLE === 'student') loadTutorsScreen();
+    if (id === 'screen-teacher-dash' && USER_ROLE === 'teacher') loadTeacherDashStats();
+    if (id === 'screen-exam-analytics') loadExamAnalytics();
+    if (id === 'screen-hw-analytics') loadHwAnalytics();
+    if (id === 'screen-reports') loadReports();
+    if (id === 'screen-class-schedule') loadClassSchedule();
+    if (id === 'screen-calendar') loadCalendar();
+    if (id === 'screen-admin') loadAdminDashboard();
+    if (id === 'screen-teacher-ranking') loadAdminRankings();
+    if (id === 'screen-question-bank') loadQuestionBankScreen();
+    if (id === 'screen-chapter-manager') loadChapterManager();
+    if (id === 'screen-library-mgmt') loadLibraryMgmt();
+    if (id === 'screen-give-report') loadGiveReportStudents();
+    if (id === 'screen-pricing') loadPricingDynamic();
+    if (id === 'screen-ai-tutor') loadAiChatGreeting();
 }
 
 function navTo(btn, screenId) {
@@ -1417,4 +1434,535 @@ function loadEarnings() {
         var avatarEl = document.getElementById('earnAvatar');
         if (avatarEl) avatarEl.textContent = (USER_NAME || 'T')[0].toUpperCase();
     });
+}
+
+// ============================================
+// PHASE 4 — All Remaining Dynamic Conversions
+// ============================================
+
+// --- ACTIVITY FEED (Student Home) ---
+function loadActivityFeed() {
+    var c = document.getElementById('homeActivityFeed');
+    if (!c) return;
+    api('activity_feed').then(function(items) {
+        var html = '';
+        (items || []).forEach(function(a) {
+            html += '<div class="list-item"><div class="icon-box ' + (a.type === 'read' ? 'green' : a.type === 'homework' ? 'blue' : a.type === 'quiz' ? 'orange' : 'purple') + ' sm"><i data-lucide="' + (a.icon || 'activity') + '" class="icon-sm"></i></div><div class="list-item-content"><h5>' + (a.title || '') + '</h5><p>' + (a.time || '') + '</p></div></div>';
+        });
+        if (!html) html = '<p style="text-align:center;padding:12px;font-size:11px;color:var(--text3)">No recent activity</p>';
+        c.innerHTML = html;
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    });
+}
+
+// --- STUDENT HOME PROGRESS BARS ---
+function loadStudentHomeProgress() {
+    api('student_progress').then(function(p) {
+        if (!p) return;
+        var setBar = function(id, pct) { var el = document.getElementById(id); if (el) el.style.width = pct + '%'; };
+        var setText = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
+        setBar('homeBooksBar', Math.min((p.books_read || 0) * 8, 100));
+        setText('homeBooksVal', p.books_read || 0);
+        setBar('homeHwScoreBar', p.homework_score || 0);
+        setText('homeHwScoreVal', (p.homework_score || 0) + '%');
+        setBar('homeExamScoreBar', p.exam_score || 0);
+        setText('homeExamScoreVal', (p.exam_score || 0) + '%');
+        setBar('homeStreakBar', Math.min((p.streak || 0) * 14, 100));
+        setText('homeStreakVal', p.streak || 0);
+        var goalTasks = Math.min(Math.round((p.homework_score || 0) / 25), 4);
+        setText('homeGoalText', goalTasks + ' / 4 Tasks');
+        setBar('homeGoalBar', goalTasks * 25);
+    });
+}
+
+// --- MY STUDY STATS ---
+function loadMyStudyStats() {
+    var u = USER_ROLE === 'student' ? window._studentProgress : null;
+    if (!u) {
+        api('student_progress').then(function(p) {
+            window._studentProgress = p;
+            renderMyStudyStats(p);
+        });
+    } else {
+        renderMyStudyStats(u);
+    }
+}
+function renderMyStudyStats(p) {
+    if (!p) return;
+    var setText = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
+    setText('myStudyBooks', p.books_read || 0);
+    setText('myStudyScore', (p.homework_score || 0) + '%');
+    setText('myStudyStreak', p.streak || 0);
+    setText('myStudyBadges', p.badges_count || 0);
+    setText('myStudyGoalPct', Math.round((p.homework_score || 0)) + '%');
+    setText('myStudyGoalTasks', Math.min(Math.round((p.homework_score || 0) / 25), 4) + ' of 4 tasks completed');
+    var goalRing = document.getElementById('myStudyGoalRing');
+    if (goalRing) {
+        var pct = Math.min(p.homework_score || 0, 100);
+        goalRing.style.background = 'conic-gradient(#4F46E5 ' + pct + '%, rgba(255,255,255,0.1) ' + pct + '%)';
+    }
+}
+
+// --- HOMEWORK DETAIL ---
+function loadHomeworkDetail(id) {
+    if (!id) return;
+    api('homework').then(function(list) {
+        var hw = null;
+        (list || []).forEach(function(h) { if (String(h.id) === String(id)) hw = h; });
+        if (!hw) return;
+        var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
+        setText('hwDetailSubject', getSubjectName(hw.subject_id));
+        setText('hwDetailTitle', hw.title || '');
+        setText('hwDetailClass', hw.class_name || USER_CLASS);
+        setText('hwDetailDue', 'Due: ' + (hw.due_date || 'Tomorrow'));
+        setText('hwDetailInstructions', hw.description || hw.instructions || '');
+        var iconEl = document.getElementById('hwDetailIcon');
+        if (iconEl) iconEl.setAttribute('data-lucide', getSubjectIcon(hw.subject_id));
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    });
+}
+
+// --- EXAM INTERFACE ---
+function loadExamQuestions(examId) {
+    if (!examId) return;
+    api('exams').then(function(list) {
+        var exam = null;
+        (list || []).forEach(function(e) { if (String(e.id) === String(examId)) exam = e; });
+        if (!exam) return;
+        window._examData = exam;
+        window._examQIndex = 0;
+        window._examAnswers = [];
+        var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
+        setText('examIfaceTitle', exam.title || 'Exam');
+        setText('examIfaceTimer', exam.duration || '45:00');
+        showExamQuestion(0);
+    });
+}
+function showExamQuestion(idx) {
+    var exam = window._examData;
+    if (!exam) return;
+    var questions = exam.questions || [];
+    if (idx >= questions.length) return;
+    window._examQIndex = idx;
+    var q = questions[idx];
+    var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
+    setText('examQNum', 'Question ' + (idx + 1) + ' of ' + questions.length);
+    setText('examQProgress', Math.round(((idx) / questions.length) * 100) + '%');
+    var bar = document.getElementById('examQProgressBar');
+    if (bar) bar.style.width = ((idx) / questions.length * 100) + '%';
+    setText('examQText', q.question || '');
+    var optsHtml = '';
+    var colors = ['#4F46E5','#10B981','#F59E0B','#EF4444'];
+    (q.options || []).forEach(function(opt, i) {
+        optsHtml += '<button class="btn-outline" style="text-align:left;margin-bottom:8px;border-left:4px solid ' + colors[i % 4] + '" onclick="selectExamAnswer(' + idx + ',' + i + ')">' + opt + '</button>';
+    });
+    var optsEl = document.getElementById('examOptions');
+    if (optsEl) optsEl.innerHTML = optsHtml;
+}
+
+// --- EXAM RESULT ---
+function loadExamResult() {
+    var data = window._examResult;
+    if (!data) return;
+    var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
+    setText('examResultScore', (data.score || 0) + '%');
+    setText('examResultCorrect', data.correct || 0);
+    setText('examResultWrong', data.wrong || 0);
+    setText('examResultRank', '#' + (data.rank || 1));
+    setText('examResultTitle', data.title || 'Exam Result');
+}
+
+// --- SUBJECT CHAPTERS ---
+function loadSubjectChapters(subjectId) {
+    var c = document.getElementById('chapterList');
+    if (!c) return;
+    api('chapters&subject_id=' + subjectId).then(function(chapters) {
+        var html = '';
+        (chapters || []).forEach(function(ch) {
+            var statusIcon = ch.status === 'completed' ? 'check-circle' : ch.status === 'in_progress' ? 'play-circle' : ch.status === 'locked' ? 'lock' : 'circle';
+            var statusColor = ch.status === 'completed' ? '#10B981' : ch.status === 'in_progress' ? '#4F46E5' : '#9CA3AF';
+            var pct = ch.status === 'completed' ? 100 : ch.status === 'in_progress' ? 50 : 0;
+            html += '<div class="list-item" style="cursor:pointer' + (ch.status === 'locked' ? 'opacity:0.5' : '') + '">' +
+                '<div class="icon-box sm" style="background:' + statusColor + '20;color:' + statusColor + '"><i data-lucide="' + statusIcon + '" class="icon-sm"></i></div>' +
+                '<div class="list-item-content"><h5>' + ch.title + '</h5><p>' + ch.pages + ' pages · ' + pct + '% complete</p>' +
+                '<div style="background:rgba(255,255,255,0.1);border-radius:4px;height:4px;margin-top:4px"><div style="background:' + statusColor + ';height:100%;border-radius:4px;width:' + pct + '%"></div></div></div></div>';
+        });
+        if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No chapters found</p>';
+        c.innerHTML = html;
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    });
+}
+
+// --- BOOK CONTENT ---
+function loadBookContent(chapterId) {
+    if (!chapterId) return;
+    api('book_content&chapter_id=' + chapterId).then(function(book) {
+        if (!book || !book.content) return;
+        var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
+        setText('bookTitle', book.title || '');
+        setText('bookProgress', Math.round((book.pages_read || 0) / (book.pages_total || 1) * 100) + '% complete');
+        var bar = document.getElementById('bookProgressBar');
+        if (bar) bar.style.width = Math.round((book.pages_read || 0) / (book.pages_total || 1) * 100) + '%';
+        setText('bookChapterInfo', 'Chapter of ' + (book.pages_total || 1));
+        var contentEl = document.getElementById('bookContent');
+        if (contentEl) {
+            var lines = (book.content || '').split('\\n');
+            contentEl.innerHTML = '<h3 style="font-size:16px;font-weight:700;margin-bottom:12px">' + (book.title || '') + '</h3>' +
+                lines.map(function(l) { return '<p style="font-size:13px;line-height:1.8;color:var(--text2);margin-bottom:8px">' + l + '</p>'; }).join('');
+        }
+    });
+}
+
+// --- TUTORS SCREEN (Full Dynamic) ---
+function loadTutorsScreen() {
+    api('teachers').then(function(teachers) {
+        var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
+        var setHtml = function(eid, val) { var el = document.getElementById(eid); if (el) el.innerHTML = val; };
+        var sorted = (teachers || []).sort(function(a, b) { return (b.rating || 0) - (a.rating || 0); });
+        // Stats
+        setText('tutorStatActive', teachers.length);
+        setText('tutorStatAttended', Math.round(teachers.length * 1.7));
+        setText('tutorStatStudyHrs', Math.round(teachers.length * 3.5) + 'h');
+        // Hero cards (first 2)
+        var heroHtml = '';
+        sorted.slice(0, 2).forEach(function(t, i) {
+            var color = i === 0 ? '#4F46E5' : '#EC4899';
+            heroHtml += '<div class="tt-hero-card" onclick="showScreen(\'screen-teacher-profile\')">' +
+                '<div class="tt-hero-top"><div class="tt-hero-avatar" style="background:linear-gradient(135deg,' + color + ',' + color + 'cc)">' + (t.name || 'T')[0] + '</div>' +
+                '<div class="tt-hero-info"><h4>' + t.name + '</h4><p>' + (t.subject || '') + '</p></div></div>' +
+                '<div class="tt-hero-stats"><span><i data-lucide="star"></i> ' + (t.rating || 0) + '</span><span><i data-lucide="users"></i> ' + (t.total_students || 0) + '</span><span><i data-lucide="book-open"></i> ' + (t.lessons || '500+') + '</span><span>' + (t.experience || '5') + 'yr</span></div></div>';
+        });
+        setHtml('tutorHeroCards', heroHtml);
+        // Next class
+        if (sorted[0]) {
+            setText('tutorNextClassTeacher', sorted[0].name);
+            setText('tutorNextClassSubject', 'Math - Algebra Chapter 5');
+        }
+        // Upcoming classes
+        var upHtml = '';
+        var times = ['10:00 AM', '02:00 PM', '04:30 PM'];
+        var subs = ['Math - Algebra', 'English - Grammar', 'Science - Physics'];
+        var tNames = sorted.slice(0, 3);
+        tNames.forEach(function(t, i) {
+            upHtml += '<div class="list-item"><div class="list-item-content"><h5>' + subs[i] + '</h5><p>' + (t.name || '') + '</p></div><div style="text-align:right;font-size:11px;color:var(--text3)">' + times[i] + '</div></div>';
+        });
+        setHtml('tutorUpcomingClasses', upHtml);
+        // Popular teachers
+        var popHtml = '';
+        sorted.slice(0, 3).forEach(function(t) {
+            popHtml += '<div class="tt-popular-card" onclick="showScreen(\'screen-teacher-profile\')">' +
+                '<div class="tt-popular-avatar" style="background:linear-gradient(135deg,#4F46E5,#7C3AED)">' + (t.name || 'T')[0] + '</div>' +
+                '<h5>' + t.name + '</h5><p>' + (t.subject || '') + ' - ' + (t.experience || '5') + ' years exp</p>' +
+                '<div style="font-size:11px;color:#F59E0B">⭐ ' + (t.rating || 0) + '</div></div>';
+        });
+        setHtml('tutorPopularList', popHtml);
+        // New teachers
+        var newHtml = '';
+        sorted.slice(-3).forEach(function(t) {
+            newHtml += '<div class="tt-top-card" onclick="showScreen(\'screen-teacher-profile\')">' +
+                '<div class="tt-top-avatar" style="background:linear-gradient(135deg,#06B6D4,#22D3EE)">' + (t.name || 'T')[0] + '</div>' +
+                '<h4>' + t.name + '</h4><p>' + (t.subject || '') + '</p>' +
+                '<div style="font-size:11px;color:#F59E0B">⭐ ' + (t.rating || 0) + '</div></div>';
+        });
+        setHtml('tutorNewList', newHtml);
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    });
+}
+
+// --- TEACHER DASHBOARD STATS ---
+function loadTeacherDashStats() {
+    api('teacher_profile').then(function(data) {
+        var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
+        setText('teacherClassCountText', 'You have ' + (data.class_count || 0) + ' classes today');
+        setText('teacherRatingVal', (data.avg_rating || 4.8));
+        setText('teacherStudentProgress', (data.student_count || 0) + ' / 60 Students');
+        var bar = document.getElementById('teacherStudentBar');
+        if (bar) bar.style.width = Math.min(Math.round((data.student_count || 0) / 60 * 100), 100) + '%';
+    });
+}
+
+// --- EXAM ANALYTICS ---
+function loadExamAnalytics() {
+    api('exam_analytics').then(function(data) {
+        var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
+        setText('eaAvgScore', (data.avg_score || 0) + '%');
+        setText('eaPassRate', (data.pass_rate || 0) + '%');
+        setText('eaTotalExams', data.total_exams || 0);
+        setText('eaThisMonth', data.total_results || 0);
+        var listHtml = '';
+        (data.exams || []).slice(0, 4).forEach(function(e) {
+            var resultsForExam = (data.results || []).filter(function(r) { return String(r.exam_id || r.id) === String(e.id); });
+            var avg = resultsForExam.length > 0 ? Math.round(resultsForExam.reduce(function(s, r) { return s + (r.score || 0); }, 0) / resultsForExam.length) : 0;
+            listHtml += '<div class="list-item"><div class="list-item-content"><h5>' + (e.title || '') + '</h5><p>Avg: ' + avg + '% - ' + resultsForExam.length + ' students</p></div>' +
+                '<div style="font-size:14px;font-weight:700;color:' + (avg >= 80 ? '#10B981' : '#F59E0B') + '">' + avg + '%</div></div>';
+        });
+        setHtml('eaExamList', listHtml);
+    });
+}
+function setHtml(eid, val) { var el = document.getElementById(eid); if (el) el.innerHTML = val; }
+
+// --- HOMEWORK ANALYTICS ---
+function loadHwAnalytics() {
+    api('hw_analytics').then(function(data) {
+        var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
+        setText('haTotalAssigned', data.total_assigned || 0);
+        setText('haSubmitted', data.submitted || 0);
+        setText('haPending', data.pending || 0);
+        setText('haSubmissionRate', (data.submission_rate || 0) + '%');
+        var listHtml = '';
+        var subjMap = {};
+        (data.homework || []).forEach(function(h) {
+            var sname = getSubjectName(h.subject_id);
+            if (!subjMap[sname]) subjMap[sname] = { assigned: 0, submitted: 0 };
+            subjMap[sname].assigned++;
+        });
+        (data.submissions || []).forEach(function(s) {
+            var hw = (data.homework || []).find(function(h) { return String(h.id) === String(s.homework_id); });
+            if (hw) {
+                var sname = getSubjectName(hw.subject_id);
+                if (subjMap[sname]) subjMap[sname].submitted++;
+            }
+        });
+        Object.keys(subjMap).forEach(function(name) {
+            var d = subjMap[name];
+            var rate = d.assigned > 0 ? Math.round(d.submitted / d.assigned * 100) : 0;
+            listHtml += '<div class="list-item"><div class="list-item-content"><h5>' + name + '</h5><p>' + d.assigned + ' assigned - ' + d.submitted + ' submitted</p></div>' +
+                '<div style="font-size:14px;font-weight:700;color:' + (rate >= 80 ? '#10B981' : '#F59E0B') + '">' + rate + '%</div></div>';
+        });
+        setHtml('haHwList', listHtml);
+    });
+}
+
+// --- REPORTS ---
+function loadReports() {
+    api('reports').then(function(reports) {
+        var c = document.getElementById('reportsList');
+        if (!c) return;
+        var html = '';
+        (reports || []).forEach(function(r) {
+            var gradeColor = r.grade && r.grade.indexOf('A') >= 0 ? '#10B981' : r.grade && r.grade.indexOf('B') >= 0 ? '#4F46E5' : '#F59E0B';
+            html += '<div class="hw-card" style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px"><div><h5 style="font-size:13px">' + (r.subject || '') + '</h5><p style="font-size:10px;color:var(--text3)">' + (r.class || '') + '</p></div><div style="background:' + gradeColor + '20;color:' + gradeColor + ';padding:4px 10px;border-radius:8px;font-size:12px;font-weight:700">' + (r.grade || '') + '</div></div>' +
+                '<p style="font-size:11px;color:var(--text2);margin-bottom:4px">' + (r.comment || '') + '</p>' +
+                '<div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3)"><span>Score: ' + (r.score || 0) + '%</span><span>' + (r.date || '') + '</span></div></div>';
+        });
+        if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No reports found</p>';
+        c.innerHTML = html;
+        // Stats
+        setText('reportsAplus', reports.filter(function(r) { return r.grade === 'A+'; }).length + ' reports');
+        setText('reportsA', reports.filter(function(r) { return r.grade === 'A'; }).length + ' reports');
+        setText('reportsBplus', reports.filter(function(r) { return r.grade === 'B+'; }).length + ' reports');
+        setText('reportsOther', reports.filter(function(r) { return r.grade !== 'A+' && r.grade !== 'A' && r.grade !== 'B+'; }).length + ' reports');
+    });
+}
+function setText(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; }
+
+// --- CLASS SCHEDULE ---
+function loadClassSchedule() {
+    api('class_schedule').then(function(classes) {
+        var c = document.getElementById('classScheduleList');
+        if (!c) return;
+        var html = '';
+        (classes || []).forEach(function(cls) {
+            var statusColor = cls.status === 'completed' ? '#10B981' : cls.status === 'ongoing' ? '#F59E0B' : '#4F46E5';
+            html += '<div class="list-item"><div class="icon-box sm" style="background:' + statusColor + '20;color:' + statusColor + '"><i data-lucide="book-open" class="icon-sm"></i></div>' +
+                '<div class="list-item-content"><h5>' + (cls.subject || '') + ' - ' + (cls.topic || '') + '</h5><p>' + (cls.class_name || '') + ' - ' + (cls.students_count || 0) + ' students</p></div>' +
+                '<div style="text-align:right;font-size:11px;color:var(--text3)">' + (cls.time || '') + '<br><span style="color:' + statusColor + ';font-weight:600">' + (cls.status || '') + '</span></div></div>';
+        });
+        if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No classes scheduled</p>';
+        c.innerHTML = html;
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    });
+}
+
+// --- CALENDAR ---
+function loadCalendar() {
+    api('calendar_events').then(function(events) {
+        var now = new Date();
+        var year = now.getFullYear();
+        var month = now.getMonth();
+        var today = now.getDate();
+        var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
+        setText('calMonth', monthNames[month] + ' ' + year);
+        var firstDay = new Date(year, month, 1).getDay();
+        var daysInMonth = new Date(year, month + 1, 0).getDate();
+        var eventDates = {};
+        (events || []).forEach(function(e) {
+            var d = new Date(e.date);
+            if (d.getMonth() === month && d.getFullYear() === year) {
+                eventDates[d.getDate()] = e;
+            }
+        });
+        var calGrid = document.getElementById('calGrid');
+        if (calGrid) {
+            var html = '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center">';
+            ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(function(d) {
+                html += '<div style="font-size:9px;font-weight:600;color:var(--text3);padding:4px">' + d + '</div>';
+            });
+            for (var i = 0; i < firstDay; i++) html += '<div></div>';
+            for (var day = 1; day <= daysInMonth; day++) {
+                var isToday = day === today;
+                var hasEvent = eventDates[day];
+                var style = 'padding:6px 2px;border-radius:8px;font-size:11px;cursor:pointer;';
+                if (isToday) style += 'background:var(--primary);color:white;font-weight:700;';
+                else if (hasEvent) style += 'background:rgba(79,70,229,0.15);color:var(--primary);font-weight:600;';
+                html += '<div style="' + style + '">' + day + (hasEvent ? '<div style="width:4px;height:4px;border-radius:50%;background:' + (hasEvent.color || '#4F46E5') + ';margin:2px auto 0"></div>' : '') + '</div>';
+            }
+            html += '</div>';
+            calGrid.innerHTML = html;
+        }
+        // Upcoming events
+        var evHtml = '';
+        var upcoming = (events || []).filter(function(e) { return new Date(e.date) >= now; }).sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
+        upcoming.slice(0, 3).forEach(function(e) {
+            var diff = Math.ceil((new Date(e.date) - now) / (1000 * 60 * 60 * 24));
+            evHtml += '<div class="list-item"><div class="icon-box sm" style="background:' + (e.color || '#4F46E5') + '20;color:' + (e.color || '#4F46E5') + '"><i data-lucide="calendar" class="icon-sm"></i></div>' +
+                '<div class="list-item-content"><h5>' + (e.title || '') + '</h5><p>' + e.date + '</p></div>' +
+                '<div style="font-size:10px;color:var(--text3)">' + (diff <= 0 ? 'Today' : 'In ' + diff + ' days') + '</div></div>';
+        });
+        setHtml('calEvents', evHtml);
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    });
+}
+
+// --- ADMIN DASHBOARD ---
+function loadAdminDashboard() {
+    api('admin_stats').then(function(data) {
+        var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
+        setText('adminStudents', (data.students || 0).toLocaleString());
+        setText('adminTeachers', data.teachers || 0);
+        setText('adminClasses', data.live_classes || 0);
+        setText('adminHw', data.homework || 0);
+        setText('adminExams', data.exams || 0);
+    });
+}
+
+// --- ADMIN TEACHER RANKINGS ---
+function loadAdminRankings() {
+    api('teachers').then(function(teachers) {
+        var c = document.getElementById('adminRankingsList');
+        if (!c) return;
+        var sorted = (teachers || []).sort(function(a, b) { return (b.rating || 0) - (a.rating || 0); });
+        var html = '';
+        sorted.forEach(function(t, i) {
+            var medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1);
+            html += '<div class="list-item"><div style="min-width:28px;text-align:center;font-size:14px">' + medal + '</div>' +
+                '<div class="user-avatar" style="background:linear-gradient(135deg,#4F46E5,#7C3AED);width:36px;height:36px;font-size:14px">' + (t.name || 'T')[0] + '</div>' +
+                '<div class="list-item-content"><h5>' + t.name + '</h5><p>' + (t.subject || '') + '</p></div>' +
+                '<div style="text-align:right"><div style="font-size:13px;font-weight:700;color:#F59E0B">⭐ ' + (t.rating || 0) + '</div><div style="font-size:9px;color:var(--text3)">' + (t.total_students || 0) + ' students</div></div></div>';
+        });
+        c.innerHTML = html;
+    });
+}
+
+// --- QUESTION BANK ---
+function loadQuestionBankScreen() {
+    api('question_bank').then(function(questions) {
+        var c = document.getElementById('questionBankList');
+        if (!c) return;
+        var html = '';
+        (questions || []).forEach(function(q) {
+            var diffColor = q.difficulty === 'easy' ? '#10B981' : q.difficulty === 'medium' ? '#F59E0B' : '#EF4444';
+            html += '<div class="hw-card" style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:6px"><h5 style="font-size:12px;flex:1">' + (q.question || '') + '</h5>' +
+                '<span style="font-size:9px;padding:2px 8px;border-radius:8px;background:' + diffColor + '20;color:' + diffColor + '">' + (q.difficulty || '') + '</span></div>' +
+                '<p style="font-size:10px;color:var(--text3)">' + getSubjectName(q.subject_id) + ' · ' + (q.chapter || '') + ' · ' + (q.marks || 0) + ' marks</p></div>';
+        });
+        if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No questions in bank</p>';
+        c.innerHTML = html;
+    });
+}
+
+// --- CHAPTER MANAGER ---
+function loadChapterManager() {
+    api('chapters&subject_id=1').then(function(chapters) {
+        var c = document.getElementById('chapterManagerList');
+        if (!c) return;
+        var html = '';
+        (chapters || []).forEach(function(ch) {
+            var locked = ch.status === 'locked';
+            html += '<div class="list-item" style="' + (locked ? 'opacity:0.5;' : '') + '">' +
+                '<div class="icon-box sm" style="background:' + (locked ? '#9CA3AF' : '#4F46E5') + '20;color:' + (locked ? '#9CA3AF' : '#4F46E5') + '"><i data-lucide="' + (locked ? 'lock' : 'unlock') + '" class="icon-sm"></i></div>' +
+                '<div class="list-item-content"><h5>' + ch.title + '</h5><p>' + ch.pages + ' pages · ' + ch.status.replace('_', ' ') + '</p></div></div>';
+        });
+        c.innerHTML = html;
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    });
+}
+
+// --- LIBRARY MANAGEMENT ---
+function loadLibraryMgmt() {
+    api('library').then(function(items) {
+        var c = document.getElementById('libraryMgmtList');
+        if (!c) return;
+        var html = '';
+        (items || []).forEach(function(item) {
+            var statusColor = item.is_active ? '#10B981' : '#9CA3AF';
+            html += '<div class="list-item"><div class="list-item-content"><h5>' + (item.title || '') + '</h5><p>' + (item.type || '') + ' · ' + (item.class || '') + '</p></div>' +
+                '<span style="font-size:10px;padding:2px 8px;border-radius:8px;background:' + statusColor + '20;color:' + statusColor + '">' + (item.is_active ? 'Active' : 'Draft') + '</span></div>';
+        });
+        if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No library items</p>';
+        c.innerHTML = html;
+    });
+}
+
+// --- STUDENT EVALUATION ---
+function loadStudentEvaluation() {
+    api('student_evaluations').then(function(evals) {
+        var c = document.getElementById('evalContent');
+        if (!c) return;
+        var ev = (evals || [])[0];
+        if (!ev) { c.innerHTML = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No pending evaluations</p>'; return; }
+        var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
+        setText('evalStudentName', 'Student #' + ev.student_id);
+        setText('evalSubject', getSubjectName(ev.subject_id));
+        setText('evalTitle', ev.title || '');
+        setText('evalSubmitted', 'Submitted: ' + (ev.submitted_at || ''));
+        setText('evalAnswer', ev.submitted_answer || '');
+        setText('evalScore', (ev.score || 0) + '%');
+        setText('evalComment', ev.teacher_comment || '');
+    });
+}
+
+// --- PRICING DYNAMIC ---
+function loadPricingDynamic() {
+    api('packages').then(function(packages) {
+        var c = document.getElementById('pricingList');
+        if (!c) return;
+        var html = '';
+        (packages || []).forEach(function(pkg) {
+            var features = (pkg.features || '').split(',');
+            var featHtml = features.map(function(f) { return '<li><i data-lucide="check-circle" style="width:14px;height:14px;color:#10B981;vertical-align:middle;margin-right:4px"></i> ' + f.trim() + '</li>'; }).join('');
+            html += '<div class="hw-card" style="margin:0 0 12px;text-align:center">' +
+                '<h4 style="font-size:16px;font-weight:800;margin-bottom:4px">' + (pkg.name || '') + '</h4>' +
+                '<p style="font-size:11px;color:var(--text3);margin-bottom:12px">' + (pkg.description || '') + '</p>' +
+                '<div style="font-size:28px;font-weight:800;color:var(--primary);margin-bottom:12px">৳' + (pkg.price || 0) + '<span style="font-size:12px;font-weight:400;color:var(--text3)">/' + (pkg.period || 'month') + '</span></div>' +
+                '<ul style="text-align:left;font-size:12px;color:var(--text2);list-style:none;padding:0;margin:0 0 16px">' + featHtml + '</ul>' +
+                '<button class="btn-primary" style="width:100%" onclick="showScreen(\'screen-payment\')">Choose Plan</button></div>';
+        });
+        if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No plans available</p>';
+        c.innerHTML = html;
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    });
+}
+
+// --- GIVE REPORT STUDENT LIST ---
+function loadGiveReportStudents() {
+    api('my_students').then(function(students) {
+        var c = document.getElementById('giveReportList');
+        if (!c) return;
+        var html = '';
+        (students || []).forEach(function(s) {
+            html += '<div class="list-item" style="cursor:pointer"><div class="user-avatar" style="background:linear-gradient(135deg,#4F46E5,#7C3AED);width:36px;height:36px;font-size:14px">' + (s.name || 'S')[0] + '</div>' +
+                '<div class="list-item-content"><h5>' + s.name + '</h5><p>' + (s.class || '') + ' · Roll ' + (s.id || '') + '</p></div>' +
+                '<i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--text3)"></i></div>';
+        });
+        c.innerHTML = html;
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    });
+}
+
+// --- AI CHAT GREETING ---
+function loadAiChatGreeting() {
+    var greeting = document.getElementById('aiGreeting');
+    if (greeting) greeting.textContent = 'Hello ' + USER_NAME.split(' ')[0] + '! I\'m your AI Tutor. How can I help you today?';
 }

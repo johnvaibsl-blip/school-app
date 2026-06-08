@@ -301,6 +301,69 @@ class JsonDB {
             ['id'=>4,'user_id'=>2,'action'=>'login','details'=>'Logged in from desktop','created_at'=>'2026-06-12 07:30:00'],
             ['id'=>5,'user_id'=>2,'action'=>'create_homework','details'=>'Created new Mathematics homework','created_at'=>'2026-06-12 08:45:00'],
         ];
+
+        $this->data['activity_feed'] = [
+            ['id'=>1,'user_id'=>1,'type'=>'read','title'=>'Read: Science Chapter 2','subject'=>'Science','time'=>'Today, 10:30 AM','icon'=>'book-open'],
+            ['id'=>2,'user_id'=>1,'type'=>'homework','title'=>'Homework: Math (Quadratic)','subject'=>'Mathematics','time'=>'Yesterday, 07:45 PM','icon'=>'file-text'],
+            ['id'=>3,'user_id'=>1,'type'=>'quiz','title'=>'Quiz: English Grammar','subject'=>'English','time'=>'Yesterday, 04:20 PM','icon'=>'help-circle'],
+            ['id'=>4,'user_id'=>1,'type'=>'ai','title'=>'AI Tutor: Photosynthesis','subject'=>'Science','time'=>'Yesterday, 03:10 PM','icon'=>'bot'],
+            ['id'=>5,'user_id'=>5,'type'=>'read','title'=>'Read: Math Chapter 3','subject'=>'Mathematics','time'=>'Today, 09:00 AM','icon'=>'book-open'],
+            ['id'=>6,'user_id'=>5,'type'=>'homework','title'=>'Homework: English Essay','subject'=>'English','time'=>'Yesterday, 06:00 PM','icon'=>'file-text'],
+        ];
+
+        $this->data['chapters'] = [
+            ['id'=>1,'subject_id'=>1,'title'=>'Rational Numbers','status'=>'completed','pages'=>12,'order'=>1],
+            ['id'=>2,'subject_id'=>1,'title'=>'Linear Equations','status'=>'completed','pages'=>15,'order'=>2],
+            ['id'=>3,'subject_id'=>1,'title'=>'Quadrilaterals','status'=>'in_progress','pages'=>18,'order'=>3],
+            ['id'=>4,'subject_id'=>1,'title'=>'Data Handling','status'=>'not_started','pages'=>14,'order'=>4],
+            ['id'=>5,'subject_id'=>1,'title'=>'Squares & Square Roots','status'=>'locked','pages'=>16,'order'=>5],
+            ['id'=>6,'subject_id'=>1,'title'=>'Cubes & Cube Roots','status'=>'locked','pages'=>13,'order'=>6],
+            ['id'=>7,'subject_id'=>2,'title'=>'Food: Where Does It Come From?','status'=>'completed','pages'=>10,'order'=>1],
+            ['id'=>8,'subject_id'=>2,'title'=>'Components of Food','status'=>'in_progress','pages'=>12,'order'=>2],
+            ['id'=>9,'subject_id'=>2,'title'=>'Fibre to Fabric','status'=>'not_started','pages'=>11,'order'=>3],
+            ['id'=>10,'subject_id'=>3,'title'=>'The Happy Prince','status'=>'completed','pages'=>8,'order'=>1],
+            ['id'=>11,'subject_id'=>3,'title'=>'The Ball Poem','status'=>'in_progress','pages'=>9,'order'=>2],
+        ];
+
+        $this->data['book_content'] = [
+            ['id'=>1,'chapter_id'=>3,'title'=>'Chapter 3: Quadrilaterals','content'=>'A quadrilateral is a polygon with four sides and four vertices. The word "quadrilateral" is derived from the Latin words "quadri" (four) and "latus" (side).\n\nTypes of Quadrilaterals:\n\n1. Parallelogram: A quadrilateral with both pairs of opposite sides parallel. Properties: opposite sides are equal, opposite angles are equal, and diagonals bisect each other.\n\n2. Rectangle: A parallelogram with all angles equal to 90 degrees. Properties: all properties of a parallelogram plus diagonals are equal.\n\n3. Square: A rectangle with all sides equal. Properties: all properties of a rectangle plus all sides are equal and diagonals are perpendicular.\n\n4. Rhombus: A parallelogram with all sides equal. Properties: all sides are equal, opposite angles are equal, and diagonals bisect each other at right angles.\n\n5. Trapezium: A quadrilateral with exactly one pair of parallel sides.','pages_total'=>18,'pages_read'=>6],
+            ['id'=>2,'chapter_id'=>7,'title'=>'Chapter 1: Food Sources','content'=>'Food is essential for survival. It provides energy, helps in growth, and repairs worn-out body tissues.\n\nSources of Food:\n- Plants: fruits, vegetables, grains, herbs\n- Animals: milk, eggs, meat, fish\n\nComponents of Food:\nCarbohydrates, Proteins, Fats, Vitamins, Minerals, Water, and Roughage.','pages_total'=>10,'pages_read'=>10],
+        ];
+
+        $this->data['calendar_events'] = [
+            ['id'=>1,'title'=>'Science Exam','date'=>'2026-06-23','type'=>'exam','color'=>'#EF4444'],
+            ['id'=>2,'title'=>'Math Live Class','date'=>'2026-06-13','type'=>'class','color'=>'#4F46E5'],
+            ['id'=>3,'title'=>'English Essay Due','date'=>'2026-06-19','type'=>'homework','color'=>'#F59E0B'],
+            ['id'=>4,'title'=>'Science Viva','date'=>'2026-06-25','type'=>'exam','color'=>'#EF4444'],
+            ['id'=>5,'title'=>'Holiday - Weekend','date'=>'2026-06-14','type'=>'holiday','color'=>'#10B981'],
+        ];
+
+        $this->data['reports'] = [
+            ['id'=>1,'student_id'=>1,'teacher_id'=>2,'subject'=>'Mathematics','class'=>'Class 8','grade'=>'A+','score'=>92,'behavior'=>'Excellent','comment'=>'Outstanding performance in algebra and geometry.','date'=>'2026-06-10'],
+            ['id'=>2,'student_id'=>1,'teacher_id'=>3,'subject'=>'Science','class'=>'Class 8','grade'=>'A','score'=>88,'behavior'=>'Good','comment'=>'Good understanding of concepts. Needs more practice in physics.','date'=>'2026-06-08'],
+            ['id'=>3,'student_id'=>1,'teacher_id'=>4,'subject'=>'English','class'=>'Class 8','grade'=>'B+','score'=>82,'behavior'=>'Good','comment'=>'Good writing skills. Improve grammar and vocabulary.','date'=>'2026-06-05'],
+            ['id'=>4,'student_id'=>5,'teacher_id'=>2,'subject'=>'Mathematics','class'=>'Class 8','grade'=>'B','score'=>75,'behavior'=>'Good','comment'=>'Shows improvement. Keep working on problem solving.','date'=>'2026-06-10'],
+            ['id'=>5,'student_id'=>5,'teacher_id'=>3,'subject'=>'Science','class'=>'Class 8','grade'=>'A+','score'=>94,'behavior'=>'Excellent','comment'=>'Excellent grasp of scientific concepts.','date'=>'2026-06-08'],
+        ];
+
+        $this->data['question_bank'] = [
+            ['id'=>1,'subject_id'=>1,'chapter'=>'Quadrilaterals','question'=>'What is the value of √144?','type'=>'mcq','options'=>['12','14','11','13'],'correct'=>0,'marks'=>2,'difficulty'=>'easy'],
+            ['id'=>2,'subject_id'=>2,'chapter'=>'Photosynthesis','question'=>'Explain the process of photosynthesis.','type'=>'written','model_answer'=>'Photosynthesis is the process by which green plants use sunlight, water, and CO2 to produce glucose and oxygen.','marks'=>5,'difficulty'=>'medium'],
+            ['id'=>3,'subject_id'=>3,'chapter'=>'Grammar','question'=>'Write an essay on "My School".','type'=>'written','model_answer'=>'My school is a place where I learn and grow. It has a beautiful campus with green gardens...','marks'=>10,'difficulty'=>'medium'],
+            ['id'=>4,'subject_id'=>1,'chapter'=>'Algebra','question'=>'Solve: x² - 5x + 6 = 0','type'=>'mcq','options'=>['x=2, x=3','x=1, x=6','x=-2, x=-3','x=0, x=5'],'correct'=>0,'marks'=>3,'difficulty'=>'medium'],
+            ['id'=>5,'subject_id'=>1,'chapter'=>'Geometry','question'=>'If a triangle has sides 3, 4, 5, what type of triangle is it?','type'=>'mcq','options'=>['Right-angled','Equilateral','Isosceles','Scalene'],'correct'=>0,'marks'=>2,'difficulty'=>'easy'],
+        ];
+
+        $this->data['student_evaluations'] = [
+            ['id'=>1,'student_id'=>1,'homework_id'=>1,'subject_id'=>1,'title'=>'Quadratic Equation Practice','submitted_answer'=>'x² - 5x + 6 = 0\n(x-2)(x-3) = 0\nx = 2 or x = 3\n\nUsing quadratic formula:\nx = (5 ± √(25-24)) / 2\nx = (5 ± 1) / 2\nx = 3 or x = 2','status'=>'graded','score'=>92,'teacher_comment'=>'Excellent work! Clear step-by-step solution.','submitted_at'=>'2026-06-12 14:30:00','graded_at'=>'2026-06-12 16:00:00'],
+        ];
+
+        $this->data['class_schedule'] = [
+            ['id'=>1,'subject'=>'Mathematics','topic'=>'Algebra','class_name'=>'Class 8','time'=>'09:00 - 10:00','day'=>'Monday','teacher_name'=>'Mr. Rahim','teacher_id'=>2,'students_count'=>25,'status'=>'completed'],
+            ['id'=>2,'subject'=>'Science','topic'=>'Physics','class_name'=>'Class 8','time'=>'11:00 - 12:00','day'=>'Monday','teacher_name'=>'Ms. Sarah','teacher_id'=>3,'students_count'=>28,'status'=>'upcoming'],
+            ['id'=>3,'subject'=>'English','topic'=>'Grammar','class_name'=>'Class 8','time'=>'02:00 - 03:00','day'=>'Monday','teacher_name'=>'Mr. Karim','teacher_id'=>4,'students_count'=>22,'status'=>'upcoming'],
+            ['id'=>4,'subject'=>'Mathematics','topic'=>'Geometry','class_name'=>'Class 8','time'=>'09:00 - 10:00','day'=>'Tuesday','teacher_name'=>'Mr. Rahim','teacher_id'=>2,'students_count'=>25,'status'=>'upcoming'],
+        ];
     }
 }
 

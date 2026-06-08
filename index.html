@@ -363,26 +363,26 @@
             <div class="stat-card">
                 <div class="stat-icon green"><i data-lucide="book-open" style="width:18px;height:18px"></i></div>
                 <h5>Books Read</h5>
-                <div class="val"><span id="homeBooks">0 / 30</span></div>
-                <div class="stat-bar"><div class="stat-bar-fill" style="width:40%;background:#22C55E"></div></div>
+                <div class="val"><span id="homeBooksVal">0 / 30</span></div>
+                <div class="stat-bar"><div class="stat-bar-fill" id="homeBooksBar" style="width:40%;background:#22C55E"></div></div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon orange"><i data-lucide="file-text" style="width:18px;height:18px"></i></div>
                 <h5>Homework Score</h5>
-                <div class="val"><span id="homeHWScore">0%</span></div>
-                <div class="stat-bar"><div class="stat-bar-fill" style="width:85%;background:#F97316"></div></div>
+                <div class="val"><span id="homeHwScoreVal">0%</span></div>
+                <div class="stat-bar"><div class="stat-bar-fill" id="homeHwScoreBar" style="width:85%;background:#F97316"></div></div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon blue"><i data-lucide="target" style="width:18px;height:18px"></i></div>
                 <h5>Exam Score</h5>
-                <div class="val"><span id="homeExamScore">0%</span></div>
-                <div class="stat-bar"><div class="stat-bar-fill" style="width:78%;background:#3B82F6"></div></div>
+                <div class="val"><span id="homeExamScoreVal">0%</span></div>
+                <div class="stat-bar"><div class="stat-bar-fill" id="homeExamScoreBar" style="width:78%;background:#3B82F6"></div></div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon red"><i data-lucide="flame" style="width:18px;height:18px"></i></div>
                 <h5>Study Streak</h5>
-                <div class="val"><span id="homeStreakBadge">0</span> <span>Days</span></div>
-                <div class="stat-bar"><div class="stat-bar-fill" style="width:100%;background:#EF4444"></div></div>
+                <div class="val"><span id="homeStreakVal">0</span> <span>Days</span></div>
+                <div class="stat-bar"><div class="stat-bar-fill" id="homeStreakBar" style="width:100%;background:#EF4444"></div></div>
             </div>
             <div class="trophy-card">
                 <div class="trophy-emoji"><i data-lucide="trophy" style="width:32px;height:32px;color:#F59E0B"></i></div>
@@ -395,35 +395,14 @@
             <a class="section-link" onclick="showScreen('screen-homework')">View All</a>
         </div>
         <div class="activity-row">
-            <div class="activity-list">
-                <div class="activity-item" onclick="showScreen('screen-reader')">
-                    <div class="act-icon green"><i data-lucide="book-open" style="width:14px;height:14px"></i></div>
-                    <div class="act-info"><h5>Read: Science Chapter 2</h5><p>Today, 10:30 AM</p></div>
-                    <span class="act-arrow"><i data-lucide="chevron-right"></i></span>
-                </div>
-                <div class="activity-item" onclick="showScreen('screen-hw-detail')">
-                    <div class="act-icon orange"><i data-lucide="file-text" style="width:14px;height:14px"></i></div>
-                    <div class="act-info"><h5>Homework: Math (Quadratic)</h5><p>Yesterday, 07:45 PM</p></div>
-                    <span class="act-arrow"><i data-lucide="chevron-right"></i></span>
-                </div>
-                <div class="activity-item">
-                    <div class="act-icon purple"><i data-lucide="brain" style="width:14px;height:14px"></i></div>
-                    <div class="act-info"><h5>Quiz: English Grammar</h5><p>Yesterday, 04:20 PM</p></div>
-                    <span class="act-arrow"><i data-lucide="chevron-right"></i></span>
-                </div>
-                <div class="activity-item" onclick="showScreen('screen-chat')">
-                    <div class="act-icon blue"><i data-lucide="bot" style="width:14px;height:14px"></i></div>
-                    <div class="act-info"><h5>AI Tutor: Photosynthesis</h5><p>Yesterday, 03:10 PM</p></div>
-                    <span class="act-arrow"><i data-lucide="chevron-right"></i></span>
-                </div>
-            </div>
+            <div id="homeActivityFeed"></div>
             <div class="goal-card">
                 <div class="goal-emoji"><i data-lucide="target" style="width:24px;height:24px;color:var(--primary)"></i></div>
                 <h4 class="goal-title">Daily Goal</h4>
                 <p class="goal-desc">Keep learning everyday and achieve your goals.</p>
                 <div class="goal-progress">
-                    <h5>3 / 5 Tasks</h5>
-                    <div class="goal-bar"><div class="goal-bar-fill" style="width:60%"></div></div>
+                    <h5 id="homeGoalText">3 / 5 Tasks</h5>
+                    <div class="goal-bar"><div class="goal-bar-fill" id="homeGoalBar" style="width:60%"></div></div>
                 </div>
             </div>
         </div>
@@ -443,7 +422,7 @@
     <div class="chat-messages">
         <div class="msg ai">
             <div class="msg-avatar"><i data-lucide="bot" style="width:16px;height:16px"></i></div>
-            <div class="msg-bubble">Hello Arman! I'm your AI Tutor. How can I help you today?</div>
+            <div class="msg-bubble" id="aiGreeting">Hello Arman! I'm your AI Tutor. How can I help you today?</div>
         </div>
         <div class="suggested-prompts">
             <button class="prompt-chip" onclick="sendPrompt(this)">Explain photosynthesis</button>
@@ -477,7 +456,7 @@
     <div class="main-content">
 
         <!-- 1. Featured Teacher Hero -->
-        <div class="tt-hero-scroll">
+        <div class="tt-hero-scroll" id="tutorHeroCards">
             <div class="tt-hero-card" onclick="showScreen('screen-teacher-profile')">
                 <div class="tt-hero-badge"><i data-lucide="award"></i> Featured Teacher</div>
                 <div class="tt-hero-row">
@@ -522,7 +501,7 @@
         <div class="tt-stats-row">
             <div class="tt-stat-card">
                 <i data-lucide="users"></i>
-                <span class="tt-stat-val">24</span>
+                <span class="tt-stat-val" id="tutorStatActive">24</span>
                 <span class="tt-stat-lbl">Active Tutors</span>
             </div>
             <div class="tt-stat-card">
@@ -532,12 +511,12 @@
             </div>
             <div class="tt-stat-card">
                 <i data-lucide="check-circle"></i>
-                <span class="tt-stat-val">42</span>
+                <span class="tt-stat-val" id="tutorStatAttended">42</span>
                 <span class="tt-stat-lbl">Attended</span>
             </div>
             <div class="tt-stat-card">
                 <i data-lucide="clock"></i>
-                <span class="tt-stat-val">86h</span>
+                <span class="tt-stat-val" id="tutorStatStudyHrs">86h</span>
                 <span class="tt-stat-lbl">Study Hrs</span>
             </div>
         </div>
@@ -554,28 +533,30 @@
         <div class="tt-section-header">
             <span class="tt-section-title">My Tutors</span>
         </div>
-        <div class="tt-my-tutor" onclick="showScreen('screen-teacher-profile')">
-            <div class="tt-my-tutor-avatar">R</div>
-            <div class="tt-my-tutor-info">
-                <h4>Mr. Rahim Ahmed</h4>
-                <p>Mathematics - Last class: 2 hours ago</p>
+        <div id="tutorMyTutorsList">
+            <div class="tt-my-tutor" onclick="showScreen('screen-teacher-profile')">
+                <div class="tt-my-tutor-avatar">R</div>
+                <div class="tt-my-tutor-info">
+                    <h4>Mr. Rahim Ahmed</h4>
+                    <p>Mathematics - Last class: 2 hours ago</p>
+                </div>
+                <button class="tt-my-tutor-btn">Profile</button>
             </div>
-            <button class="tt-my-tutor-btn">Profile</button>
-        </div>
-        <div class="tt-my-tutor" onclick="showScreen('screen-teacher-profile')">
-            <div class="tt-my-tutor-avatar" style="background:linear-gradient(135deg,#EC4899,#F472B6)">S</div>
-            <div class="tt-my-tutor-info">
-                <h4>Ms. Sarah Khan</h4>
-                <p>English - Last class: Yesterday</p>
+            <div class="tt-my-tutor" onclick="showScreen('screen-teacher-profile')">
+                <div class="tt-my-tutor-avatar" style="background:linear-gradient(135deg,#EC4899,#F472B6)">S</div>
+                <div class="tt-my-tutor-info">
+                    <h4>Ms. Sarah Khan</h4>
+                    <p>English - Last class: Yesterday</p>
+                </div>
+                <button class="tt-my-tutor-btn">Profile</button>
             </div>
-            <button class="tt-my-tutor-btn">Profile</button>
         </div>
 
         <!-- 5. Next Class Highlight -->
         <div class="tt-next-class">
             <div class="tt-next-class-badge"><i data-lucide="play"></i> Starting Soon</div>
             <h3>Math - Algebra Chapter 5</h3>
-            <div class="tt-next-teacher">Mr. Rahim Ahmed</div>
+            <div class="tt-next-teacher" id="tutorNextClassTeacher">Mr. Rahim Ahmed</div>
             <div class="tt-next-class-row">
                 <div class="tt-next-time"><i data-lucide="clock"></i> Today, 10:00 AM</div>
                 <button class="tt-next-join" onclick="showScreen('screen-live-class')">Join Now</button>
@@ -587,102 +568,75 @@
             <span class="tt-section-title">Upcoming Classes</span>
             <span class="tt-section-link" onclick="showScreen('screen-live-lobby')">View All</span>
         </div>
-        <div class="tt-upcoming-item">
-            <div class="tt-upcoming-time"><div class="t">10:00</div><div class="p">AM</div></div>
-            <div class="tt-upcoming-vline"></div>
-            <div class="tt-upcoming-info"><h4>Math - Algebra</h4><p>Mr. Rahim - Live Class</p></div>
-            <button class="tt-upcoming-join" onclick="showScreen('screen-live-class')">Join</button>
-        </div>
-        <div class="tt-upcoming-item">
-            <div class="tt-upcoming-time"><div class="t">02:00</div><div class="p">PM</div></div>
-            <div class="tt-upcoming-vline"></div>
-            <div class="tt-upcoming-info"><h4>English - Grammar</h4><p>Ms. Sarah - Live Class</p></div>
-            <button class="tt-upcoming-join" onclick="showScreen('screen-live-class')">Join</button>
-        </div>
-        <div class="tt-upcoming-item">
-            <div class="tt-upcoming-time"><div class="t">04:30</div><div class="p">PM</div></div>
-            <div class="tt-upcoming-vline"></div>
-            <div class="tt-upcoming-info"><h4>Science - Physics</h4><p>Mr. Karim - Live Class</p></div>
-            <button class="tt-upcoming-join" onclick="showScreen('screen-live-class')">Join</button>
+        <div id="tutorUpcomingClasses">
+            <div class="tt-upcoming-item">
+                <div class="tt-upcoming-time"><div class="t">10:00</div><div class="p">AM</div></div>
+                <div class="tt-upcoming-vline"></div>
+                <div class="tt-upcoming-info"><h4>Math - Algebra</h4><p>Mr. Rahim - Live Class</p></div>
+                <button class="tt-upcoming-join" onclick="showScreen('screen-live-class')">Join</button>
+            </div>
+            <div class="tt-upcoming-item">
+                <div class="tt-upcoming-time"><div class="t">02:00</div><div class="p">PM</div></div>
+                <div class="tt-upcoming-vline"></div>
+                <div class="tt-upcoming-info"><h4>English - Grammar</h4><p>Ms. Sarah - Live Class</p></div>
+                <button class="tt-upcoming-join" onclick="showScreen('screen-live-class')">Join</button>
+            </div>
+            <div class="tt-upcoming-item">
+                <div class="tt-upcoming-time"><div class="t">04:30</div><div class="p">PM</div></div>
+                <div class="tt-upcoming-vline"></div>
+                <div class="tt-upcoming-info"><h4>Science - Physics</h4><p>Mr. Karim - Live Class</p></div>
+                <button class="tt-upcoming-join" onclick="showScreen('screen-live-class')">Join</button>
+            </div>
         </div>
 
         <!-- 7. Most Popular Teachers -->
         <div class="tt-section-header" style="margin-top:6px">
             <span class="tt-section-title">Most Popular Teachers</span>
         </div>
-        <div class="tt-popular-card" onclick="showScreen('screen-teacher-profile')">
-            <div class="tt-popular-avatar" style="background:linear-gradient(135deg,#22C55E,#4ADE80)">K</div>
-            <div class="tt-popular-info">
-                <h4>Mr. Karim Uddin</h4>
-                <div class="tt-pop-subject">Science - 10 years exp</div>
-                <div class="tt-pop-meta">
-                    <span><i data-lucide="star" style="color:#F59E0B"></i> 4.7</span>
-                    <span><i data-lucide="users" style="color:#6366F1"></i> 200+</span>
+        <div id="tutorPopularList">
+            <div class="tt-popular-card" onclick="showScreen('screen-teacher-profile')">
+                <div class="tt-popular-avatar" style="background:linear-gradient(135deg,#22C55E,#4ADE80)">K</div>
+                <div class="tt-popular-info">
+                    <h4>Mr. Karim Uddin</h4>
+                    <div class="tt-pop-subject">Science - 10 years exp</div>
+                    <div class="tt-pop-meta">
+                        <span><i data-lucide="star" style="color:#F59E0B"></i> 4.7</span>
+                        <span><i data-lucide="users" style="color:#6366F1"></i> 200+</span>
+                    </div>
                 </div>
+                <button class="tt-pop-subscribe">Subscribe</button>
             </div>
-            <button class="tt-pop-subscribe">Subscribe</button>
-        </div>
-        <div class="tt-popular-card" onclick="showScreen('screen-teacher-profile')">
-            <div class="tt-popular-avatar" style="background:linear-gradient(135deg,#F59E0B,#F97316)">N</div>
-            <div class="tt-popular-info">
-                <h4>Ms. Nusrat Jahan</h4>
-                <div class="tt-pop-subject">Bangla - 8 years exp</div>
-                <div class="tt-pop-meta">
-                    <span><i data-lucide="star" style="color:#F59E0B"></i> 4.8</span>
-                    <span><i data-lucide="users" style="color:#6366F1"></i> 150+</span>
+            <div class="tt-popular-card" onclick="showScreen('screen-teacher-profile')">
+                <div class="tt-popular-avatar" style="background:linear-gradient(135deg,#F59E0B,#F97316)">N</div>
+                <div class="tt-popular-info">
+                    <h4>Ms. Nusrat Jahan</h4>
+                    <div class="tt-pop-subject">Bangla - 8 years exp</div>
+                    <div class="tt-pop-meta">
+                        <span><i data-lucide="star" style="color:#F59E0B"></i> 4.8</span>
+                        <span><i data-lucide="users" style="color:#6366F1"></i> 150+</span>
+                    </div>
                 </div>
+                <button class="tt-pop-subscribe">Subscribe</button>
             </div>
-            <button class="tt-pop-subscribe">Subscribe</button>
-        </div>
-        <div class="tt-popular-card" onclick="showScreen('screen-teacher-profile')">
-            <div class="tt-popular-avatar" style="background:linear-gradient(135deg,#EC4899,#F472B6)">T</div>
-            <div class="tt-popular-info">
-                <h4>Dr. Tanvir Hossain</h4>
-                <div class="tt-pop-subject">Physics - 12 years exp</div>
-                <div class="tt-pop-meta">
-                    <span><i data-lucide="star" style="color:#F59E0B"></i> 4.9</span>
-                    <span><i data-lucide="users" style="color:#6366F1"></i> 300+</span>
+            <div class="tt-popular-card" onclick="showScreen('screen-teacher-profile')">
+                <div class="tt-popular-avatar" style="background:linear-gradient(135deg,#EC4899,#F472B6)">T</div>
+                <div class="tt-popular-info">
+                    <h4>Dr. Tanvir Hossain</h4>
+                    <div class="tt-pop-subject">Physics - 12 years exp</div>
+                    <div class="tt-pop-meta">
+                        <span><i data-lucide="star" style="color:#F59E0B"></i> 4.9</span>
+                        <span><i data-lucide="users" style="color:#6366F1"></i> 300+</span>
+                    </div>
                 </div>
+                <button class="tt-pop-subscribe">Subscribe</button>
             </div>
-            <button class="tt-pop-subscribe">Subscribe</button>
         </div>
 
         <!-- 8. New Teachers -->
         <div class="tt-section-header" style="margin-top:6px">
             <span class="tt-section-title">New Teachers</span>
         </div>
-        <div class="tt-hscroll">
-            <div class="tt-top-card" style="position:relative" onclick="showScreen('screen-teacher-profile')">
-                <div class="tt-new-badge">NEW</div>
-                <div class="tt-top-avatar" style="background:linear-gradient(135deg,#06B6D4,#22D3EE)">A</div>
-                <h4>Mr. Anis</h4>
-                <div class="tt-top-subject">Chemistry</div>
-                <div class="tt-top-meta">
-                    <span><i data-lucide="star"></i> 4.5</span>
-                    <span><i data-lucide="users"></i> 12</span>
-                </div>
-            </div>
-            <div class="tt-top-card" style="position:relative" onclick="showScreen('screen-teacher-profile')">
-                <div class="tt-new-badge">NEW</div>
-                <div class="tt-top-avatar" style="background:linear-gradient(135deg,#8B5CF6,#A78BFA)">F</div>
-                <h4>Ms. Fatima</h4>
-                <div class="tt-top-subject">Biology</div>
-                <div class="tt-top-meta">
-                    <span><i data-lucide="star"></i> 4.6</span>
-                    <span><i data-lucide="users"></i> 8</span>
-                </div>
-            </div>
-            <div class="tt-top-card" style="position:relative" onclick="showScreen('screen-teacher-profile')">
-                <div class="tt-new-badge">NEW</div>
-                <div class="tt-top-avatar" style="background:linear-gradient(135deg,#10B981,#34D399)">Z</div>
-                <h4>Mr. Zahid</h4>
-                <div class="tt-top-subject">ICT</div>
-                <div class="tt-top-meta">
-                    <span><i data-lucide="star"></i> 4.4</span>
-                    <span><i data-lucide="users"></i> 15</span>
-                </div>
-            </div>
-        </div>
+        <div id="tutorNewList" class="tt-hscroll">
 
         <!-- 9. Popular Subjects -->
         <div class="tt-section-header" style="margin-top:6px">
@@ -848,39 +802,39 @@
         <div class="stats-row-enhanced card-enter">
             <div class="stat-pill">
                 <div class="stat-icon" style="background:#EEF2FF;color:#6366F1"><i data-lucide="book-open" style="width:14px;height:14px"></i></div>
-                <div class="stat-val" style="color:#6366F1">12</div>
+                <div class="stat-val" style="color:#6366F1" id="myStudyBooks">12</div>
                 <div class="stat-lbl">Books</div>
             </div>
             <div class="stat-pill">
                 <div class="stat-icon" style="background:#FEF3C7;color:#F59E0B"><i data-lucide="target" style="width:14px;height:14px"></i></div>
-                <div class="stat-val" style="color:#F59E0B">85%</div>
+                <div class="stat-val" style="color:#F59E0B" id="myStudyScore">85%</div>
                 <div class="stat-lbl">Score</div>
             </div>
             <div class="stat-pill">
                 <div class="stat-icon" style="background:#FEE2E2;color:#EF4444"><i data-lucide="flame" style="width:14px;height:14px"></i></div>
-                <div class="stat-val" style="color:#EF4444">7</div>
+                <div class="stat-val" style="color:#EF4444" id="myStudyStreak">7</div>
                 <div class="stat-lbl">Streak</div>
             </div>
             <div class="stat-pill">
                 <div class="stat-icon" style="background:#DCFCE7;color:#22C55E"><i data-lucide="award" style="width:14px;height:14px"></i></div>
-                <div class="stat-val" style="color:#22C55E">5</div>
+                <div class="stat-val" style="color:#22C55E" id="myStudyBadges">5</div>
                 <div class="stat-lbl">Badges</div>
             </div>
         </div>
 
         <!-- Daily Goal -->
         <div class="glass-card card-enter" style="animation-delay:0.1s;padding:14px;margin-bottom:16px;display:flex;align-items:center;gap:14px">
-            <div class="daily-goal-ring">
+            <div class="daily-goal-ring" id="myStudyGoalRing">
                 <svg width="60" height="60" viewBox="0 0 60 60">
                     <circle cx="30" cy="30" r="26" fill="none" stroke="#E5E7EB" stroke-width="5"/>
                     <circle cx="30" cy="30" r="26" fill="none" stroke="url(#goalGrad2)" stroke-width="5" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="40.8"/>
                     <defs><linearGradient id="goalGrad2" x1="0" y1="0" x2="60" y2="60"><stop stop-color="#6366F1"/><stop offset="1" stop-color="#7C3AED"/></linearGradient></defs>
                 </svg>
-                <div class="daily-goal-text">75%</div>
+                <div class="daily-goal-text" id="myStudyGoalPct">75%</div>
             </div>
             <div style="flex:1">
                 <h4 style="font-size:13px;font-weight:700;margin-bottom:2px">Daily Goal</h4>
-                <p style="font-size:11px;color:var(--text3)">3 of 4 tasks completed</p>
+                <p id="myStudyGoalTasks" style="font-size:11px;color:var(--text3)">3 of 4 tasks completed</p>
                 <div style="display:flex;gap:4px;margin-top:6px">
                     <div style="width:20px;height:4px;border-radius:2px;background:var(--primary)"></div>
                     <div style="width:20px;height:4px;border-radius:2px;background:var(--primary)"></div>
@@ -1056,17 +1010,17 @@
     </header>
     <div class="main-content">
         <div class="hw-card">
-            <div class="hw-header"><span class="hw-subject math">Math</span><span class="hw-status pending">Pending</span></div>
-            <h4>Quadratic Equation Practice</h4>
-            <p>Mr. Rahim - Class 8</p>
-            <div class="hw-deadline"><i data-lucide="clock"></i> Due: Tomorrow, 11:59 PM</div>
+            <div class="hw-header"><span class="hw-subject math" id="hwDetailSubject">Math</span><span class="hw-status pending">Pending</span></div>
+            <h4 id="hwDetailTitle">Quadratic Equation Practice</h4>
+            <p>Mr. Rahim - <span id="hwDetailClass">Class 8</span></p>
+            <div class="hw-deadline"><i data-lucide="clock"></i> <span id="hwDetailDue">Due: Tomorrow, 11:59 PM</span></div>
         </div>
         <div class="section-header"><h2 class="section-title">Instructions</h2></div>
-        <p style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:16px">Complete exercises 3.2 from the textbook. Solve all 10 questions showing your working steps. Use the quadratic formula where necessary.</p>
+        <p id="hwDetailInstructions" style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:16px">Complete exercises 3.2 from the textbook. Solve all 10 questions showing your working steps. Use the quadratic formula where necessary.</p>
 
         <div class="section-header"><h2 class="section-title">Attachments</h2></div>
         <div class="hw-card" style="display:flex;align-items:center;gap:10px">
-            <div style="width:40px;height:40px;border-radius:10px;background:#FEE2E2;display:flex;align-items:center;justify-content:center"><i data-lucide="file-text" style="color:#EF4444"></i></div>
+            <div id="hwDetailIcon" style="width:40px;height:40px;border-radius:10px;background:#FEE2E2;display:flex;align-items:center;justify-content:center"><i data-lucide="file-text" style="color:#EF4444"></i></div>
             <div style="flex:1"><h5 style="font-size:12px">Chapter_3_Exercises.pdf</h5><p style="font-size:9px;color:var(--text3)">2.4 MB</p></div>
             <i data-lucide="download" style="color:var(--primary)"></i>
         </div>
@@ -1106,21 +1060,21 @@
         <button class="header-back" onclick="showScreen('screen-exam')"><i data-lucide="arrow-left"></i></button>
         <h3 class="header-title">Science Test</h3>
         <div style="display:flex;align-items:center;gap:8px">
-            <span style="background:#FEE2E2;color:#EF4444;padding:4px 10px;border-radius:8px;font-size:12px;font-weight:600"><i data-lucide="clock"></i> 45:00</span>
+            <span style="background:#FEE2E2;color:#EF4444;padding:4px 10px;border-radius:8px;font-size:12px;font-weight:600"><i data-lucide="clock"></i> <span id="examIfaceTimer">45:00</span></span>
         </div>
     </header>
     <div class="main-content">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-            <span style="font-size:12px;color:var(--text3)">Question 3 of 20</span>
-            <span style="font-size:12px;font-weight:600;color:var(--primary)">15%</span>
+            <span id="examQNum" style="font-size:12px;color:var(--text3)">Question 3 of 20</span>
+            <span id="examQProgress" style="font-size:12px;font-weight:600;color:var(--primary)">15%</span>
         </div>
         <div style="height:4px;background:#E5E7EB;border-radius:2px;margin-bottom:20px">
-            <div style="height:100%;width:15%;background:var(--primary);border-radius:2px"></div>
+            <div id="examQProgressBar" style="height:100%;width:15%;background:var(--primary);border-radius:2px"></div>
         </div>
 
         <div class="hw-card">
-            <h4 style="margin-bottom:12px">Q3. What is the powerhouse of a cell?</h4>
-            <div style="display:flex;flex-direction:column;gap:8px">
+            <h4 id="examQText" style="margin-bottom:12px">Q3. What is the powerhouse of a cell?</h4>
+            <div id="examOptions" style="display:flex;flex-direction:column;gap:8px">
                 <label style="display:flex;align-items:center;gap:10px;padding:12px;border:2px solid var(--border);border-radius:10px;cursor:pointer">
                     <input type="radio" name="q3" style="width:18px;height:18px"> <span style="font-size:13px">Nucleus</span>
                 </label>
@@ -1152,13 +1106,13 @@
     </header>
     <div class="result-hero">
         <div style="font-size:48px;margin-bottom:8px"><i data-lucide="trophy" style="width:48px;height:48px;color:#F59E0B"></i></div>
-        <div class="result-score">82%</div>
-        <div class="result-label">English Grammar Test</div>
+        <div id="examResultScore" class="result-score">82%</div>
+        <div id="examResultTitle" class="result-label">English Grammar Test</div>
     </div>
     <div class="result-stats" style="margin-top:-20px">
-        <div class="result-stat correct"><div class="num">16</div><div class="lbl">Correct</div></div>
-        <div class="result-stat wrong"><div class="num">4</div><div class="lbl">Wrong</div></div>
-        <div class="result-stat rank"><div class="num">#5</div><div class="lbl">Rank</div></div>
+        <div class="result-stat correct"><div class="num" id="examResultCorrect">16</div><div class="lbl">Correct</div></div>
+        <div class="result-stat wrong"><div class="num" id="examResultWrong">4</div><div class="lbl">Wrong</div></div>
+        <div class="result-stat rank"><div class="num" id="examResultRank">#5</div><div class="lbl">Rank</div></div>
     </div>
     <div class="main-content">
         <div class="section-header"><h2 class="section-title">Performance</h2></div>
@@ -1199,35 +1153,37 @@
         </div>
 
         <div class="section-header"><h2 class="section-title">Chapters</h2></div>
-        <div class="chapter-card" onclick="showScreen('screen-reader')">
-            <div class="chapter-num">1</div>
-            <div class="chapter-info"><h5>Rational Numbers</h5><p>Completed - 12 pages</p></div>
-            <div class="chapter-status"><i data-lucide="check-circle" style="width:18px;height:18px;color:var(--success)"></i></div>
-        </div>
-        <div class="chapter-card" onclick="showScreen('screen-reader')">
-            <div class="chapter-num">2</div>
-            <div class="chapter-info"><h5>Linear Equations</h5><p>Completed - 15 pages</p></div>
-            <div class="chapter-status"><i data-lucide="book-open" style="width:18px;height:18px;color:var(--primary)"></i></div>
-        </div>
-        <div class="chapter-card" onclick="showScreen('screen-reader')">
-            <div class="chapter-num">3</div>
-            <div class="chapter-info"><h5>Quadrilaterals</h5><p>In Progress - 18 pages</p></div>
-            <div class="chapter-status"><i data-lucide="book-open" style="width:18px;height:18px;color:var(--primary)"></i></div>
-        </div>
-        <div class="chapter-card" onclick="showScreen('screen-reader')">
-            <div class="chapter-num">4</div>
-            <div class="chapter-info"><h5>Data Handling</h5><p>Not started - 14 pages</p></div>
-            <div class="chapter-status"><i data-lucide="book-open" style="width:18px;height:18px;color:var(--primary)"></i></div>
-        </div>
-        <div class="chapter-card locked" onclick="showScreen('screen-pricing')" style="cursor:pointer">
-            <div class="chapter-num">5</div>
-            <div class="chapter-info"><h5>Squares & Square Roots</h5><p style="color:#EF4444"><i data-lucide="lock" style="width:12px;height:12px"></i> Premium - Tap to unlock</p></div>
-            <div class="chapter-status"><i data-lucide="lock" style="width:18px;height:18px;color:#EF4444"></i></div>
-        </div>
-        <div class="chapter-card locked" onclick="showScreen('screen-pricing')" style="cursor:pointer">
-            <div class="chapter-num">6</div>
-            <div class="chapter-info"><h5>Cubes & Cube Roots</h5><p style="color:#EF4444"><i data-lucide="lock" style="width:12px;height:12px"></i> Premium - Tap to unlock</p></div>
-            <div class="chapter-status"><i data-lucide="lock" style="width:18px;height:18px;color:#EF4444"></i></div>
+        <div id="chapterList">
+            <div class="chapter-card" onclick="showScreen('screen-reader')">
+                <div class="chapter-num">1</div>
+                <div class="chapter-info"><h5>Rational Numbers</h5><p>Completed - 12 pages</p></div>
+                <div class="chapter-status"><i data-lucide="check-circle" style="width:18px;height:18px;color:var(--success)"></i></div>
+            </div>
+            <div class="chapter-card" onclick="showScreen('screen-reader')">
+                <div class="chapter-num">2</div>
+                <div class="chapter-info"><h5>Linear Equations</h5><p>Completed - 15 pages</p></div>
+                <div class="chapter-status"><i data-lucide="book-open" style="width:18px;height:18px;color:var(--primary)"></i></div>
+            </div>
+            <div class="chapter-card" onclick="showScreen('screen-reader')">
+                <div class="chapter-num">3</div>
+                <div class="chapter-info"><h5>Quadrilaterals</h5><p>In Progress - 18 pages</p></div>
+                <div class="chapter-status"><i data-lucide="book-open" style="width:18px;height:18px;color:var(--primary)"></i></div>
+            </div>
+            <div class="chapter-card" onclick="showScreen('screen-reader')">
+                <div class="chapter-num">4</div>
+                <div class="chapter-info"><h5>Data Handling</h5><p>Not started - 14 pages</p></div>
+                <div class="chapter-status"><i data-lucide="book-open" style="width:18px;height:18px;color:var(--primary)"></i></div>
+            </div>
+            <div class="chapter-card locked" onclick="showScreen('screen-pricing')" style="cursor:pointer">
+                <div class="chapter-num">5</div>
+                <div class="chapter-info"><h5>Squares & Square Roots</h5><p style="color:#EF4444"><i data-lucide="lock" style="width:12px;height:12px"></i> Premium - Tap to unlock</p></div>
+                <div class="chapter-status"><i data-lucide="lock" style="width:18px;height:18px;color:#EF4444"></i></div>
+            </div>
+            <div class="chapter-card locked" onclick="showScreen('screen-pricing')" style="cursor:pointer">
+                <div class="chapter-num">6</div>
+                <div class="chapter-info"><h5>Cubes & Cube Roots</h5><p style="color:#EF4444"><i data-lucide="lock" style="width:12px;height:12px"></i> Premium - Tap to unlock</p></div>
+                <div class="chapter-status"><i data-lucide="lock" style="width:18px;height:18px;color:#EF4444"></i></div>
+            </div>
         </div>
     </div>
 </div>
@@ -1236,16 +1192,16 @@
 <div id="screen-reader" class="screen">
     <header class="header">
         <button class="header-back" onclick="showScreen('screen-subject')"><i data-lucide="arrow-left"></i></button>
-        <h3 class="header-title">Chapter 3: Quadrilaterals</h3>
+        <h3 id="bookTitle" class="header-title">Chapter 3: Quadrilaterals</h3>
         <button class="icon-btn" onclick="showToast('Bookmark saved!')"><i data-lucide="bookmark"></i></button>
     </header>
     <div class="reader-header">
         <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3)">
-            <span>Chapter 3 of 12</span><span>35% complete</span>
+            <span id="bookChapterInfo">Chapter 3 of 12</span><span id="bookProgress">35% complete</span>
         </div>
-        <div class="reader-progress"><div class="reader-progress-fill" style="width:35%"></div></div>
+        <div class="reader-progress"><div id="bookProgressBar" class="reader-progress-fill" style="width:35%"></div></div>
     </div>
-    <div class="reader-content">
+    <div id="bookContent" class="reader-content">
         <h3>3.1 Introduction to Quadrilaterals</h3>
         <p>A quadrilateral is a polygon with four sides and four vertices. The word "quadrilateral" is derived from the Latin words "quadri" (meaning four) and "latus" (meaning side).</p>
         <p>Quadrilaterals are everywhere in our daily life - from the tiles on our floor to the screens of our devices. Understanding their properties is fundamental to geometry.</p>
@@ -1605,16 +1561,16 @@
             <div style="display:flex;justify-content:space-between;align-items:start">
                 <div>
                     <h2 style="font-size:18px;margin-bottom:4px">Good morning, <span id="teacherGreetingName">Teacher</span>!</h2>
-                    <p style="font-size:11px;opacity:0.85">You have 3 classes today</p>
+                    <p id="teacherClassCountText" style="font-size:11px;opacity:0.85">You have 3 classes today</p>
                 </div>
                 <div style="text-align:right">
-                    <div style="font-size:24px;font-weight:800">85%</div>
+                    <div id="teacherRatingVal" style="font-size:24px;font-weight:800">85%</div>
                     <div style="font-size:9px;opacity:0.7">Rating</div>
                 </div>
             </div>
             <div class="xp-bar-wrap" style="margin-top:12px">
-                <div class="xp-label"><span>Top Teacher</span><span>48 / 60 Students</span></div>
-                <div class="xp-bar"><div class="xp-bar-fill" style="width:80%;background:linear-gradient(90deg,#fff,#D1FAE5)"></div></div>
+                <div class="xp-label"><span>Top Teacher</span><span id="teacherStudentProgress">48 / 60 Students</span></div>
+                <div class="xp-bar"><div class="xp-bar-fill" id="teacherStudentBar" style="width:80%;background:linear-gradient(90deg,#fff,#D1FAE5)"></div></div>
             </div>
         </div>
 
@@ -2008,7 +1964,7 @@
             <button class="filter-chip">Fri</button>
             <button class="filter-chip">Sat</button>
         </div>
-        <div class="schedule-timeline">
+        <div id="classScheduleList" class="schedule-timeline">
             <div class="schedule-item">
                 <div style="display:flex;justify-content:space-between;align-items:start">
                     <div>
@@ -2054,7 +2010,7 @@
         <div class="glass-card" style="padding:16px;margin-bottom:16px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
                 <button class="icon-btn glass-card-sm" style="width:32px;height:32px" onclick="showToast('Previous month','info')"><i data-lucide="chevron-left" style="width:16px;height:16px"></i></button>
-                <h3 style="font-size:16px;font-weight:700">May 2025</h3>
+                <h3 id="calMonth" style="font-size:16px;font-weight:700">May 2025</h3>
                 <button class="icon-btn glass-card-sm" style="width:32px;height:32px" onclick="showToast('Next month','info')"><i data-lucide="chevron-right" style="width:16px;height:16px"></i></button>
             </div>
             <div class="calendar-grid" style="margin-bottom:8px">
@@ -2066,7 +2022,7 @@
                 <div style="font-size:10px;font-weight:600;color:var(--text3);padding:6px">Fri</div>
                 <div style="font-size:10px;font-weight:600;color:var(--text3);padding:6px">Sat</div>
             </div>
-            <div class="calendar-grid">
+            <div id="calGrid" class="calendar-grid">
                 <div class="calendar-day" style="color:var(--text3)">27</div>
                 <div class="calendar-day" style="color:var(--text3)">28</div>
                 <div class="calendar-day" style="color:var(--text3)">29</div>
@@ -2105,21 +2061,23 @@
             </div>
         </div>
         <div class="section-header"><h2 class="section-title">Upcoming Events</h2></div>
-        <div class="list-item">
-            <div class="icon-box purple sm"><i data-lucide="clipboard" class="icon-sm"></i></div>
-            <div class="list-item-content">
-                <h5>Science Test</h5>
-                <p>May 23 - Class 8</p>
+        <div id="calEvents">
+            <div class="list-item">
+                <div class="icon-box purple sm"><i data-lucide="clipboard" class="icon-sm"></i></div>
+                <div class="list-item-content">
+                    <h5>Science Test</h5>
+                    <p>May 23 - Class 8</p>
+                </div>
+                <span style="font-size:10px;color:var(--primary);font-weight:600">In 16 days</span>
             </div>
-            <span style="font-size:10px;color:var(--primary);font-weight:600">In 16 days</span>
-        </div>
-        <div class="list-item">
-            <div class="icon-box orange sm"><i data-lucide="video" class="icon-sm"></i></div>
-            <div class="list-item-content">
-                <h5>Live Class - Algebra</h5>
-                <p>May 13 - 10:00 AM</p>
+            <div class="list-item">
+                <div class="icon-box orange sm"><i data-lucide="video" class="icon-sm"></i></div>
+                <div class="list-item-content">
+                    <h5>Live Class - Algebra</h5>
+                    <p>May 13 - 10:00 AM</p>
+                </div>
+                <span style="font-size:10px;color:var(--warning);font-weight:600">In 6 days</span>
             </div>
-            <span style="font-size:10px;color:var(--warning);font-weight:600">In 6 days</span>
         </div>
     </div>
 </div>
@@ -2133,19 +2091,19 @@
     <div class="main-content">
         <div class="stats-grid">
             <div class="glass-stat purple">
-                <div style="font-size:20px;font-weight:800;color:var(--primary)">82%</div>
+                <div style="font-size:20px;font-weight:800;color:var(--primary)" id="eaAvgScore">82%</div>
                 <div style="font-size:10px;color:var(--text3)">Avg Score</div>
             </div>
             <div class="glass-stat green">
-                <div style="font-size:20px;font-weight:800;color:var(--success)">95%</div>
+                <div style="font-size:20px;font-weight:800;color:var(--success)" id="eaPassRate">95%</div>
                 <div style="font-size:10px;color:var(--text3)">Pass Rate</div>
             </div>
             <div class="glass-stat orange">
-                <div style="font-size:20px;font-weight:800;color:var(--warning)">45</div>
+                <div style="font-size:20px;font-weight:800;color:var(--warning)" id="eaTotalExams">45</div>
                 <div style="font-size:10px;color:var(--text3)">Total Exams</div>
             </div>
             <div class="glass-stat blue">
-                <div style="font-size:20px;font-weight:800;color:var(--info)">12</div>
+                <div style="font-size:20px;font-weight:800;color:var(--info)" id="eaThisMonth">12</div>
                 <div style="font-size:10px;color:var(--text3)">This Month</div>
             </div>
         </div>
@@ -2154,21 +2112,23 @@
             <div class="chart-placeholder"><i data-lucide="bar-chart-2" style="width:24px;height:24px"></i> Performance Chart</div>
         </div>
         <div class="section-header"><h2 class="section-title">Recent Exams</h2></div>
-        <div class="list-item">
-            <div class="icon-box green sm"><i data-lucide="check-circle" class="icon-sm"></i></div>
-            <div class="list-item-content">
-                <h5>Science Test - Chapter 5-7</h5>
-                <p>Avg: 78% - 45 students</p>
+        <div id="eaExamList">
+            <div class="list-item">
+                <div class="icon-box green sm"><i data-lucide="check-circle" class="icon-sm"></i></div>
+                <div class="list-item-content">
+                    <h5>Science Test - Chapter 5-7</h5>
+                    <p>Avg: 78% - 45 students</p>
+                </div>
+                <span style="font-size:12px;font-weight:700;color:var(--success)">78%</span>
             </div>
-            <span style="font-size:12px;font-weight:700;color:var(--success)">78%</span>
-        </div>
-        <div class="list-item">
-            <div class="icon-box green sm"><i data-lucide="check-circle" class="icon-sm"></i></div>
-            <div class="list-item-content">
-                <h5>Math Quiz - Algebra</h5>
-                <p>Avg: 85% - 40 students</p>
+            <div class="list-item">
+                <div class="icon-box green sm"><i data-lucide="check-circle" class="icon-sm"></i></div>
+                <div class="list-item-content">
+                    <h5>Math Quiz - Algebra</h5>
+                    <p>Avg: 85% - 40 students</p>
+                </div>
+                <span style="font-size:12px;font-weight:700;color:var(--success)">85%</span>
             </div>
-            <span style="font-size:12px;font-weight:700;color:var(--success)">85%</span>
         </div>
     </div>
 </div>
@@ -2182,19 +2142,19 @@
     <div class="main-content">
         <div class="stats-grid">
             <div class="glass-stat purple">
-                <div style="font-size:20px;font-weight:800;color:var(--primary)">156</div>
+                <div style="font-size:20px;font-weight:800;color:var(--primary)" id="haTotalAssigned">156</div>
                 <div style="font-size:10px;color:var(--text3)">Total Assigned</div>
             </div>
             <div class="glass-stat green">
-                <div style="font-size:20px;font-weight:800;color:var(--success)">132</div>
+                <div style="font-size:20px;font-weight:800;color:var(--success)" id="haSubmitted">132</div>
                 <div style="font-size:10px;color:var(--text3)">Submitted</div>
             </div>
             <div class="glass-stat orange">
-                <div style="font-size:20px;font-weight:800;color:var(--warning)">24</div>
+                <div style="font-size:20px;font-weight:800;color:var(--warning)" id="haPending">24</div>
                 <div style="font-size:10px;color:var(--text3)">Pending</div>
             </div>
             <div class="glass-stat blue">
-                <div style="font-size:20px;font-weight:800;color:var(--info)">84%</div>
+                <div style="font-size:20px;font-weight:800;color:var(--info)" id="haSubmissionRate">84%</div>
                 <div style="font-size:10px;color:var(--text3)">Submission Rate</div>
             </div>
         </div>
@@ -2203,21 +2163,23 @@
             <div class="chart-placeholder"><i data-lucide="bar-chart-2" style="width:24px;height:24px"></i> Homework Chart</div>
         </div>
         <div class="section-header"><h2 class="section-title">By Subject</h2></div>
-        <div class="list-item">
-            <div class="icon-box orange sm"><i data-lucide="file-text" class="icon-sm"></i></div>
-            <div class="list-item-content">
-                <h5>Mathematics</h5>
-                <p>45 assigned - 38 submitted</p>
+        <div id="haHwList">
+            <div class="list-item">
+                <div class="icon-box orange sm"><i data-lucide="file-text" class="icon-sm"></i></div>
+                <div class="list-item-content">
+                    <h5>Mathematics</h5>
+                    <p>45 assigned - 38 submitted</p>
+                </div>
+                <span style="font-size:12px;font-weight:700;color:var(--success)">84%</span>
             </div>
-            <span style="font-size:12px;font-weight:700;color:var(--success)">84%</span>
-        </div>
-        <div class="list-item">
-            <div class="icon-box purple sm"><i data-lucide="file-text" class="icon-sm"></i></div>
-            <div class="list-item-content">
-                <h5>Science</h5>
-                <p>32 assigned - 30 submitted</p>
+            <div class="list-item">
+                <div class="icon-box purple sm"><i data-lucide="file-text" class="icon-sm"></i></div>
+                <div class="list-item-content">
+                    <h5>Science</h5>
+                    <p>32 assigned - 30 submitted</p>
+                </div>
+                <span style="font-size:12px;font-weight:700;color:var(--success)">94%</span>
             </div>
-            <span style="font-size:12px;font-weight:700;color:var(--success)">94%</span>
         </div>
     </div>
 </div>
@@ -2507,14 +2469,14 @@
         <div class="hw-card">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
                 <div class="user-avatar" style="width:36px;height:36px;font-size:12px">S</div>
-                <div><h4 style="font-size:13px">Sakib Hassan</h4><p style="font-size:10px;color:var(--text3)">Math - Quadratic Equation</p></div>
+                <div><h4 id="evalStudentName" style="font-size:13px">Sakib Hassan</h4><p style="font-size:10px;color:var(--text3)"><span id="evalSubject">Math - Quadratic Equation</span></p></div>
             </div>
-            <p style="font-size:10px;color:var(--text3)">Submitted: Today, 2:30 PM</p>
+            <p style="font-size:10px;color:var(--text3)"><span id="evalSubmitted">Submitted: Today, 2:30 PM</span></p>
         </div>
 
         <div class="section-header"><h2 class="section-title">Submitted Answer</h2></div>
-        <div style="background:var(--card);border-radius:12px;padding:16px;box-shadow:var(--shadow);margin-bottom:12px">
-            <div style="background:#F0F2F8;border-radius:8px;padding:12px;margin-bottom:8px">
+        <div id="evalAnswer" style="background:var(--card);border-radius:12px;padding:16px;box-shadow:var(--shadow);margin-bottom:12px">
+            <div id="evalContent" style="background:#F0F2F8;border-radius:8px;padding:12px;margin-bottom:8px">
                 <p style="font-size:12px;font-family:monospace">x + 5x + 6 = 0</p>
                 <p style="font-size:12px;font-family:monospace">x = (-5  (25-24)) / 2</p>
                 <p style="font-size:12px;font-family:monospace">x = (-5  1) / 2</p>
@@ -2555,6 +2517,7 @@
             <button class="link-btn" onclick="showScreen('screen-give-report')">+ Give Report</button>
         </div>
 
+        <div id="reportsList">
         <div class="hw-card" onclick="showToast('Report details coming soon!','info')">
             <div style="display:flex;justify-content:space-between;align-items:start">
                 <div style="display:flex;gap:10px;align-items:center">
@@ -2611,6 +2574,7 @@
             </div>
             <p style="font-size:9px;color:var(--text3);margin-top:8px">Given 2 weeks ago</p>
         </div>
+        </div>
 
         <div class="section-header">
             <h2 class="section-title">Report Types</h2>
@@ -2618,19 +2582,19 @@
         <div class="admin-stats" style="grid-template-columns:repeat(2,1fr)">
             <div class="admin-stat" onclick="showToast('Mid-term reports coming soon!','info')" style="cursor:pointer">
                 <h5>Mid-term</h5>
-                <div class="num" style="font-size:16px">8 reports</div>
+                <div class="num" id="reportsAplus" style="font-size:16px">8 reports</div>
             </div>
             <div class="admin-stat" onclick="showToast('Monthly reports coming soon!','info')" style="cursor:pointer">
                 <h5>Monthly</h5>
-                <div class="num" style="font-size:16px">6 reports</div>
+                <div class="num" id="reportsA" style="font-size:16px">6 reports</div>
             </div>
             <div class="admin-stat" onclick="showToast('Final reports coming soon!','info')" style="cursor:pointer">
                 <h5>Final</h5>
-                <div class="num" style="font-size:16px">3 reports</div>
+                <div class="num" id="reportsBplus" style="font-size:16px">3 reports</div>
             </div>
             <div class="admin-stat" onclick="showToast('Custom reports coming soon!','info')" style="cursor:pointer">
                 <h5>Custom</h5>
-                <div class="num" style="font-size:16px">1 report</div>
+                <div class="num" id="reportsOther" style="font-size:16px">1 report</div>
             </div>
         </div>
     </div>
@@ -2649,7 +2613,7 @@
                 <i data-lucide="search" style="width:18px;height:18px;color:var(--text3);flex-shrink:0"></i>
                 <input type="text" placeholder="Search by name or roll...">
             </div>
-            <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+            <div id="giveReportList" style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
                 <div class="hw-card" style="cursor:pointer;border:2px solid var(--primary);opacity:1" onclick="this.style.borderColor='var(--primary)'">
                     <div style="display:flex;gap:10px;align-items:center">
                         <div class="user-avatar" style="background:linear-gradient(135deg,#4F46E5,#7C3AED);width:32px;height:32px;font-size:12px">T</div>
@@ -2825,10 +2789,10 @@
     </header>
     <div class="main-content">
         <div class="admin-stats">
-            <div class="admin-stat"><h5>Total Students</h5><div class="num">2,450</div><div class="change"><i data-lucide="trending-up" style="width:10px;height:10px"></i> 18% this month</div></div>
-            <div class="admin-stat"><h5>Teachers</h5><div class="num">45</div><div class="change"><i data-lucide="trending-up" style="width:10px;height:10px"></i> 3 new</div></div>
-            <div class="admin-stat"><h5>Revenue</h5><div class="num">৳8.5L</div><div class="change"><i data-lucide="trending-up" style="width:10px;height:10px"></i> 24% growth</div></div>
-            <div class="admin-stat"><h5>AI Usage</h5><div class="num">12K</div><div class="change">queries today</div></div>
+            <div class="admin-stat"><h5>Total Students</h5><div class="num" id="adminStudents">2,450</div><div class="change"><i data-lucide="trending-up" style="width:10px;height:10px"></i> 18% this month</div></div>
+            <div class="admin-stat"><h5>Teachers</h5><div class="num" id="adminTeachers">45</div><div class="change"><i data-lucide="trending-up" style="width:10px;height:10px"></i> 3 new</div></div>
+            <div class="admin-stat"><h5>Revenue</h5><div class="num" id="adminRevenue">৳8.5L</div><div class="change"><i data-lucide="trending-up" style="width:10px;height:10px"></i> 24% growth</div></div>
+            <div class="admin-stat"><h5>AI Usage</h5><div class="num" id="adminExams">12K</div><div class="change">queries today</div></div>
         </div>
 
         <div class="section-header"><h2 class="section-title">Quick Actions</h2></div>
@@ -2882,7 +2846,7 @@
         <div class="table-scroll">
             <table class="data-table">
                 <thead><tr><th>Title</th><th>Class</th><th>Subject</th><th>Status</th></tr></thead>
-                <tbody>
+                <tbody id="libraryMgmtList">
                     <tr><td>Math Class 8</td><td>8</td><td>Math</td><td><span class="badge green">Active</span></td></tr>
                     <tr><td>Science Class 8</td><td>8</td><td>Science</td><td><span class="badge green">Active</span></td></tr>
                     <tr><td>English Class 8</td><td>8</td><td>English</td><td><span class="badge orange">Draft</span></td></tr>
@@ -2914,30 +2878,32 @@
         </div>
 
         <div class="section-header"><h2 class="section-title">Chapters</h2></div>
-        <div class="chapter-card">
-            <div class="chapter-num">1</div>
-            <div class="chapter-info"><h5>Rational Numbers</h5><p>Unlocked for all</p></div>
-            <div class="toggle active" onclick="this.classList.toggle('active')"></div>
-        </div>
-        <div class="chapter-card">
-            <div class="chapter-num">2</div>
-            <div class="chapter-info"><h5>Linear Equations</h5><p>Unlocked for all</p></div>
-            <div class="toggle active" onclick="this.classList.toggle('active')"></div>
-        </div>
-        <div class="chapter-card">
-            <div class="chapter-num">3</div>
-            <div class="chapter-info"><h5>Quadrilaterals</h5><p>Unlocked for all</p></div>
-            <div class="toggle active" onclick="this.classList.toggle('active')"></div>
-        </div>
-        <div class="chapter-card locked">
-            <div class="chapter-num">4</div>
-            <div class="chapter-info"><h5>Data Handling</h5><p>Locked</p></div>
-            <div class="toggle" onclick="this.classList.toggle('active')"></div>
-        </div>
-        <div class="chapter-card locked">
-            <div class="chapter-num">5</div>
-            <div class="chapter-info"><h5>Squares & Square Roots</h5><p>Locked</p></div>
-            <div class="toggle" onclick="this.classList.toggle('active')"></div>
+        <div id="chapterManagerList">
+            <div class="chapter-card">
+                <div class="chapter-num">1</div>
+                <div class="chapter-info"><h5>Rational Numbers</h5><p>Unlocked for all</p></div>
+                <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+            </div>
+            <div class="chapter-card">
+                <div class="chapter-num">2</div>
+                <div class="chapter-info"><h5>Linear Equations</h5><p>Unlocked for all</p></div>
+                <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+            </div>
+            <div class="chapter-card">
+                <div class="chapter-num">3</div>
+                <div class="chapter-info"><h5>Quadrilaterals</h5><p>Unlocked for all</p></div>
+                <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+            </div>
+            <div class="chapter-card locked">
+                <div class="chapter-num">4</div>
+                <div class="chapter-info"><h5>Data Handling</h5><p>Locked</p></div>
+                <div class="toggle" onclick="this.classList.toggle('active')"></div>
+            </div>
+            <div class="chapter-card locked">
+                <div class="chapter-num">5</div>
+                <div class="chapter-info"><h5>Squares & Square Roots</h5><p>Locked</p></div>
+                <div class="toggle" onclick="this.classList.toggle('active')"></div>
+            </div>
         </div>
         <button class="btn-primary" style="margin-top:12px" onclick="showToast('Chapter settings saved!')">Save Changes</button>
     </div>
@@ -3048,20 +3014,22 @@
         </div>
 
         <div class="section-header"><h2 class="section-title">All Teachers</h2></div>
-        <div class="teacher-card">
-            <div class="teacher-photo">R</div>
-            <div class="teacher-info"><h4>Mr. Rahim</h4><p>Math - 120 students</p><div class="teacher-meta"><span class="badge green">#1</span><span class="badge purple"> 4.8</span></div></div>
-            <i data-lucide="grip-vertical" style="color:var(--text3)"></i>
-        </div>
-        <div class="teacher-card">
-            <div class="teacher-photo" style="background:linear-gradient(135deg,#EC4899,#F472B6)">S</div>
-            <div class="teacher-info"><h4>Ms. Sarah</h4><p>English - 95 students</p><div class="teacher-meta"><span class="badge green">#2</span><span class="badge purple"> 4.9</span></div></div>
-            <i data-lucide="grip-vertical" style="color:var(--text3)"></i>
-        </div>
-        <div class="teacher-card">
-            <div class="teacher-photo" style="background:linear-gradient(135deg,#22C55E,#4ADE80)">K</div>
-            <div class="teacher-info"><h4>Mr. Karim</h4><p>Science - 88 students</p><div class="teacher-meta"><span class="badge green">#3</span><span class="badge purple"> 4.7</span></div></div>
-            <i data-lucide="grip-vertical" style="color:var(--text3)"></i>
+        <div id="adminRankingsList">
+            <div class="teacher-card">
+                <div class="teacher-photo">R</div>
+                <div class="teacher-info"><h4>Mr. Rahim</h4><p>Math - 120 students</p><div class="teacher-meta"><span class="badge green">#1</span><span class="badge purple"> 4.8</span></div></div>
+                <i data-lucide="grip-vertical" style="color:var(--text3)"></i>
+            </div>
+            <div class="teacher-card">
+                <div class="teacher-photo" style="background:linear-gradient(135deg,#EC4899,#F472B6)">S</div>
+                <div class="teacher-info"><h4>Ms. Sarah</h4><p>English - 95 students</p><div class="teacher-meta"><span class="badge green">#2</span><span class="badge purple"> 4.9</span></div></div>
+                <i data-lucide="grip-vertical" style="color:var(--text3)"></i>
+            </div>
+            <div class="teacher-card">
+                <div class="teacher-photo" style="background:linear-gradient(135deg,#22C55E,#4ADE80)">K</div>
+                <div class="teacher-info"><h4>Mr. Karim</h4><p>Science - 88 students</p><div class="teacher-meta"><span class="badge green">#3</span><span class="badge purple"> 4.7</span></div></div>
+                <i data-lucide="grip-vertical" style="color:var(--text3)"></i>
+            </div>
         </div>
     </div>
 </div>
@@ -3082,20 +3050,22 @@
             <button class="filter-chip">Board</button>
         </div>
 
-        <div class="hw-card">
-            <div class="hw-header"><span class="hw-subject math">Math</span><span class="badge purple">MCQ</span></div>
-            <h4>What is the value of 144?</h4>
-            <p style="font-size:10px;color:var(--text3)">Class 8  Chapter 5  2 marks</p>
-        </div>
-        <div class="hw-card">
-            <div class="hw-header"><span class="hw-subject science">Science</span><span class="badge blue">Written</span></div>
-            <h4>Explain the process of photosynthesis</h4>
-            <p style="font-size:10px;color:var(--text3)">Class 8  Chapter 3  5 marks</p>
-        </div>
-        <div class="hw-card">
-            <div class="hw-header"><span class="hw-subject english">English</span><span class="badge orange">CQ</span></div>
-            <h4>Write an essay on "My School"</h4>
-            <p style="font-size:10px;color:var(--text3)">Class 8  Unit 2  10 marks</p>
+        <div id="questionBankList">
+            <div class="hw-card">
+                <div class="hw-header"><span class="hw-subject math">Math</span><span class="badge purple">MCQ</span></div>
+                <h4>What is the value of 144?</h4>
+                <p style="font-size:10px;color:var(--text3)">Class 8  Chapter 5  2 marks</p>
+            </div>
+            <div class="hw-card">
+                <div class="hw-header"><span class="hw-subject science">Science</span><span class="badge blue">Written</span></div>
+                <h4>Explain the process of photosynthesis</h4>
+                <p style="font-size:10px;color:var(--text3)">Class 8  Chapter 3  5 marks</p>
+            </div>
+            <div class="hw-card">
+                <div class="hw-header"><span class="hw-subject english">English</span><span class="badge orange">CQ</span></div>
+                <h4>Write an essay on "My School"</h4>
+                <p style="font-size:10px;color:var(--text3)">Class 8  Unit 2  10 marks</p>
+            </div>
         </div>
 
         <div style="text-align:center;margin-top:20px">

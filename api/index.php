@@ -274,5 +274,87 @@ switch ($path) {
         jsonResponse(['success' => true]);
         break;
 
+    case 'activity_feed':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $uid = intval($_SESSION['user_id'] ?? 0);
+        jsonResponse($db->findAll('activity_feed', 'user_id', $uid));
+        break;
+
+    case 'chapters':
+        $sid = intval($_GET['subject_id'] ?? 0);
+        jsonResponse($db->findAll('chapters', 'subject_id', $sid));
+        break;
+
+    case 'book_content':
+        $cid = intval($_GET['chapter_id'] ?? 0);
+        $all = $db->query('book_content');
+        $found = null;
+        foreach ($all as $b) { if (intval($b['chapter_id'] ?? 0) === $cid) { $found = $b; break; } }
+        jsonResponse($found ?: []);
+        break;
+
+    case 'class_schedule':
+        jsonResponse($db->query('class_schedule'));
+        break;
+
+    case 'calendar_events':
+        jsonResponse($db->query('calendar_events'));
+        break;
+
+    case 'reports':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $uid = intval($_SESSION['user_id'] ?? 0);
+        $role = $_SESSION['role'] ?? '';
+        if ($role === 'student') {
+            jsonResponse($db->findAll('reports', 'student_id', $uid));
+        } else {
+            jsonResponse($db->query('reports'));
+        }
+        break;
+
+    case 'admin_stats':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $users = $db->query('users');
+        $students = count(array_filter($users, function($u) { return ($u['role'] ?? '') === 'student'; }));
+        $teachers = count(array_filter($users, function($u) { return ($u['role'] ?? '') === 'teacher'; }));
+        $liveClasses = count($db->query('live_classes'));
+        $hw = count($db->query('homework'));
+        $exams = count($db->query('exams'));
+        jsonResponse(['students' => $students, 'teachers' => $teachers, 'live_classes' => $liveClasses, 'homework' => $hw, 'exams' => $exams]);
+        break;
+
+    case 'exam_analytics':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $exams = $db->query('exams');
+        $results = $db->query('exam_results');
+        $totalExams = count($exams);
+        $totalResults = count($results);
+        $avgScore = $totalResults > 0 ? round(array_sum(array_column($results, 'score')) / $totalResults) : 0;
+        $passCount = 0;
+        foreach ($results as $r) { if (($r['score'] ?? 0) >= 50) $passCount++; }
+        $passRate = $totalResults > 0 ? round($passCount / $totalResults * 100) : 0;
+        jsonResponse(['avg_score' => $avgScore, 'pass_rate' => $passRate, 'total_exams' => $totalExams, 'total_results' => $totalResults, 'results' => $results, 'exams' => $exams]);
+        break;
+
+    case 'hw_analytics':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $hw = $db->query('homework');
+        $subs = $db->query('homework_submissions');
+        $totalAssigned = count($hw);
+        $totalSubmitted = count($subs);
+        $pending = $totalAssigned - $totalSubmitted;
+        $rate = $totalAssigned > 0 ? round($totalSubmitted / $totalAssigned * 100) : 0;
+        jsonResponse(['total_assigned' => $totalAssigned, 'submitted' => $totalSubmitted, 'pending' => $pending, 'submission_rate' => $rate, 'submissions' => $subs, 'homework' => $hw]);
+        break;
+
+    case 'question_bank':
+        jsonResponse($db->query('question_bank'));
+        break;
+
+    case 'student_evaluations':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        jsonResponse($db->query('student_evaluations'));
+        break;
+
     default: jsonResponseError('Unknown action');
 }
