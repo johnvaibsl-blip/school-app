@@ -745,7 +745,6 @@ function handleChatFile(input, type) {
 }
 
 function tryProviderChain(imageData, name, sysPrompt, thinking, container) {
-    // Step 1: Try configured provider via PHP backend
     apiRaw('ai_analyze_image', { image: imageData, name: name, system_prompt: sysPrompt }).then(function(res) {
         if (res && res.analysis) {
             thinking.remove();
@@ -754,41 +753,22 @@ function tryProviderChain(imageData, name, sysPrompt, thinking, container) {
             return;
         }
         if (res && res.needs_fallback) {
-            return tryPuterFallback(imageData, name, sysPrompt, thinking, container);
+            return tryMoondreamFallback(imageData, name, sysPrompt, thinking, container);
         }
         thinking.remove();
         addChatMessage('I received your image <strong>' + name + '</strong>, but could not analyze it. Please try again.', 'ai');
-    }).catch(function() {
-        tryPuterFallback(imageData, name, sysPrompt, thinking, container);
-    });
-}
-
-function tryPuterFallback(imageData, name, sysPrompt, thinking, container) {
-    // Step 2: Try Puter.js (free, no API key, client-side)
-    if (typeof puter === 'undefined' || !puter.ai || !puter.ai.chat) {
-        return tryMoondreamFallback(imageData, name, sysPrompt, thinking, container);
-    }
-    puter.ai.chat(sysPrompt + '\n\nAnalyze this image: ' + name, imageData, { model: 'openai/gpt-4o-mini' }).then(function(res) {
-        thinking.remove();
-        var answer = (res && res.message && res.message.content) ? res.message.content : (typeof res === 'string' ? res : '');
-        if (answer) {
-            addChatMessage(answer + ' <span style="font-size:10px;opacity:0.5">via Puter.js</span>', 'ai');
-        } else {
-            tryMoondreamFallback(imageData, name, sysPrompt, thinking, container);
-        }
     }).catch(function() {
         tryMoondreamFallback(imageData, name, sysPrompt, thinking, container);
     });
 }
 
 function tryMoondreamFallback(imageData, name, sysPrompt, thinking, container) {
-    // Step 3: Try Moondream Cloud API (free $5/mo credits)
     apiRaw('ai_analyze_image', { image: imageData, name: name, system_prompt: sysPrompt, provider_override: 'moondream' }).then(function(res) {
         thinking.remove();
         if (res && res.analysis) {
             addChatMessage(res.analysis + ' <span style="font-size:10px;opacity:0.5">via Moondream</span>', 'ai');
         } else {
-            addChatMessage('Image analysis requires an API key. Please ask the admin to configure one in <strong>Admin Panel → AI Settings</strong>.<br><br>Free options available:<br>• <strong>Puter.js</strong> — no key needed (check browser console)<br>• <strong>Moondream</strong> — free at <a href="https://console.moondream.ai" target="_blank">console.moondream.ai</a>', 'ai');
+            addChatMessage('Image analysis requires an API key. Please ask the admin to configure one in <strong>Admin Panel → AI Settings</strong>.<br><br>Supported providers: OpenAI, Gemini, Claude, OpenRouter, Moondream (free $5/mo at <a href="https://console.moondream.ai" target="_blank">console.moondream.ai</a>)', 'ai');
         }
     }).catch(function() {
         thinking.remove();
