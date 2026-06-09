@@ -201,7 +201,7 @@ body {
     top: -65px;
     width: 150px;
     height: 180px;
-    z-index: 40;
+    z-index: 80;
     animation: float 3s ease-in-out infinite;
     filter: drop-shadow(0 8px 20px rgba(56,189,248,0.25));
     pointer-events: none;
