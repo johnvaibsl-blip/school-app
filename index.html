@@ -405,12 +405,14 @@
             <div class="goal-popup-overlay" id="goalPopupOverlay" onclick="closeGoalPopup()">
                 <div class="goal-popup" onclick="event.stopPropagation()">
                     <div class="goal-popup-header">
-                        <h4>Add Daily Goal</h4>
+                        <h4>Daily Goals</h4>
                         <button class="goal-popup-close" onclick="closeGoalPopup()"><i data-lucide="x" style="width:18px;height:18px"></i></button>
                     </div>
+                    <div class="goal-popup-goals" id="goalPopupGoals"></div>
+                    <div class="goal-popup-divider"></div>
                     <div class="goal-popup-body">
-                        <input type="text" id="goalInput" class="goal-popup-input" placeholder="e.g. Complete Math Chapter 3" maxlength="60" onkeydown="if(event.key==='Enter')addDailyGoal()">
-                        <button class="goal-popup-add" onclick="addDailyGoal()"><i data-lucide="plus" style="width:16px;height:16px"></i> Add</button>
+                        <input type="text" id="goalInput" class="goal-popup-input" placeholder="Add new goal..." maxlength="60" onkeydown="if(event.key==='Enter')addDailyGoal()">
+                        <button class="goal-popup-add" onclick="addDailyGoal()"><i data-lucide="plus" style="width:16px;height:16px"></i></button>
                     </div>
                 </div>
             </div>

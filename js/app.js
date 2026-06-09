@@ -1962,11 +1962,31 @@ function openGoalPopup() {
     var input = document.getElementById('goalInput');
     if (overlay) overlay.classList.add('active');
     if (input) { input.value = ''; setTimeout(function() { input.focus(); }, 100); }
+    _renderPopupGoals();
 }
 
 function closeGoalPopup() {
     var overlay = document.getElementById('goalPopupOverlay');
     if (overlay) overlay.classList.remove('active');
+}
+
+function _renderPopupGoals() {
+    var container = document.getElementById('goalPopupGoals');
+    if (!container) return;
+    var goals = _getGoals();
+    if (!goals.length) {
+        container.innerHTML = '<div class="goal-popup-empty">No goals yet. Add one below!</div>';
+        return;
+    }
+    var html = '';
+    goals.forEach(function(g, i) {
+        html += '<div class="goal-popup-goal">' +
+            '<input type="checkbox"' + (g.done ? ' checked' : '') + ' onchange="toggleDailyGoal(' + i + ')">' +
+            '<span class="goal-popup-goal-text' + (g.done ? ' done' : '') + '">' + _escHtml(g.text) + '</span>' +
+            '<button class="goal-popup-goal-del" onclick="deleteDailyGoal(' + i + ')">&times;</button>' +
+            '</div>';
+    });
+    container.innerHTML = html;
 }
 
 function addDailyGoal() {
@@ -1980,6 +2000,7 @@ function addDailyGoal() {
     input.value = '';
     input.focus();
     loadDailyGoals();
+    _renderPopupGoals();
 }
 
 function toggleDailyGoal(index) {
@@ -1988,6 +2009,7 @@ function toggleDailyGoal(index) {
     goals[index].done = !goals[index].done;
     _saveGoals(goals);
     loadDailyGoals();
+    _renderPopupGoals();
 }
 
 function deleteDailyGoal(index) {
@@ -1995,6 +2017,7 @@ function deleteDailyGoal(index) {
     goals.splice(index, 1);
     _saveGoals(goals);
     loadDailyGoals();
+    _renderPopupGoals();
 }
 
 function _escHtml(s) {
