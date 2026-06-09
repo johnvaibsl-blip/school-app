@@ -1890,10 +1890,10 @@ function loadActivityFeed() {
     if (!c) return;
     api('activity_feed').then(function(items) {
         var html = '';
-        (items || []).forEach(function(a) {
+        (items || []).slice(0, 3).forEach(function(a) {
             html += '<div class="list-item"><div class="icon-box ' + (a.type === 'read' ? 'green' : a.type === 'homework' ? 'blue' : a.type === 'quiz' ? 'orange' : 'purple') + ' sm"><i data-lucide="' + (a.icon || 'activity') + '" class="icon-sm"></i></div><div class="list-item-content"><h5>' + (a.title || '') + '</h5><p>' + (a.time || '') + '</p></div></div>';
         });
-        if (!html) html = '<p style="text-align:center;padding:12px;font-size:11px;color:var(--text3)">No recent activity</p>';
+        if (!html) html = '<p style="text-align:center;padding:8px;font-size:10px;color:var(--text3)">No recent activity</p>';
         c.innerHTML = html;
         if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
     });

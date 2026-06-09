@@ -574,9 +574,15 @@ body {
 
 /* Activity */
 .activity-row {
-    display: flex;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: 1fr 140px;
+    gap: 8px;
+    align-items: start;
 }
+.activity-row .list-item { padding: 6px 8px; gap: 6px; margin-bottom: 3px; border-radius: 10px; }
+.activity-row .list-item-content h5 { font-size: 9px; }
+.activity-row .list-item-content p { font-size: 8px; }
+.activity-row .icon-box.sm { width: 24px; height: 24px; border-radius: 6px; }
 
 .activity-list {
     flex: 1;
@@ -621,23 +627,22 @@ body {
 
 /* Daily Goal */
 .goal-card {
-    width: 160px;
+    width: 100%;
     background: var(--card);
-    border-radius: 14px;
-    padding: 14px;
+    border-radius: 12px;
+    padding: 10px;
     box-shadow: var(--shadow);
-    flex-shrink: 0;
 }
 
-.goal-emoji { font-size: 32px; margin-bottom: 4px; }
-.goal-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
-.goal-desc { font-size: 9px; color: var(--text3); line-height: 1.4; margin-bottom: 10px; }
-.goal-progress h5 { font-size: 11px; font-weight: 600; margin-bottom: 5px; }
+.goal-emoji { font-size: 20px; margin-bottom: 2px; }
+.goal-title { font-size: 11px; font-weight: 700; margin-bottom: 2px; }
+.goal-desc { font-size: 8px; color: var(--text3); line-height: 1.3; margin-bottom: 6px; }
+.goal-progress h5 { font-size: 10px; font-weight: 600; margin-bottom: 4px; }
 
 .goal-bar {
-    height: 6px;
+    height: 4px;
     background: #E5E7EB;
-    border-radius: 3px;
+    border-radius: 2px;
     overflow: hidden;
 }
 
@@ -3551,7 +3556,7 @@ textarea.input-field { min-height: 100px; resize: vertical; }
     flex-shrink: 0;
 }
 
-.icon-box.sm { width: 36px; height: 36px; border-radius: 10px; }
+.icon-box.sm { width: 28px; height: 28px; border-radius: 8px; }
 .icon-box.lg { width: 52px; height: 52px; border-radius: 14px; }
 
 .icon-box.purple { background: linear-gradient(135deg, #EDE9FE, #DDD6FE); color: #7C3AED; }
@@ -3629,14 +3634,14 @@ textarea.input-field { min-height: 100px; resize: vertical; }
 .list-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px;
+    gap: 8px;
+    padding: 8px;
     background: rgba(255, 255, 255, 0.65);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 14px;
-    margin-bottom: 8px;
+    border-radius: 10px;
+    margin-bottom: 4px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
