@@ -1481,7 +1481,7 @@ function loadTeacherRankings() {
         sorted.forEach(function(t, i) {
             var medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1);
             var medalStyle = i < 3 ? 'font-size:16px' : 'font-size:12px;font-weight:700;color:var(--text3)';
-            html += '<div class="list-item" style="cursor:pointer" onclick="showScreen(\'screen-teacher-profile\')">' +
+            html += '<div class="list-item" style="cursor:pointer" onclick="viewTeacherProfile(' + (t.user_id || t.id || 0) + ',\'' + (t.name || '').replace(/'/g, "\\'") + '\',\'' + (t.subject || '').replace(/'/g, "\\'") + '\')">' +
                 '<div style="' + medalStyle + ';min-width:28px;text-align:center">' + medal + '</div>' +
                 '<div class="user-avatar" style="background:linear-gradient(135deg,' + getSubjectColor(t.subject === 'Mathematics' ? 1 : t.subject === 'English Literature' ? 2 : 3) + ',' + getSubjectColor(t.subject === 'Mathematics' ? 1 : t.subject === 'English Literature' ? 2 : 3) + '80);width:36px;height:36px;font-size:14px">' + (t.name || 'T')[0] + '</div>' +
                 '<div class="list-item-content"><h5>' + (t.name || '') + '</h5><p>' + (t.subject || '') + '</p></div>' +
@@ -1575,26 +1575,179 @@ function saveProfile() {
 
 // --- TEACHER PROFILE ---
 function loadTeacherProfile() {
-    api('teacher_profile').then(function(data) {
-        var u = data.user || {};
-        var t = data.teacher || {};
+    if (!_viewingTeacherId) {
+        _viewingTeacherId = window.__USER_ID || 1;
+    }
+    api('teachers').then(function(teachers) {
+        var teacher = null;
+        var allTeachers = teachers || [];
+        for (var i = 0; i < allTeachers.length; i++) {
+            if (parseInt(allTeachers[i].user_id) === parseInt(_viewingTeacherId) || parseInt(allTeachers[i].id) === parseInt(_viewingTeacherId)) {
+                teacher = allTeachers[i];
+                break;
+            }
+        }
+        if (!teacher && allTeachers.length > 0) {
+            teacher = allTeachers[0];
+            _viewingTeacherId = teacher.user_id;
+        }
+        if (!teacher) return;
+        var name = teacher.name || 'Teacher';
+        var subject = teacher.subject || 'Teacher';
+        _viewingTeacherName = name;
+        _viewingTeacherSubject = subject;
         var setEl = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
-        setEl('tpName', u.name || USER_NAME);
-        setEl('tpSubject', t.subject || 'Teacher');
-        setEl('tpExp', (t.experience || 0) + ' years experience');
-        setEl('tpRating', t.rating || data.avg_rating || 0);
-        setEl('tpStudents', t.total_students || data.student_count || 0);
-        setEl('tpLessons', data.hw_count || 0);
+        setEl('tpName', name);
+        setEl('tpSubject', subject);
+        setEl('tpExp', (teacher.experience || 0) + ' years experience');
+        setEl('tpRating', teacher.rating || 0);
+        setEl('tpStudents', teacher.total_students || 0);
+        setEl('tpLessons', 0);
         var avatarEl = document.getElementById('tpAvatar');
-        if (avatarEl) avatarEl.textContent = (u.name || 'T')[0].toUpperCase();
+        if (avatarEl) avatarEl.textContent = name[0].toUpperCase();
         var descEl = document.getElementById('tpBio');
-        if (descEl) descEl.textContent = (t.bio || u.name || 'Teacher') + ' is a passionate teacher.';
-        // Reviews
+        if (descEl) descEl.textContent = (teacher.bio || name) + ' is a passionate teacher.';
         var reviewContainer = document.getElementById('tpReviews');
         if (reviewContainer) {
-            var rhtml = '<p style="font-size:12px;color:var(--text3);margin-bottom:8px">' + data.review_count + ' reviews</p>';
-            reviewContainer.innerHTML = rhtml;
+            reviewContainer.innerHTML = '<p style="font-size:12px;color:var(--text3);margin-bottom:8px">Reviews</p>';
         }
+        var msgBtn = document.querySelector('#screen-teacher-profile .tutor-action-btn');
+        if (msgBtn && USER_ROLE === 'student') {
+            checkSubscriptionStatus(_viewingTeacherId, function(res) {
+                if (res.subscribed) {
+                    msgBtn.innerHTML = '<i data-lucide="message-circle"></i>';
+                    msgBtn.onclick = function() { openChat(_viewingTeacherId, _viewingTeacherName); };
+                    msgBtn.style.background = 'linear-gradient(135deg,var(--primary),#7C3AED)';
+                } else if (res.status === 'pending') {
+                    msgBtn.innerHTML = '<i data-lucide="clock"></i>';
+                    msgBtn.onclick = function() { showToast('Subscription pending admin approval', 'info'); };
+                    msgBtn.style.background = '#F59E0B';
+                } else {
+                    msgBtn.innerHTML = '<i data-lucide="plus"></i>';
+                    msgBtn.onclick = function() { openSubscribeModal(_viewingTeacherId, _viewingTeacherName, _viewingTeacherSubject); };
+                    msgBtn.style.background = 'var(--bg)';
+                }
+                if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+            });
+        } else if (msgBtn && USER_ROLE === 'teacher') {
+            msgBtn.innerHTML = '<i data-lucide="message-circle"></i>';
+            msgBtn.onclick = function() { openChat(_viewingTeacherId, _viewingTeacherName); };
+            msgBtn.style.background = 'linear-gradient(135deg,var(--primary),#7C3AED)';
+            if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+        }
+    });
+}
+
+// --- SUBSCRIPTION SYSTEM ---
+var _viewingTeacherId = null;
+var _viewingTeacherName = '';
+var _viewingTeacherSubject = '';
+var _selectedSubPayment = 'bkash';
+
+function viewTeacherProfile(teacherUserId, teacherName, teacherSubject) {
+    _viewingTeacherId = teacherUserId;
+    _viewingTeacherName = teacherName || '';
+    _viewingTeacherSubject = teacherSubject || '';
+    showScreen('screen-teacher-profile');
+}
+
+function openSubscribeModal(teacherId, teacherName, teacherSubject) {
+    _viewingTeacherId = teacherId;
+    _viewingTeacherName = teacherName || 'Teacher';
+    _viewingTeacherSubject = teacherSubject || '';
+    var overlay = document.getElementById('subscribeModalOverlay');
+    var avatarEl = document.getElementById('subModalAvatar');
+    var nameEl = document.getElementById('subModalTeacherName');
+    var subjectEl = document.getElementById('subModalTeacherSubject');
+    var pkgSelect = document.getElementById('subModalPackage');
+    var amountEl = document.getElementById('subModalAmount');
+    var txInput = document.getElementById('subModalTxId');
+    var errorEl = document.getElementById('subModalError');
+    if (avatarEl) avatarEl.textContent = _viewingTeacherName[0].toUpperCase();
+    if (nameEl) nameEl.textContent = _viewingTeacherName;
+    if (subjectEl) subjectEl.textContent = _viewingTeacherSubject;
+    if (txInput) txInput.value = '';
+    if (errorEl) { errorEl.style.display = 'none'; errorEl.textContent = ''; }
+    if (amountEl) amountEl.value = '';
+    if (pkgSelect) {
+        pkgSelect.innerHTML = '<option value="">Loading packages...</option>';
+        api('packages').then(function(pkgs) {
+            var html = '';
+            (pkgs || []).forEach(function(p) {
+                if (p.is_active) html += '<option value="' + p.id + '" data-price="' + p.price + '">' + p.name + ' - \u09F3' + (p.price || 0).toLocaleString() + ' (' + (p.duration || 30) + ' days)</option>';
+            });
+            pkgSelect.innerHTML = html || '<option value="">No packages available</option>';
+            if (pkgSelect.options.length > 0) {
+                pkgSelect.selectedIndex = 0;
+                onSubPackageChange();
+            }
+        });
+    }
+    if (overlay) { overlay.style.display = 'flex'; }
+    if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+}
+
+function closeSubscribeModal() {
+    var overlay = document.getElementById('subscribeModalOverlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
+function onSubPackageChange() {
+    var sel = document.getElementById('subModalPackage');
+    var amountEl = document.getElementById('subModalAmount');
+    if (sel && amountEl && sel.selectedIndex >= 0) {
+        var opt = sel.options[sel.selectedIndex];
+        amountEl.value = opt.getAttribute('data-price') || '';
+    }
+}
+
+function selectSubPayment(method) {
+    _selectedSubPayment = method;
+    var bkash = document.getElementById('subPayBkash');
+    var nagad = document.getElementById('subPayNagad');
+    if (bkash) bkash.style.borderColor = method === 'bkash' ? 'var(--primary)' : 'var(--border)';
+    if (nagad) nagad.style.borderColor = method === 'nagad' ? 'var(--primary)' : 'var(--border)';
+}
+
+function submitSubscription() {
+    var pkgSelect = document.getElementById('subModalPackage');
+    var amountEl = document.getElementById('subModalAmount');
+    var txInput = document.getElementById('subModalTxId');
+    var errorEl = document.getElementById('subModalError');
+    var btn = document.getElementById('subModalSubmitBtn');
+    if (!pkgSelect || !amountEl || !txInput) return;
+    var packageId = parseInt(pkgSelect.value);
+    var amount = parseFloat(amountEl.value);
+    var txId = txInput.value.trim();
+    if (!packageId || !amount || !txId) {
+        if (errorEl) { errorEl.style.display = 'block'; errorEl.textContent = 'Please fill all fields including Transaction ID'; }
+        return;
+    }
+    if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
+    fetch('/api/index.php?action=subscribe_teacher', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacher_id: parseInt(_viewingTeacherId), package_id: packageId, amount: amount, transaction_id: txId }),
+        credentials: 'same-origin'
+    }).then(function(r) { return r.json(); }).then(function(res) {
+        if (res.error) {
+            if (errorEl) { errorEl.style.display = 'block'; errorEl.textContent = res.error; }
+        } else {
+            closeSubscribeModal();
+            showToast('Subscription request sent! Admin will approve shortly.', 'success');
+        }
+        if (btn) { btn.disabled = false; btn.textContent = 'Submit Subscription Request'; }
+    }).catch(function() {
+        if (errorEl) { errorEl.style.display = 'block'; errorEl.textContent = 'Network error. Please try again.'; }
+        if (btn) { btn.disabled = false; btn.textContent = 'Submit Subscription Request'; }
+    });
+}
+
+function checkSubscriptionStatus(teacherId, callback) {
+    api('is_subscribed&teacher_id=' + teacherId).then(function(res) {
+        if (callback) callback(res);
+    }).catch(function() {
+        if (callback) callback({ subscribed: false, status: null });
     });
 }
 
@@ -1798,7 +1951,16 @@ function loadMessages() {
                 (c.unread ? '<div style="background:#4F46E5;color:white;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;margin-top:4px">' + c.unread + '</div>' : '') +
                 '</div></div>';
         });
-        if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No conversations</p>';
+        if (!html) {
+            if (USER_ROLE === 'student') {
+                html = '<div style="text-align:center;padding:30px 20px"><div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#7C3AED);display:flex;align-items:center;justify-content:center;margin:0 auto 12px"><i data-lucide="lock" style="width:24px;height:24px;color:white"></i></div>' +
+                    '<h4 style="font-size:14px;font-weight:700;margin-bottom:6px">No Active Subscriptions</h4>' +
+                    '<p style="font-size:12px;color:var(--text3);margin-bottom:16px">Subscribe to a teacher to start chatting with them</p>' +
+                    '<button onclick="showScreen(\'screen-tutors\')" style="padding:10px 24px;background:linear-gradient(135deg,var(--primary),#7C3AED);color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer">Browse Teachers</button></div>';
+            } else {
+                html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No conversations</p>';
+            }
+        }
         container.innerHTML = html;
     });
 }
@@ -2380,7 +2542,7 @@ function loadTutorsScreen() {
         if (secondTeacher) {
             var card2 = document.createElement('div');
             card2.className = 'tt-hero-card';
-            card2.onclick = function() { showScreen('screen-teacher-profile'); };
+            card2.onclick = function() { viewTeacherProfile(secondTeacher.user_id || secondTeacher.id, secondTeacher.name, secondTeacher.subject); };
             card2.style.background = 'linear-gradient(135deg, #EC4899, #F472B6)';
             card2.innerHTML = '<div class="tt-hero-badge"><i data-lucide="award"></i> Featured Teacher</div>' +
                 '<div class="tt-hero-row"><div class="tt-hero-avatar" style="background:rgba(255,255,255,0.2)">' + (secondTeacher.name || 'T')[0] + '</div>' +
@@ -2419,20 +2581,20 @@ function loadTutorsScreen() {
         var popSorted = teachers.slice().sort(function(a, b) { return (b.total_students || 0) - (a.total_students || 0); });
         var popHtml = '';
         popSorted.slice(0, 3).forEach(function(t) {
-            popHtml += '<div class="tt-popular-card" onclick="showScreen(\'screen-teacher-profile\')">' +
+            popHtml += '<div class="tt-popular-card" onclick="viewTeacherProfile(' + (t.user_id || t.id || 0) + ',\'' + (t.name || '').replace(/'/g, "\\'") + '\',\'' + (t.subject || '').replace(/'/g, "\\'") + '\')">' +
                 '<div class="tt-popular-avatar" style="background:linear-gradient(135deg,#4F46E5,#7C3AED)">' + (t.name || 'T')[0] + '</div>' +
                 '<div class="tt-popular-info"><h4>' + (t.name || '') + '</h4>' +
                 '<div class="tt-pop-subject">' + (t.subject || '') + ' - ' + (t.experience || '5') + ' years exp</div>' +
                 '<div class="tt-pop-meta"><span><i data-lucide="star" style="color:#F59E0B"></i> ' + (t.rating || 0) + '</span>' +
                 '<span><i data-lucide="users" style="color:#6366F1"></i> ' + (t.total_students || 0) + '</span></div></div>' +
-                '<button class="tt-pop-subscribe">Subscribe</button></div>';
+                '<button class="tt-pop-subscribe" onclick="event.stopPropagation();openSubscribeModal(' + (t.user_id || t.id || 0) + ',\'' + (t.name || '').replace(/'/g, "\\'") + '\',\'' + (t.subject || '').replace(/'/g, "\\'") + '\')">Subscribe</button></div>';
         });
         setHtml('tutorPopularList', popHtml);
 
         var newSorted = teachers.slice().sort(function(a, b) { return (a.experience || 0) - (b.experience || 0); });
         var newHtml = '';
         newSorted.slice(0, 3).forEach(function(t) {
-            newHtml += '<div class="tt-top-card" onclick="showScreen(\'screen-teacher-profile\')">' +
+            newHtml += '<div class="tt-top-card" onclick="viewTeacherProfile(' + (t.user_id || t.id || 0) + ',\'' + (t.name || '').replace(/'/g, "\\'") + '\',\'' + (t.subject || '').replace(/'/g, "\\'") + '\')">' +
                 '<div class="tt-top-avatar" style="background:linear-gradient(135deg,#06B6D4,#22D3EE)">' + (t.name || 'T')[0] + '</div>' +
                 '<h4>' + (t.name || '') + '</h4><p class="tt-top-subject">' + (t.subject || '') + '</p>' +
                 '<div style="font-size:10px;color:#F59E0B">&#11088; ' + (t.rating || 0) + '</div></div>';
@@ -2525,7 +2687,7 @@ function filterTeachersBySubject(subject) {
         }
         var html = '';
         filtered.forEach(function(t) {
-            html += '<div class="tt-top-card" onclick="showScreen(\'screen-teacher-profile\')">' +
+            html += '<div class="tt-top-card" onclick="viewTeacherProfile(' + (t.user_id || t.id || 0) + ',\'' + (t.name || '').replace(/'/g, "\\'") + '\',\'' + (t.subject || '').replace(/'/g, "\\'") + '\')">' +
                 '<div class="tt-top-avatar" style="background:linear-gradient(135deg,#4F46E5,#7C3AED)">' + (t.name || 'T')[0] + '</div>' +
                 '<h4>' + (t.name || '') + '</h4><p class="tt-top-subject">' + (t.subject || '') + '</p>' +
                 '<div style="font-size:10px;color:#F59E0B">&#11088; ' + (t.rating || 0) + '</div></div>';

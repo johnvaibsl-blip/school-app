@@ -501,6 +501,12 @@ class JsonDB {
             ['id'=>9,'subject'=>'Science','topic'=>'Biology - Cells','class_name'=>'Class 8','time'=>'13:00 - 14:00','day'=>'Wednesday','teacher_name'=>'Ms. Fatima','teacher_id'=>8,'students_count'=>28,'status'=>'upcoming'],
             ['id'=>10,'subject'=>'ICT','topic'=>'Database Fundamentals','class_name'=>'Class 8','time'=>'09:00 - 10:00','day'=>'Thursday','teacher_name'=>'Ms. Sarah','teacher_id'=>4,'students_count'=>22,'status'=>'upcoming'],
         ];
+
+        $this->data['subscriptions'] = [
+            ['id'=>1,'student_id'=>1,'teacher_id'=>1,'package_id'=>2,'amount'=>499,'transaction_id'=>'BK1234567890','status'=>'approved','created_at'=>'2026-06-01 10:00:00','approved_at'=>'2026-06-02 09:00:00'],
+            ['id'=>2,'student_id'=>5,'teacher_id'=>1,'package_id'=>1,'amount'=>299,'transaction_id'=>'NAG9876543210','status'=>'pending','created_at'=>'2026-06-09 14:30:00','approved_at'=>null],
+            ['id'=>3,'student_id'=>6,'teacher_id'=>2,'package_id'=>2,'amount'=>499,'transaction_id'=>'BK1122334455','status'=>'approved','created_at'=>'2026-06-05 11:00:00','approved_at'=>'2026-06-05 16:00:00'],
+        ];
     }
 }
 

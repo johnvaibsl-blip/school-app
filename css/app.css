@@ -4602,3 +4602,26 @@ textarea.input-field { min-height: 100px; resize: vertical; }
     0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
     30% { transform: translateY(-6px); opacity: 1; }
 }
+
+/* Subscribe Modal */
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+.sub-pay-method { transition: all 0.2s ease; }
+.sub-pay-method.selected { border-color: var(--primary) !important; background: #EEF2FF !important; }
+#subscribeModal select,
+#subscribeModal input {
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+#subscribeModal select:focus,
+#subscribeModal input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+}
+
+/* Subscription Status Badges */
+.badge-sub-approved { background: #10B981; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; }
+.badge-sub-pending { background: #F59E0B; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; }
+.badge-sub-rejected { background: #EF4444; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; }

@@ -90,7 +90,7 @@ $sidebar=[
 ['s'=>'Content','i'=>[['homework','file-text','Homework'],['exams','calendar','Exams'],['library','library','Library']]],
 ['s'=>'Assessment','i'=>[['questions','help-circle','Question Bank'],['submissions','inbox','Submissions'],['results','award','Exam Results'],['exam_analytics','bar-chart','Exam Analytics'],['hw_analytics','pie-chart','Homework Analytics'],['reports','file-bar-chart','Reports']]],
 ['s'=>'Communication','i'=>[['live_classes','tv','Live Classes'],['announcements','megaphone','Announcements'],['messages','message-square','Messages'],['notifications','bell','Notifications'],['calendar','calendar-days','Calendar'],['calendar_events','calendar-range','Calendar Events']]],
-['s'=>'Business','i'=>[['packages','credit-card','Packages'],['revenue','dollar-sign','Revenue']]],
+['s'=>'Business','i'=>[['packages','credit-card','Packages'],['subscriptions','user-check','Subscriptions'],['revenue','dollar-sign','Revenue']]],
 ['s'=>'System','i'=>[['settings','settings','General Settings'],['ai_settings','brain','AI Settings']]]
 ];
 ?>
@@ -207,7 +207,7 @@ td{color:#374151}
 <div class="main">
 <div class="topbar">
 <h1><?php
-$t=['dashboard'=>'Dashboard','users'=>'All Users','teachers'=>'Teachers','featured_teachers'=>'Featured Teachers','subjects'=>'Subjects','chapters'=>'Chapters','homework'=>'Homework','exams'=>'Exams','questions'=>'Question Bank','submissions'=>'Submissions','results'=>'Exam Results','live_classes'=>'Live Classes','announcements'=>'Announcements','messages'=>'Messages','packages'=>'Packages','revenue'=>'Revenue','settings'=>'General Settings','ai_settings'=>'AI Settings','library'=>'Library','student_progress'=>'Student Progress','rankings'=>'Teacher Rankings','exam_analytics'=>'Exam Analytics','hw_analytics'=>'Homework Analytics','notifications'=>'Notifications','calendar'=>'Calendar'];
+$t=['dashboard'=>'Dashboard','users'=>'All Users','teachers'=>'Teachers','featured_teachers'=>'Featured Teachers','subjects'=>'Subjects','chapters'=>'Chapters','homework'=>'Homework','exams'=>'Exams','questions'=>'Question Bank','submissions'=>'Submissions','results'=>'Exam Results','live_classes'=>'Live Classes','announcements'=>'Announcements','messages'=>'Messages','packages'=>'Packages','subscriptions'=>'Subscriptions','revenue'=>'Revenue','settings'=>'General Settings','ai_settings'=>'AI Settings','library'=>'Library','student_progress'=>'Student Progress','rankings'=>'Teacher Rankings','exam_analytics'=>'Exam Analytics','hw_analytics'=>'Homework Analytics','notifications'=>'Notifications','calendar'=>'Calendar'];
 echo $t[$page]??ucfirst(str_replace('_',' ',$page));
 ?></h1>
 <div class="info"><div><div class="name"><?php echo htmlspecialchars($_SESSION['user_name']); ?></div><div class="role">Administrator</div></div></div>
@@ -781,10 +781,65 @@ $ep=$edit>0?$db->find('packages','id',$edit):null; ?>
 <td class="actions"><a href="?page=packages&edit=<?php echo $p['id']; ?>" class="btn btn-primary btn-sm"><i data-lucide="edit-2" style="width:12px;height:12px"></i></a><a href="?page=packages&edit=<?php echo $p['id']; ?>&del_table=packages" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
 <?php endforeach; ?></table></div>
 
+<?php /* === SUBSCRIPTIONS === */ ?>
+<?php elseif($page==='subscriptions'):
+$allSubs=$db->query('subscriptions');
+$pendingCount=0;$approvedCount=0;$rejectedCount=0;
+foreach($allSubs as $s){if($s['status']==='pending')$pendingCount++;if($s['status']==='approved')$approvedCount++;if($s['status']==='rejected')$rejectedCount++;}
+
+if($_SERVER['REQUEST_METHOD']==='POST'&&isset($_POST['action'])){
+    $sa=$_POST['action'];
+    if($sa==='approve_sub'){
+        $sid=intval($_POST['id']);
+        $db->update('subscriptions',$sid,['status'=>'approved','approved_at'=>date('Y-m-d H:i:s')]);
+        header('Location: ?page=subscriptions&msg=approved');exit;
+    }
+    if($sa==='reject_sub'){
+        $sid=intval($_POST['id']);
+        $db->update('subscriptions',$sid,['status'=>'rejected']);
+        header('Location: ?page=subscriptions&msg=rejected');exit;
+    }
+}
+?>
+<div class="sg">
+<div class="sc"><div class="si y"><i data-lucide="clock"></i></div><div class="st"><h3><?php echo $pendingCount; ?></h3><p>Pending</p></div></div>
+<div class="sc"><div class="si g"><i data-lucide="check-circle"></i></div><div class="st"><h3><?php echo $approvedCount; ?></h3><p>Approved</p></div></div>
+<div class="sc"><div class="si r"><i data-lucide="x-circle"></i></div><div class="st"><h3><?php echo $rejectedCount; ?></h3><p>Rejected</p></div></div>
+<div class="sc"><div class="si p"><i data-lucide="users"></i></div><div class="st"><h3><?php echo count($allSubs); ?></h3><p>Total Requests</p></div></div></div>
+
+<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="margin-bottom:0"><i data-lucide="user-check"></i>Subscription Requests</h3></div>
+<div class="search-bar"><i data-lucide="search"></i><input type="text" placeholder="Search subscriptions..." oninput="filterTable(this,'subs-table')"></div>
+<table id="subs-table"><tr><th>Student</th><th>Teacher</th><th>Package</th><th>Amount</th><th>Transaction ID</th><th>Status</th><th>Date</th><th>Actions</th></tr>
+<?php foreach($allSubs as $s):
+$student=$db->find('users','id',$s['student_id']);
+$teacherUser=null;
+$teachers=$db->query('teachers');
+foreach($teachers as $t){if(intval($t['user_id'])===intval($s['teacher_id'])||intval($t['id'])===intval($s['teacher_id'])){$teacherUser=$db->find('users','id',$t['user_id']);break;}}
+$pkg=$db->find('packages','id',$s['package_id']);
+?>
+<tr>
+<td><strong><?php echo htmlspecialchars($student['name']??'Unknown'); ?></strong><br><span style="font-size:10px;color:#9CA3AF"><?php echo htmlspecialchars($student['email']??''); ?></span></td>
+<td><strong><?php echo htmlspecialchars($teacherUser['name']??'Unknown'); ?></strong><br><span style="font-size:10px;color:#9CA3AF"><?php echo htmlspecialchars($s['teacher_id']); ?></span></td>
+<td><?php echo htmlspecialchars($pkg['name']??'Unknown'); ?></td>
+<td><strong style="color:#4F46E5"><?php echo number_format($s['amount'],0); ?> BDT</strong></td>
+<td><code style="background:#1E293B;padding:2px 6px;border-radius:4px;font-size:11px"><?php echo htmlspecialchars($s['transaction_id']); ?></code></td>
+<td><span class="badge <?php echo $s['status']==='approved'?'bg':($s['status']==='rejected'?'br':'bo'); ?>"><?php echo ucfirst($s['status']); ?></span></td>
+<td style="font-size:11px"><?php echo date('M d, Y',strtotime($s['created_at'])); ?></td>
+<td class="actions">
+<?php if($s['status']==='pending'): ?>
+<form method="POST" style="display:inline"><input type="hidden" name="action" value="approve_sub"><input type="hidden" name="id" value="<?php echo $s['id']; ?>"><button type="submit" class="btn btn-sm" style="background:#10B981;color:white" onclick="return confirm('Approve this subscription?')"><i data-lucide="check" style="width:12px;height:12px"></i></button></form>
+<form method="POST" style="display:inline"><input type="hidden" name="action" value="reject_sub"><input type="hidden" name="id" value="<?php echo $s['id']; ?>"><button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Reject this subscription?')"><i data-lucide="x" style="width:12px;height:12px"></i></button></form>
+<?php else: ?>
+<span style="font-size:10px;color:#9CA3AF"><?php echo $s['approved_at']?date('M d',strtotime($s['approved_at'])):'-'; ?></span>
+<?php endif; ?>
+</td></tr>
+<?php endforeach; ?></table></div>
+
 <?php /* === REVENUE === */ ?>
 <?php elseif($page==='revenue'):
 $pu=count($db->findAll('users','is_premium',1));$tr=0;$pc=[];
-foreach($allPackages as $p){$c=rand(5,25);$pc[$p['name']]=$c;$tr+=$p['price']*$c;}
+foreach($allPackages as $p){$c=rand(5,25);$pc[$p['name']]=$c;$tr+=$p['price']*($c);}
 ?>
 <div class="sg">
 <div class="sc"><div class="si g"><i data-lucide="dollar-sign"></i></div><div class="st"><h3><?php echo $tr; ?> BDT</h3><p>Total Revenue</p></div></div>

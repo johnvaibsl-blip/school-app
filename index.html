@@ -414,6 +414,57 @@
     </div>
 </div>
 
+<!-- ========== SUBSCRIBE MODAL ========== -->
+<div id="subscribeModalOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:200;align-items:flex-end;justify-content:center" onclick="closeSubscribeModal()">
+    <div id="subscribeModal" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;padding:0;animation:slideUp 0.3s ease" onclick="event.stopPropagation()">
+        <div style="padding:20px 20px 0">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                <h3 style="font-size:16px;font-weight:700;margin:0">Subscribe to Teacher</h3>
+                <button onclick="closeSubscribeModal()" style="background:none;border:none;cursor:pointer;padding:4px"><i data-lucide="x" style="width:20px;height:20px;color:var(--text3)"></i></button>
+            </div>
+            <div id="subModalTeacherInfo" style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:12px;background:var(--bg);border-radius:12px">
+                <div id="subModalAvatar" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#7C3AED);display:flex;align-items:center;justify-content:center;color:white;font-size:18px;font-weight:700">T</div>
+                <div>
+                    <h4 id="subModalTeacherName" style="font-size:14px;font-weight:600;margin:0">Teacher Name</h4>
+                    <p id="subModalTeacherSubject" style="font-size:11px;color:var(--text3);margin:0">Subject</p>
+                </div>
+            </div>
+        </div>
+        <div style="padding:0 20px 20px">
+            <div style="margin-bottom:14px">
+                <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Select Package</label>
+                <select id="subModalPackage" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px" onchange="onSubPackageChange()"></select>
+            </div>
+            <div style="margin-bottom:14px">
+                <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Amount (BDT)</label>
+                <input type="number" id="subModalAmount" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px" placeholder="0" readonly>
+            </div>
+            <div style="margin-bottom:14px">
+                <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Payment Method</label>
+                <div style="display:flex;gap:8px">
+                    <div id="subPayBkash" class="sub-pay-method selected" onclick="selectSubPayment('bkash')" style="flex:1;padding:10px;border:2px solid var(--primary);border-radius:10px;text-align:center;cursor:pointer;background:var(--bg)">
+                        <div style="font-size:16px;font-weight:700;color:#E2136E">b</div>
+                        <div style="font-size:10px;color:var(--text3)">bKash</div>
+                    </div>
+                    <div id="subPayNagad" class="sub-pay-method" onclick="selectSubPayment('nagad')" style="flex:1;padding:10px;border:2px solid var(--border);border-radius:10px;text-align:center;cursor:pointer;background:var(--bg)">
+                        <div style="font-size:16px;font-weight:700;color:#F69221">N</div>
+                        <div style="font-size:10px;color:var(--text3)">Nagad</div>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-bottom:14px">
+                <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Transaction ID</label>
+                <input type="text" id="subModalTxId" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px" placeholder="Enter bKash/Nagad Transaction ID">
+            </div>
+            <div id="subModalError" style="display:none;padding:8px 12px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;font-size:11px;color:#DC2626;margin-bottom:12px"></div>
+            <button id="subModalSubmitBtn" onclick="submitSubscription()" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--primary),#7C3AED);color:white;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer">
+                Submit Subscription Request
+            </button>
+            <p style="font-size:10px;color:var(--text3);text-align:center;margin-top:10px;margin-bottom:0">Admin will verify your payment and approve within 24 hours</p>
+        </div>
+    </div>
+</div>
+
 <!-- ========== 2. AI TUTOR CHAT ========== -->
 <div id="screen-chat" class="screen">
     <header class="header">
@@ -559,7 +610,7 @@
             <span class="tt-section-title">My Tutors</span>
         </div>
         <div id="tutorMyTutorsList">
-            <div class="tt-my-tutor" onclick="showScreen('screen-teacher-profile')">
+            <div class="tt-my-tutor" onclick="viewTeacherProfile(2,'Mr. Rahim Ahmed','Mathematics')">
                 <div class="tt-my-tutor-avatar">R</div>
                 <div class="tt-my-tutor-info">
                     <h4>Mr. Rahim Ahmed</h4>
@@ -567,7 +618,7 @@
                 </div>
                 <button class="tt-my-tutor-btn">Profile</button>
             </div>
-            <div class="tt-my-tutor" onclick="showScreen('screen-teacher-profile')">
+            <div class="tt-my-tutor" onclick="viewTeacherProfile(4,'Ms. Sarah Khan','English')">
                 <div class="tt-my-tutor-avatar" style="background:linear-gradient(135deg,#EC4899,#F472B6)">S</div>
                 <div class="tt-my-tutor-info">
                     <h4>Ms. Sarah Khan</h4>
@@ -619,41 +670,41 @@
             <span class="tt-section-title">Most Popular Teachers</span>
         </div>
         <div id="tutorPopularList">
-            <div class="tt-popular-card" onclick="showScreen('screen-teacher-profile')">
-                <div class="tt-popular-avatar" style="background:linear-gradient(135deg,#22C55E,#4ADE80)">K</div>
+            <div class="tt-popular-card" onclick="viewTeacherProfile(2,'Mr. Rahim Ahmed','Mathematics')">
+                <div class="tt-popular-avatar" style="background:linear-gradient(135deg,#22C55E,#4ADE80)">R</div>
                 <div class="tt-popular-info">
-                    <h4>Mr. Karim Uddin</h4>
-                    <div class="tt-pop-subject">Science - 10 years exp</div>
+                    <h4>Mr. Rahim Ahmed</h4>
+                    <div class="tt-pop-subject">Mathematics - 10 years exp</div>
                     <div class="tt-pop-meta">
                         <span><i data-lucide="star" style="color:#F59E0B"></i> 4.7</span>
                         <span><i data-lucide="users" style="color:#6366F1"></i> 200+</span>
                     </div>
                 </div>
-                <button class="tt-pop-subscribe">Subscribe</button>
+                <button class="tt-pop-subscribe" onclick="event.stopPropagation();openSubscribeModal(2,'Mr. Rahim Ahmed','Mathematics')">Subscribe</button>
             </div>
-            <div class="tt-popular-card" onclick="showScreen('screen-teacher-profile')">
-                <div class="tt-popular-avatar" style="background:linear-gradient(135deg,#F59E0B,#F97316)">N</div>
+            <div class="tt-popular-card" onclick="viewTeacherProfile(4,'Ms. Sarah Khan','English')">
+                <div class="tt-popular-avatar" style="background:linear-gradient(135deg,#F59E0B,#F97316)">S</div>
                 <div class="tt-popular-info">
-                    <h4>Ms. Nusrat Jahan</h4>
-                    <div class="tt-pop-subject">Bangla - 8 years exp</div>
+                    <h4>Ms. Sarah Khan</h4>
+                    <div class="tt-pop-subject">English - 8 years exp</div>
                     <div class="tt-pop-meta">
                         <span><i data-lucide="star" style="color:#F59E0B"></i> 4.8</span>
                         <span><i data-lucide="users" style="color:#6366F1"></i> 150+</span>
                     </div>
                 </div>
-                <button class="tt-pop-subscribe">Subscribe</button>
+                <button class="tt-pop-subscribe" onclick="event.stopPropagation();openSubscribeModal(4,'Ms. Sarah Khan','English')">Subscribe</button>
             </div>
-            <div class="tt-popular-card" onclick="showScreen('screen-teacher-profile')">
-                <div class="tt-popular-avatar" style="background:linear-gradient(135deg,#EC4899,#F472B6)">T</div>
+            <div class="tt-popular-card" onclick="viewTeacherProfile(8,'Ms. Fatima Begum','Science')">
+                <div class="tt-popular-avatar" style="background:linear-gradient(135deg,#EC4899,#F472B6)">F</div>
                 <div class="tt-popular-info">
-                    <h4>Dr. Tanvir Hossain</h4>
-                    <div class="tt-pop-subject">Physics - 12 years exp</div>
+                    <h4>Ms. Fatima Begum</h4>
+                    <div class="tt-pop-subject">Science - 12 years exp</div>
                     <div class="tt-pop-meta">
                         <span><i data-lucide="star" style="color:#F59E0B"></i> 4.9</span>
                         <span><i data-lucide="users" style="color:#6366F1"></i> 300+</span>
                     </div>
                 </div>
-                <button class="tt-pop-subscribe">Subscribe</button>
+                <button class="tt-pop-subscribe" onclick="event.stopPropagation();openSubscribeModal(8,'Ms. Fatima Begum','Science')">Subscribe</button>
             </div>
         </div>
 
