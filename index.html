@@ -408,7 +408,7 @@
         <button class="header-back" onclick="showScreen('screen-home')"><i data-lucide="arrow-left"></i></button>
         <div class="header-center" style="display:flex;align-items:center;gap:8px">
             <div class="snorii-avatar"><svg viewBox="0 0 40 40" width="32" height="32"><ellipse cx="20" cy="18" rx="16" ry="14" fill="#F0F9FF"/><rect x="10" y="12" width="20" height="16" rx="6" fill="#0F172A"/><circle cx="15" cy="20" r="3" fill="#22D3EE"/><circle cx="25" cy="20" r="3" fill="#22D3EE"/><path d="M16 25 Q20 28 24 25" stroke="#22D3EE" stroke-width="1.5" stroke-linecap="round" fill="none"/><rect x="18" y="3" width="4" height="6" rx="2" fill="#334155"/><circle cx="20" cy="3" r="2.5" fill="#1E293B"/><circle cx="20" cy="3" r="1.5" fill="#22D3EE" opacity="0.7"/></svg></div>
-            <div><h3 class="header-title">Snorii AI</h3><p style="font-size:9px;color:var(--text3)">Always here to help</p></div>
+            <div><h3 class="header-title" id="chatBotName">Snorii AI</h3><p style="font-size:9px;color:var(--text3)" id="chatBotSubtitle">Always here to help</p></div>
         </div>
         <button class="icon-btn" id="chatMenuBtn" onclick="toggleChatMenu()"><i data-lucide="more-vertical"></i></button>
     </header>
@@ -459,7 +459,7 @@
             <div class="msg-avatar snorii-avatar-sm"><svg viewBox="0 0 40 40" width="20" height="20"><ellipse cx="20" cy="18" rx="16" ry="14" fill="#F0F9FF"/><rect x="10" y="12" width="20" height="16" rx="6" fill="#0F172A"/><circle cx="15" cy="20" r="3" fill="#22D3EE"/><circle cx="25" cy="20" r="3" fill="#22D3EE"/><path d="M16 25 Q20 28 24 25" stroke="#22D3EE" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg></div>
             <div class="msg-bubble" id="aiGreeting">Hello! I'm <strong>Snorii AI</strong>. Ask me anything about Math, Science, English and more!</div>
         </div>
-        <div class="suggested-prompts">
+        <div class="suggested-prompts" id="chatSuggestedPrompts">
             <button class="prompt-chip" onclick="sendPrompt(this)">Explain photosynthesis</button>
             <button class="prompt-chip" onclick="sendPrompt(this)">Solve quadratic equations</button>
             <button class="prompt-chip" onclick="sendPrompt(this)">Summarize Chapter 3</button>

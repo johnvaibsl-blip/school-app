@@ -738,15 +738,28 @@ foreach($allPackages as $p){$c=rand(5,25);$pc[$p['name']]=$c;$tr+=$p['price']*$c
 
 <?php /* === AI SETTINGS === */ ?>
 <?php elseif($page==='ai_settings'): ?>
+<?php
+$allSettings = $db->query('settings');
+$sMap = [];
+foreach($allSettings as $s) $sMap[$s['key']] = $s['value'];
+?>
+<div class="card"><h3><i data-lucide="user"></i>Chat Bot Identity</h3>
+<form method="POST"><input type="hidden" name="action" value="update_settings">
+<div class="form-group"><label>Bot Name</label><input type="text" name="ai_name" value="<?php echo htmlspecialchars($sMap['ai_name'] ?? 'Snorii AI'); ?>"></div>
+<div class="form-group"><label>Greeting Message</label><textarea name="ai_greeting" rows="2"><?php echo htmlspecialchars($sMap['ai_greeting'] ?? ''); ?></textarea></div>
+<div class="form-group"><label>Subtitle</label><input type="text" name="ai_subtitle" value="<?php echo htmlspecialchars($sMap['ai_subtitle'] ?? 'Always here to help'); ?>"></div>
+<div class="form-group"><label>System Prompt</label><textarea name="ai_system_prompt" rows="3"><?php echo htmlspecialchars($sMap['ai_system_prompt'] ?? ''); ?></textarea></div>
+<div class="form-group"><label>Suggested Prompts (pipe-separated)</label><input type="text" name="ai_suggested_prompts" value="<?php echo htmlspecialchars($sMap['ai_suggested_prompts'] ?? ''); ?>" placeholder="Prompt 1|Prompt 2|Prompt 3"></div>
+<button type="submit" class="btn btn-primary">Save Bot Identity</button></form></div>
 <div class="card"><h3><i data-lucide="brain"></i>AI Configuration</h3>
 <form method="POST"><input type="hidden" name="action" value="update_settings">
-<div class="form-group"><label>AI Status</label><select name="ai_enabled"><option value="1">Enabled</option><option value="0">Disabled</option></select></div>
-<div class="form-row"><div class="form-group"><label>AI Provider</label><select name="ai_provider"><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option><option value="claude">Anthropic Claude</option><option value="openrouter">OpenRouter</option></select></div><div class="form-group"><label>Max MCQ Options</label><input type="number" name="max_mcq_options" value="6" min="2" max="10"></div></div>
+<div class="form-group"><label>AI Status</label><select name="ai_enabled"><option value="1" <?php echo ($sMap['ai_enabled']??'1')==='1'?'selected':''; ?>>Enabled</option><option value="0" <?php echo ($sMap['ai_enabled']??'1')==='0'?'selected':''; ?>>Disabled</option></select></div>
+<div class="form-row"><div class="form-group"><label>AI Provider</label><select name="ai_provider"><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option><option value="claude">Anthropic Claude</option><option value="openrouter">OpenRouter</option></select></div><div class="form-group"><label>Max MCQ Options</label><input type="number" name="max_mcq_options" value="<?php echo htmlspecialchars($sMap['max_mcq_options'] ?? '6'); ?>" min="2" max="10"></div></div>
 <div class="form-group"><label>OpenAI API Key</label><input type="password" name="openai_api_key" placeholder="sk-..."></div>
 <div class="form-group"><label>Gemini API Key</label><input type="password" name="gemini_api_key" placeholder="AIza..."></div>
 <div class="form-group"><label>Claude API Key</label><input type="password" name="claude_api_key" placeholder="sk-ant-..."></div>
 <div class="form-group"><label>OpenRouter API Key</label><input type="password" name="openrouter_api_key" placeholder="sk-or-..."></div>
-<div class="form-row"><div class="form-group"><label>Temperature (0-1)</label><input type="number" name="ai_temperature" value="0.7" step="0.1" min="0" max="1"></div><div class="form-group"><label>Max Tokens</label><input type="number" name="ai_max_tokens" value="2048" min="256" max="8192"></div></div>
+<div class="form-row"><div class="form-group"><label>Temperature (0-1)</label><input type="number" name="ai_temperature" value="<?php echo htmlspecialchars($sMap['ai_temperature'] ?? '0.7'); ?>" step="0.1" min="0" max="1"></div><div class="form-group"><label>Max Tokens</label><input type="number" name="ai_max_tokens" value="<?php echo htmlspecialchars($sMap['ai_max_tokens'] ?? '2048'); ?>" min="256" max="8192"></div></div>
 <button type="submit" class="btn btn-primary">Save AI Settings</button></form></div>
 <div class="card"><h3><i data-lucide="activity"></i>AI Usage Stats</h3>
 <div class="sg">

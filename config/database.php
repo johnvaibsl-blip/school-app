@@ -290,6 +290,11 @@ class JsonDB {
             ['id'=>5,'key'=>'max_mcq_options','value'=>'6'],
             ['id'=>6,'key'=>'currency','value'=>'BDT'],
             ['id'=>7,'key'=>'currency_symbol','value'=>'৳'],
+            ['id'=>8,'key'=>'ai_name','value'=>'Snorii AI'],
+            ['id'=>9,'key'=>'ai_greeting','value'=>'Hello! I''m <strong>Snorii AI</strong>. Ask me anything about Math, Science, English and more!'],
+            ['id'=>10,'key'=>'ai_subtitle','value'=>'Always here to help'],
+            ['id'=>11,'key'=>'ai_system_prompt','value'=>'You are a helpful school tutor for Class 8 students. Answer clearly and simply.'],
+            ['id'=>12,'key'=>'ai_suggested_prompts','value'=>'Explain photosynthesis|Solve quadratic equations|Summarize Chapter 3'],
         ];
         
         $this->data['homework_submissions'] = [

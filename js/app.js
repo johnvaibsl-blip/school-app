@@ -144,6 +144,8 @@ function showScreen(id) {
     if (id === 'screen-homework') loadHomeworkList();
     if (id === 'screen-exam') loadExamList();
     if (id === 'screen-announcements') loadAnnouncements();
+    if (id !== 'screen-chat') _chatSettingsLoaded = false;
+    if (id === 'screen-chat') loadChatSettings();
     if (id === 'screen-pricing') loadPackages();
     if (id === 'screen-tutors') loadTeacherRankings();
     if (id === 'screen-profile' && USER_ROLE === 'student') loadStudentProfile();
@@ -633,6 +635,55 @@ function bindEvents() {
         container.innerHTML = html;
         if (typeof lucide !== 'undefined') lucide.createIcons();
     });
+}
+
+// === LOAD CHAT AI SETTINGS FROM ADMIN ===
+var _chatSettingsLoaded = false;
+function loadChatSettings() {
+    if (_chatSettingsLoaded) return;
+    api('settings').then(function(s) {
+        _chatSettingsLoaded = true;
+        if (!s) return;
+        var name = s.ai_name || 'Snorii AI';
+        var greeting = s.ai_greeting || 'Hello! I\'m <strong>Snorii AI</strong>. Ask me anything about Math, Science, English and more!';
+        var subtitle = s.ai_subtitle || 'Always here to help';
+        var prompts = (s.ai_suggested_prompts || 'Explain photosynthesis|Solve quadratic equations|Summarize Chapter 3').split('|');
+        var enabled = s.ai_enabled !== '0';
+        var nameEl = document.getElementById('chatBotName');
+        var subEl = document.getElementById('chatBotSubtitle');
+        var greetEl = document.getElementById('aiGreeting');
+        var promptsEl = document.getElementById('chatSuggestedPrompts');
+        var inputEl = document.querySelector('.messenger-input');
+        if (nameEl) nameEl.textContent = name;
+        if (subEl) subEl.textContent = subtitle;
+        if (greetEl) greetEl.innerHTML = greeting;
+        if (inputEl) inputEl.placeholder = 'Message ' + name + '...';
+        if (promptsEl) {
+            promptsEl.innerHTML = '';
+            prompts.forEach(function(p) {
+                p = p.trim();
+                if (!p) return;
+                var btn = document.createElement('button');
+                btn.className = 'prompt-chip';
+                btn.textContent = p;
+                btn.onclick = function() { sendPrompt(btn); };
+                promptsEl.appendChild(btn);
+            });
+        }
+        if (!enabled) {
+            var container = document.querySelector('#screen-chat .chat-messages');
+            if (container) {
+                var disabledMsg = document.createElement('div');
+                disabledMsg.className = 'msg ai';
+                disabledMsg.innerHTML = '<div class="msg-bubble" style="background:#FEF2F2;color:#B91C1C;text-align:center">AI is currently disabled by admin.</div>';
+                container.appendChild(disabledMsg);
+            }
+            var inputBar = document.querySelector('#screen-chat .messenger-input-bar');
+            if (inputBar) inputBar.style.opacity = '0.5';
+            var sendBtn = document.querySelector('#screen-chat .messenger-send');
+            if (sendBtn) sendBtn.onclick = function() { showToast('AI is disabled by admin', 'error'); };
+        }
+    }).catch(function(){});
 }
 
 // === AI TUTOR ===
