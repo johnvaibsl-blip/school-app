@@ -389,13 +389,29 @@
         </div>
         <div class="activity-row">
             <div id="homeActivityFeed"></div>
-            <div class="goal-card">
-                <div class="goal-emoji"><i data-lucide="target" style="width:24px;height:24px;color:var(--primary)"></i></div>
+            <div class="goal-card" id="goalCard">
+                <div class="goal-header">
+                    <div class="goal-emoji"><i data-lucide="target" style="width:18px;height:18px;color:var(--primary)"></i></div>
+                    <button class="goal-add-btn" onclick="openGoalPopup()"><i data-lucide="plus" style="width:14px;height:14px"></i></button>
+                </div>
                 <h4 class="goal-title">Daily Goal</h4>
-                <p class="goal-desc">Keep learning everyday and achieve your goals.</p>
+                <div class="goal-checklist" id="goalChecklist"></div>
                 <div class="goal-progress">
-                    <h5 id="homeGoalText">3 / 5 Tasks</h5>
-                    <div class="goal-bar"><div class="goal-bar-fill" id="homeGoalBar" style="width:60%"></div></div>
+                    <h5 id="homeGoalText">0 / 0 Tasks</h5>
+                    <div class="goal-bar"><div class="goal-bar-fill" id="homeGoalBar" style="width:0%"></div></div>
+                </div>
+            </div>
+            <!-- Goal Popup -->
+            <div class="goal-popup-overlay" id="goalPopupOverlay" onclick="closeGoalPopup()">
+                <div class="goal-popup" onclick="event.stopPropagation()">
+                    <div class="goal-popup-header">
+                        <h4>Add Daily Goal</h4>
+                        <button class="goal-popup-close" onclick="closeGoalPopup()"><i data-lucide="x" style="width:18px;height:18px"></i></button>
+                    </div>
+                    <div class="goal-popup-body">
+                        <input type="text" id="goalInput" class="goal-popup-input" placeholder="e.g. Complete Math Chapter 3" maxlength="60" onkeydown="if(event.key==='Enter')addDailyGoal()">
+                        <button class="goal-popup-add" onclick="addDailyGoal()"><i data-lucide="plus" style="width:16px;height:16px"></i> Add</button>
+                    </div>
                 </div>
             </div>
         </div>

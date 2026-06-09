@@ -158,7 +158,7 @@ function showScreen(id) {
     if (id === 'screen-messages') loadMessages();
     if (id === 'screen-earnings') loadEarnings();
     if (id === 'screen-live-lobby') loadLiveSchedule();
-    if (id === 'screen-home' && USER_ROLE === 'student') { loadStudentHomeProgress(); loadActivityFeed(); }
+    if (id === 'screen-home' && USER_ROLE === 'student') { loadStudentHomeProgress(); loadActivityFeed(); loadDailyGoals(); }
     if (id === 'screen-my-study') { loadMyStudyStats(); loadSubjectChapters(1); }
     if (id === 'screen-tutors' && USER_ROLE === 'student') loadTutorsScreen();
     if (id === 'screen-teacher-dash' && USER_ROLE === 'teacher') loadTeacherDashStats();
@@ -1913,6 +1913,94 @@ function loadStudentHomeProgress() {
         setText('homeGoalText', goalTasks + ' / 4 Tasks');
         setBar('homeGoalBar', goalTasks * 25);
     });
+}
+
+// --- DAILY GOALS (localStorage) ---
+function _goalKey() {
+    var today = new Date().toISOString().slice(0, 10);
+    return 'dailyGoal_' + (USER_NAME || 'user') + '_' + today;
+}
+
+function _getGoals() {
+    try { return JSON.parse(localStorage.getItem(_goalKey())) || []; } catch(e) { return []; }
+}
+
+function _saveGoals(goals) {
+    localStorage.setItem(_goalKey(), JSON.stringify(goals));
+}
+
+function loadDailyGoals() {
+    var goals = _getGoals();
+    var checklist = document.getElementById('goalChecklist');
+    var textEl = document.getElementById('homeGoalText');
+    var barEl = document.getElementById('homeGoalBar');
+    if (!checklist) return;
+    if (!goals.length) {
+        checklist.innerHTML = '<div class="goal-empty">Tap + to add a goal</div>';
+        if (textEl) textEl.textContent = '0 / 0 Tasks';
+        if (barEl) barEl.style.width = '0%';
+        return;
+    }
+    var html = '';
+    goals.forEach(function(g, i) {
+        html += '<div class="goal-check-item' + (g.done ? ' done' : '') + '" onclick="toggleDailyGoal(' + i + ')">' +
+            '<input type="checkbox"' + (g.done ? ' checked' : '') + ' onclick="event.stopPropagation();toggleDailyGoal(' + i + ')">' +
+            '<span>' + _escHtml(g.text) + '</span>' +
+            '<button class="goal-del" onclick="event.stopPropagation();deleteDailyGoal(' + i + ')">&times;</button>' +
+            '</div>';
+    });
+    checklist.innerHTML = html;
+    var done = goals.filter(function(g) { return g.done; }).length;
+    var total = goals.length;
+    var pct = total ? Math.round((done / total) * 100) : 0;
+    if (textEl) textEl.textContent = done + ' / ' + total + ' Tasks';
+    if (barEl) barEl.style.width = pct + '%';
+}
+
+function openGoalPopup() {
+    var overlay = document.getElementById('goalPopupOverlay');
+    var input = document.getElementById('goalInput');
+    if (overlay) overlay.classList.add('active');
+    if (input) { input.value = ''; setTimeout(function() { input.focus(); }, 100); }
+}
+
+function closeGoalPopup() {
+    var overlay = document.getElementById('goalPopupOverlay');
+    if (overlay) overlay.classList.remove('active');
+}
+
+function addDailyGoal() {
+    var input = document.getElementById('goalInput');
+    if (!input) return;
+    var text = input.value.trim();
+    if (!text) return;
+    var goals = _getGoals();
+    goals.push({ text: text, done: false });
+    _saveGoals(goals);
+    input.value = '';
+    input.focus();
+    loadDailyGoals();
+}
+
+function toggleDailyGoal(index) {
+    var goals = _getGoals();
+    if (!goals[index]) return;
+    goals[index].done = !goals[index].done;
+    _saveGoals(goals);
+    loadDailyGoals();
+}
+
+function deleteDailyGoal(index) {
+    var goals = _getGoals();
+    goals.splice(index, 1);
+    _saveGoals(goals);
+    loadDailyGoals();
+}
+
+function _escHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
 }
 
 // --- MY STUDY STATS ---
