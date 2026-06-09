@@ -4,7 +4,7 @@
             "id": 1,
             "name": "Arman Khan",
             "email": "arman@student.com",
-            "password": "$2y$10$v7nHkafaDEubiusvqtXUTOklCwdPRIEWxx050ZPVDRmGcyLalEW5e",
+            "password": "$2y$10$h4g\/ejEeUzTJDmnxfOMVQuf3pHmfHtGc3BuvWW7P7KE55UBh5.uaS",
             "role": "student",
             "avatar": "",
             "class": "8",
@@ -17,7 +17,7 @@
             "id": 2,
             "name": "Rahim Ahmed",
             "email": "rahim@teacher.com",
-            "password": "$2y$10$v7nHkafaDEubiusvqtXUTOklCwdPRIEWxx050ZPVDRmGcyLalEW5e",
+            "password": "$2y$10$h4g\/ejEeUzTJDmnxfOMVQuf3pHmfHtGc3BuvWW7P7KE55UBh5.uaS",
             "role": "teacher",
             "avatar": "",
             "class": "",
@@ -30,7 +30,7 @@
             "id": 3,
             "name": "Admin User",
             "email": "admin@school.com",
-            "password": "$2y$10$v7nHkafaDEubiusvqtXUTOklCwdPRIEWxx050ZPVDRmGcyLalEW5e",
+            "password": "$2y$10$h4g\/ejEeUzTJDmnxfOMVQuf3pHmfHtGc3BuvWW7P7KE55UBh5.uaS",
             "role": "admin",
             "avatar": "",
             "class": "",
@@ -43,7 +43,7 @@
             "id": 4,
             "name": "Sarah Khan",
             "email": "sarah@teacher.com",
-            "password": "$2y$10$v7nHkafaDEubiusvqtXUTOklCwdPRIEWxx050ZPVDRmGcyLalEW5e",
+            "password": "$2y$10$h4g\/ejEeUzTJDmnxfOMVQuf3pHmfHtGc3BuvWW7P7KE55UBh5.uaS",
             "role": "teacher",
             "avatar": "",
             "class": "",
@@ -56,7 +56,7 @@
             "id": 5,
             "name": "Sakib Hasan",
             "email": "sakib@student.com",
-            "password": "$2y$10$v7nHkafaDEubiusvqtXUTOklCwdPRIEWxx050ZPVDRmGcyLalEW5e",
+            "password": "$2y$10$h4g\/ejEeUzTJDmnxfOMVQuf3pHmfHtGc3BuvWW7P7KE55UBh5.uaS",
             "role": "student",
             "avatar": "",
             "class": "8",
@@ -69,7 +69,7 @@
             "id": 6,
             "name": "Nusrat Jahan",
             "email": "nusrat@student.com",
-            "password": "$2y$10$v7nHkafaDEubiusvqtXUTOklCwdPRIEWxx050ZPVDRmGcyLalEW5e",
+            "password": "$2y$10$h4g\/ejEeUzTJDmnxfOMVQuf3pHmfHtGc3BuvWW7P7KE55UBh5.uaS",
             "role": "student",
             "avatar": "",
             "class": "8",
@@ -82,7 +82,7 @@
             "id": 7,
             "name": "Tanvir Rahman",
             "email": "tanvir@student.com",
-            "password": "$2y$10$v7nHkafaDEubiusvqtXUTOklCwdPRIEWxx050ZPVDRmGcyLalEW5e",
+            "password": "$2y$10$h4g\/ejEeUzTJDmnxfOMVQuf3pHmfHtGc3BuvWW7P7KE55UBh5.uaS",
             "role": "student",
             "avatar": "",
             "class": "9",
@@ -95,7 +95,7 @@
             "id": 8,
             "name": "Fatima Begum",
             "email": "fatima@teacher.com",
-            "password": "$2y$10$v7nHkafaDEubiusvqtXUTOklCwdPRIEWxx050ZPVDRmGcyLalEW5e",
+            "password": "$2y$10$h4g\/ejEeUzTJDmnxfOMVQuf3pHmfHtGc3BuvWW7P7KE55UBh5.uaS",
             "role": "teacher",
             "avatar": "",
             "class": "",
@@ -108,7 +108,7 @@
             "id": 9,
             "name": "Kamal Hossain",
             "email": "kamal@student.com",
-            "password": "$2y$10$v7nHkafaDEubiusvqtXUTOklCwdPRIEWxx050ZPVDRmGcyLalEW5e",
+            "password": "$2y$10$h4g\/ejEeUzTJDmnxfOMVQuf3pHmfHtGc3BuvWW7P7KE55UBh5.uaS",
             "role": "student",
             "avatar": "",
             "class": "9",
@@ -121,7 +121,7 @@
             "id": 10,
             "name": "Ruma Akter",
             "email": "ruma@student.com",
-            "password": "$2y$10$v7nHkafaDEubiusvqtXUTOklCwdPRIEWxx050ZPVDRmGcyLalEW5e",
+            "password": "$2y$10$h4g\/ejEeUzTJDmnxfOMVQuf3pHmfHtGc3BuvWW7P7KE55UBh5.uaS",
             "role": "student",
             "avatar": "",
             "class": "8",
@@ -1112,6 +1112,61 @@
             "id": 7,
             "key": "currency_symbol",
             "value": "৳"
+        },
+        {
+            "id": 8,
+            "key": "ai_name",
+            "value": "Snorii AI"
+        },
+        {
+            "id": 9,
+            "key": "ai_greeting",
+            "value": "Hello! I'm <strong>Snorii AI<\/strong>. Ask me anything about Math, Science, English and more!"
+        },
+        {
+            "id": 10,
+            "key": "ai_subtitle",
+            "value": "Always here to help"
+        },
+        {
+            "id": 11,
+            "key": "ai_system_prompt",
+            "value": "You are a helpful school tutor for Class 8 students. Answer clearly and simply."
+        },
+        {
+            "id": 12,
+            "key": "ai_suggested_prompts",
+            "value": "Explain photosynthesis|Solve quadratic equations|Summarize Chapter 3"
+        },
+        {
+            "id": 13,
+            "key": "ai_moondream_api_key",
+            "value": ""
+        },
+        {
+            "id": 14,
+            "key": "featured_teacher_id",
+            "value": "1"
+        },
+        {
+            "id": 15,
+            "key": "featured_teacher_video",
+            "value": ""
+        },
+        {
+            "id": 16,
+            "key": "top_rated_teacher_id",
+            "value": "2"
+        },
+        {
+            "id": 17,
+            "key": "popular_teacher_id",
+            "value": "3"
+        },
+        {
+            "id": 18,
+            "key": "new_teacher_id",
+            "value": ""
         }
     ],
     "homework_submissions": [
