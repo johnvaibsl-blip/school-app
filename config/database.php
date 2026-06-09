@@ -342,7 +342,7 @@ class JsonDB {
         ];
         
         $this->data['student_progress'] = [
-            ['id'=>1,'student_id'=>1,'books_read'=>12,'homework_score'=>85,'exam_score'=>84,'streak'=>7,'badges_count'=>5,'study_hours'=>86,'last_active'=>'2026-06-09'],
+            ['id'=>1,'student_id'=>1,'books_read'=>12,'homework_score'=>85,'exam_score'=>84,'streak'=>7,'badges_count'=>5,'study_hours'=>40,'last_active'=>'2026-06-09'],
             ['id'=>2,'student_id'=>5,'books_read'=>8,'homework_score'=>72,'exam_score'=>73,'streak'=>3,'badges_count'=>2,'study_hours'=>45,'last_active'=>'2026-06-09'],
             ['id'=>3,'student_id'=>6,'books_read'=>15,'homework_score'=>88,'exam_score'=>86,'streak'=>5,'badges_count'=>3,'study_hours'=>72,'last_active'=>'2026-06-09'],
             ['id'=>4,'student_id'=>7,'books_read'=>20,'homework_score'=>90,'exam_score'=>91,'streak'=>10,'badges_count'=>6,'study_hours'=>110,'last_active'=>'2026-06-09'],

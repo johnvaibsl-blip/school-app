@@ -405,11 +405,13 @@ function bindEvents() {
 
         // AI Hero send button (home screen)
         if (t.closest('.send-btn')) {
-            var input = document.querySelector('.ai-hero-input, .chat-input');
+            var input = document.querySelector('.ai-hero-input');
             if (input && input.value.trim()) {
                 var msg = input.value.trim();
                 input.value = '';
-                showToast('AI: ' + getAIResponse(msg), 'info');
+                showScreen('screen-chat');
+                addChatMessage(msg, 'user');
+                setTimeout(function() { addChatMessage(getAIResponse(msg), 'ai'); }, 1000);
             }
             return;
         }
@@ -420,7 +422,19 @@ function bindEvents() {
             return;
         }
 
-        // Chat send
+        // Chat send (messenger style)
+        if (t.closest('.messenger-send')) {
+            var messengerInput = document.querySelector('.messenger-input');
+            if (messengerInput && messengerInput.value.trim()) {
+                addChatMessage(messengerInput.value, 'user');
+                var userMsg = messengerInput.value;
+                messengerInput.value = '';
+                setTimeout(function() { addChatMessage(getAIResponse(userMsg), 'ai'); }, 1000);
+            }
+            return;
+        }
+
+        // Chat send (legacy)
         if (t.closest('.chat-send')) {
             var chatInput = document.querySelector('.chat-input');
             if (chatInput && chatInput.value.trim()) {
@@ -587,10 +601,15 @@ function bindEvents() {
 
     // Enter key on chat input
     document.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && e.target.classList.contains('chat-input')) {
+        if (e.key === 'Enter' && (e.target.classList.contains('chat-input') || e.target.classList.contains('messenger-input'))) {
             e.preventDefault();
-            var sendBtn = e.target.closest('.chat-input-wrap') ? e.target.closest('.chat-input-wrap').querySelector('.chat-send') : document.querySelector('.chat-send');
+            var sendBtn = document.querySelector('.messenger-send') || document.querySelector('.chat-send');
             if (sendBtn) sendBtn.click();
+        }
+        if (e.key === 'Enter' && e.target.classList.contains('ai-hero-input')) {
+            e.preventDefault();
+            var heroBtn = document.querySelector('.send-btn');
+            if (heroBtn) heroBtn.click();
         }
     });
 
@@ -632,17 +651,124 @@ function getAIResponse(q) {
 function addChatMessage(text, type) {
     var container = document.querySelector('.chat-messages');
     if (!container) return;
+    var snoriiSvg = '<svg viewBox="0 0 40 40" width="20" height="20"><ellipse cx="20" cy="18" rx="16" ry="14" fill="#F0F9FF"/><rect x="10" y="12" width="20" height="16" rx="6" fill="#0F172A"/><circle cx="15" cy="20" r="3" fill="#22D3EE"/><circle cx="25" cy="20" r="3" fill="#22D3EE"/><path d="M16 25 Q20 28 24 25" stroke="#22D3EE" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>';
+    var avatar = type === 'ai' ? '<div class="msg-avatar snorii-avatar-sm">' + snoriiSvg + '</div>' : '<div class="msg-avatar">' + (USER_NAME ? USER_NAME[0] : 'A') + '</div>';
     var msg = document.createElement('div');
     msg.className = 'msg ' + type;
-    msg.innerHTML = '<div class="msg-avatar">' + (type === 'ai' ? '' : 'A') + '</div><div class="msg-bubble">' + text + '</div>';
+    msg.innerHTML = avatar + '<div class="msg-bubble">' + text + '</div>';
     container.appendChild(msg);
+    var prompts = container.querySelector('.suggested-prompts');
+    if (prompts) prompts.remove();
     container.scrollTop = container.scrollHeight;
+}
+
+function handleChatFile(input, type) {
+    if (!input.files || !input.files[0]) return;
+    var file = input.files[0];
+    var name = file.name;
+    if (type === 'image' && file.type.startsWith('image/')) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            addChatMessage('<img src="' + e.target.result + '" class="chat-img" alt="' + name + '">', 'user');
+            input.value = '';
+            setTimeout(function() {
+                addChatMessage('Nice image! I can see <strong>' + name + '</strong>. What would you like to know about it?', 'ai');
+            }, 1200);
+        };
+        reader.readAsDataURL(file);
+    } else {
+        var tag = '<div class="chat-file-card"><i data-lucide="file-text"></i><div><strong>' + name + '</strong><br><span>' + (file.size / 1024).toFixed(1) + ' KB</span></div></div>';
+        addChatMessage(tag, 'user');
+        input.value = '';
+        setTimeout(function() {
+            addChatMessage('I received your file <strong>' + name + '</strong>. What would you like me to do with it?', 'ai');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }, 1200);
+    }
 }
 
 function sendPrompt(btn) {
     var text = btn.textContent;
     addChatMessage(text, 'user');
     setTimeout(function() { addChatMessage(getAIResponse(text), 'ai'); }, 800);
+}
+
+// === CHAT MENU FEATURES ===
+var chatThemes = ['', 'chat-theme-sunset', 'chat-theme-ocean', 'chat-theme-forest', 'chat-theme-lavender', 'chat-theme-night'];
+
+function toggleChatMenu() {
+    var dd = document.getElementById('chatDropdown');
+    if (!dd) return;
+    dd.classList.toggle('active');
+    if (dd.classList.contains('active')) {
+        setTimeout(function() {
+            document.addEventListener('click', closeChatMenuOutside);
+        }, 10);
+    }
+}
+
+function closeChatMenuOutside(e) {
+    var dd = document.getElementById('chatDropdown');
+    var btn = document.getElementById('chatMenuBtn');
+    if (dd && !dd.contains(e.target) && btn && !btn.contains(e.target)) {
+        dd.classList.remove('active');
+        document.removeEventListener('click', closeChatMenuOutside);
+    }
+}
+
+function searchInChat() {
+    var dd = document.getElementById('chatDropdown');
+    if (dd) dd.classList.remove('active');
+    var bar = document.getElementById('chatSearchBar');
+    if (bar) {
+        bar.classList.toggle('active');
+        if (bar.classList.contains('active')) {
+            document.getElementById('chatSearchInput').focus();
+        }
+    }
+}
+
+function filterChatMessages(query) {
+    var msgs = document.querySelectorAll('#screen-chat .chat-messages .msg');
+    var q = query.toLowerCase();
+    msgs.forEach(function(m) {
+        if (!q) { m.style.display = ''; return; }
+        var text = m.textContent.toLowerCase();
+        m.style.display = text.indexOf(q) !== -1 ? '' : 'none';
+        if (text.indexOf(q) !== -1 && q) m.classList.add('highlight');
+        else m.classList.remove('highlight');
+    });
+}
+
+function closeChatSearch() {
+    var bar = document.getElementById('chatSearchBar');
+    if (bar) bar.classList.remove('active');
+    var input = document.getElementById('chatSearchInput');
+    if (input) input.value = '';
+    filterChatMessages('');
+}
+
+function openThemePicker() {
+    var dd = document.getElementById('chatDropdown');
+    if (dd) dd.classList.remove('active');
+    var overlay = document.getElementById('themePickerOverlay');
+    if (overlay) overlay.classList.add('active');
+}
+
+function closeThemePicker() {
+    var overlay = document.getElementById('themePickerOverlay');
+    if (overlay) overlay.classList.remove('active');
+}
+
+function applyChatTheme(el) {
+    var theme = el.getAttribute('data-theme');
+    var chatScreen = document.getElementById('screen-chat');
+    if (!chatScreen) return;
+    chatThemes.forEach(function(t) { if (t) chatScreen.classList.remove(t); });
+    if (theme) chatScreen.classList.add(theme);
+    document.querySelectorAll('.theme-thumb').forEach(function(t) { t.classList.remove('active'); });
+    el.classList.add('active');
+    setTimeout(function() { closeThemePicker(); }, 200);
 }
 
 var searchData = [
@@ -1670,13 +1796,9 @@ function loadStudentHomeProgress() {
         var setBar = function(id, pct) { var el = document.getElementById(id); if (el) el.style.width = pct + '%'; };
         var setText = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
         setBar('homeBooksBar', Math.min((p.books_read || 0) * 8, 100));
-        setText('homeBooksVal', p.books_read || 0);
         setBar('homeHwScoreBar', p.homework_score || 0);
-        setText('homeHwScoreVal', (p.homework_score || 0) + '%');
         setBar('homeExamScoreBar', p.exam_score || 0);
-        setText('homeExamScoreVal', (p.exam_score || 0) + '%');
         setBar('homeStreakBar', Math.min((p.streak || 0) * 14, 100));
-        setText('homeStreakVal', p.streak || 0);
         var goalTasks = Math.min(Math.round((p.homework_score || 0) / 25), 4);
         setText('homeGoalText', goalTasks + ' / 4 Tasks');
         setBar('homeGoalBar', goalTasks * 25);

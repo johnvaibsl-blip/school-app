@@ -50,7 +50,7 @@
     <div class="landing-features">
         <div class="landing-feature-row">
             <div class="landing-feature-card">
-                <div class="landing-feature-icon" style="background:rgba(139,92,246,0.2)"><i data-lucide="bot" style="width:22px;height:22px;color:#A78BFA"></i></div>
+                <div class="landing-feature-icon" style="background:rgba(139,92,246,0.2)"><svg viewBox="0 0 40 40" width="22" height="22"><ellipse cx="20" cy="18" rx="16" ry="14" fill="#F0F9FF"/><rect x="10" y="12" width="20" height="16" rx="6" fill="#0F172A"/><circle cx="15" cy="20" r="3" fill="#22D3EE"/><circle cx="25" cy="20" r="3" fill="#22D3EE"/><path d="M16 25 Q20 28 24 25" stroke="#22D3EE" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg></div>
                 <h4>AI Tutor</h4>
                 <p>24/7 instant help</p>
             </div>
@@ -158,134 +158,127 @@
                 <div class="chat-bubble">Summarize this chapter</div>
             </div>
             <div class="robot-mascot">
-                <svg viewBox="0 0 200 240" fill="none">
+                <svg viewBox="0 0 200 260" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <!-- Shadow -->
-                    <ellipse cx="100" cy="230" rx="40" ry="8" fill="#1E1B4B" opacity="0.3"/>
+                    <ellipse cx="100" cy="250" rx="35" ry="7" fill="#1E1B4B" opacity="0.25"/>
                     <!-- Hover base glow -->
-                    <ellipse cx="100" cy="210" rx="30" ry="10" fill="url(#hoverGlow)"/>
+                    <ellipse cx="100" cy="238" rx="28" ry="8" fill="url(#nrGlow)"/>
                     <!-- Hover base -->
-                    <path d="M70 200 Q70 215 100 220 Q130 215 130 200 Q130 195 100 195 Q70 195 70 200Z" fill="url(#baseGrad)"/>
-                    <ellipse cx="100" cy="197" rx="28" ry="6" fill="#60A5FA" opacity="0.4"/>
+                    <path d="M72 228 Q72 242 100 246 Q128 242 128 228 Q128 224 100 224 Q72 224 72 228Z" fill="url(#nrBase)"/>
+                    <ellipse cx="100" cy="225" rx="26" ry="5" fill="#38BDF8" opacity="0.35"/>
                     <!-- Neck -->
-                    <rect x="90" y="178" width="20" height="18" rx="4" fill="#334155"/>
-                    <rect x="92" y="182" width="16" height="10" rx="3" fill="#475569"/>
+                    <rect x="88" y="205" width="24" height="22" rx="6" fill="#334155"/>
+                    <rect x="91" y="209" width="18" height="14" rx="4" fill="#475569"/>
                     <!-- Body -->
-                    <rect x="60" y="128" width="80" height="55" rx="20" fill="url(#bodyGrad3d)"/>
-                    <!-- Body highlight -->
-                    <ellipse cx="85" cy="145" rx="20" ry="25" fill="white" opacity="0.15"/>
-                    <!-- AI text on chest -->
-                    <text x="100" y="165" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" font-weight="800" fill="#38BDF8" opacity="0.9">Snorii</text>
-                    <!-- Body blue accent line -->
-                    <rect x="75" y="175" width="50" height="3" rx="1.5" fill="#38BDF8" opacity="0.5"/>
+                    <ellipse cx="100" cy="185" rx="42" ry="35" fill="url(#nrBody)"/>
+                    <ellipse cx="88" cy="178" rx="18" ry="22" fill="white" opacity="0.18"/>
+                    <!-- Body accent line -->
+                    <text x="100" y="192" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" font-weight="800" fill="#22D3EE" opacity="0.85">Snorii</text>
                     <!-- Left arm (waving) -->
-                    <g transform="rotate(-35, 60, 140)">
+                    <g id="robot-left-arm">
+                        <!-- Shoulder joint -->
+                        <circle cx="60" cy="172" r="8" fill="#334155"/>
                         <!-- Upper arm -->
-                        <rect x="30" y="130" width="32" height="16" rx="8" fill="url(#armGrad)"/>
-                        <!-- Joint -->
-                        <circle cx="32" cy="138" r="6" fill="#94A3B8"/>
+                        <rect x="38" y="155" width="24" height="14" rx="7" fill="#475569"/>
+                        <!-- Elbow joint -->
+                        <circle cx="38" cy="162" r="6" fill="#334155"/>
                         <!-- Forearm -->
-                        <rect x="10" y="115" width="26" height="14" rx="7" fill="url(#armGrad)"/>
-                        <!-- Hand -->
-                        <circle cx="14" cy="122" r="10" fill="#E2E8F0"/>
-                        <circle cx="14" cy="122" r="7" fill="#CBD5E1"/>
-                        <!-- Fingers waving -->
-                        <rect x="4" y="108" width="5" height="14" rx="2.5" fill="#E2E8F0" transform="rotate(-10, 6, 108)"/>
-                        <rect x="10" y="106" width="5" height="15" rx="2.5" fill="#E2E8F0"/>
-                        <rect x="16" y="108" width="5" height="14" rx="2.5" fill="#E2E8F0" transform="rotate(10, 18, 108)"/>
-                        <rect x="22" y="110" width="5" height="12" rx="2.5" fill="#E2E8F0" transform="rotate(20, 24, 110)"/>
+                        <rect x="20" y="140" width="20" height="13" rx="6.5" fill="url(#nrBody)"/>
+                        <!-- Wrist -->
+                        <circle cx="30" cy="146" r="4" fill="#334155"/>
+                        <!-- Palm -->
+                        <ellipse cx="24" cy="132" rx="10" ry="8" fill="url(#nrBody)"/>
+                        <!-- Fingers with cyan tips -->
+                        <rect x="16" y="118" width="5" height="13" rx="2.5" fill="#475569"/>
+                        <rect x="16" y="116" width="5" height="5" rx="2.5" fill="#22D3EE"/>
+                        <rect x="22" y="116" width="5" height="15" rx="2.5" fill="#475569"/>
+                        <rect x="22" y="114" width="5" height="5" rx="2.5" fill="#22D3EE"/>
+                        <rect x="28" y="118" width="5" height="13" rx="2.5" fill="#475569"/>
+                        <rect x="28" y="116" width="5" height="5" rx="2.5" fill="#22D3EE"/>
+                        <rect x="34" y="120" width="5" height="11" rx="2.5" fill="#475569"/>
+                        <rect x="34" y="118" width="5" height="4" rx="2" fill="#22D3EE"/>
                     </g>
-                    <!-- Right arm -->
-                    <rect x="140" y="135" width="30" height="14" rx="7" fill="url(#armGrad)"/>
-                    <circle cx="170" cy="142" r="6" fill="#94A3B8"/>
-                    <rect x="166" y="138" width="24" height="13" rx="6.5" fill="url(#armGrad)"/>
-                    <circle cx="188" cy="145" r="9" fill="#E2E8F0"/>
-                    <circle cx="188" cy="145" r="6" fill="#CBD5E1"/>
-                    <!-- Fingers right -->
-                    <rect x="183" y="134" width="4" height="11" rx="2" fill="#E2E8F0"/>
-                    <rect x="188" y="133" width="4" height="12" rx="2" fill="#E2E8F0"/>
-                    <rect x="193" y="134" width="4" height="11" rx="2" fill="#E2E8F0"/>
+                    <!-- Right arm (resting) -->
+                    <g id="robot-right-arm">
+                        <!-- Shoulder joint -->
+                        <circle cx="140" cy="172" r="8" fill="#334155"/>
+                        <!-- Upper arm -->
+                        <rect x="138" y="178" width="14" height="24" rx="7" fill="#475569"/>
+                        <!-- Elbow joint -->
+                        <circle cx="145" cy="202" r="6" fill="#334155"/>
+                        <!-- Forearm -->
+                        <rect x="140" y="202" width="13" height="20" rx="6.5" fill="url(#nrBody)"/>
+                        <!-- Wrist -->
+                        <circle cx="146" cy="222" r="4" fill="#334155"/>
+                        <!-- Palm -->
+                        <ellipse cx="146" cy="230" rx="8" ry="7" fill="url(#nrBody)"/>
+                        <!-- Fingers with cyan tips -->
+                        <rect x="138" y="233" width="4" height="11" rx="2" fill="#475569"/>
+                        <rect x="138" y="231" width="4" height="4" rx="2" fill="#22D3EE"/>
+                        <rect x="144" y="234" width="4" height="12" rx="2" fill="#475569"/>
+                        <rect x="144" y="232" width="4" height="4" rx="2" fill="#22D3EE"/>
+                        <rect x="150" y="233" width="4" height="11" rx="2" fill="#475569"/>
+                        <rect x="150" y="231" width="4" height="4" rx="2" fill="#22D3EE"/>
+                    </g>
                     <!-- Head -->
-                    <rect x="42" y="30" width="116" height="95" rx="35" fill="url(#headGrad3d)"/>
-                    <!-- Head highlight -->
-                    <ellipse cx="80" cy="60" rx="35" ry="25" fill="white" opacity="0.2"/>
-                    <!-- Face screen (dark) -->
-                    <rect x="55" y="48" width="90" height="65" rx="22" fill="#0F172A"/>
-                    <!-- Screen glass effect -->
-                    <rect x="55" y="48" width="90" height="35" rx="22" fill="white" opacity="0.05"/>
-                    <!-- Left ear -->
-                    <rect x="30" y="60" width="14" height="35" rx="7" fill="url(#earGrad)"/>
-                    <rect x="33" y="68" width="8" height="18" rx="4" fill="#38BDF8" opacity="0.6"/>
-                    <!-- Right ear -->
-                    <rect x="156" y="60" width="14" height="35" rx="7" fill="url(#earGrad)"/>
-                    <rect x="159" y="68" width="8" height="18" rx="4" fill="#38BDF8" opacity="0.6"/>
-                    <!-- Eyes (pixel/digital style) -->
-                    <g filter="url(#eyeGlow)">
-                        <!-- Left eye -->
-                        <rect x="70" y="64" width="22" height="22" rx="4" fill="#38BDF8"/>
-                        <rect x="73" y="67" width="4" height="4" rx="1" fill="white" opacity="0.9"/>
-                        <rect x="79" y="67" width="4" height="4" rx="1" fill="white" opacity="0.9"/>
-                        <rect x="85" y="67" width="4" height="4" rx="1" fill="white" opacity="0.7"/>
-                        <rect x="73" y="73" width="4" height="4" rx="1" fill="white" opacity="0.9"/>
-                        <rect x="79" y="73" width="4" height="4" rx="1" fill="white"/>
-                        <rect x="85" y="73" width="4" height="4" rx="1" fill="white" opacity="0.9"/>
-                        <rect x="73" y="79" width="4" height="4" rx="1" fill="white" opacity="0.7"/>
-                        <rect x="79" y="79" width="4" height="4" rx="1" fill="white" opacity="0.9"/>
-                        <rect x="85" y="79" width="4" height="4" rx="1" fill="white" opacity="0.9"/>
-                        <!-- Right eye -->
-                        <rect x="108" y="64" width="22" height="22" rx="4" fill="#38BDF8"/>
-                        <rect x="111" y="67" width="4" height="4" rx="1" fill="white" opacity="0.9"/>
-                        <rect x="117" y="67" width="4" height="4" rx="1" fill="white" opacity="0.9"/>
-                        <rect x="123" y="67" width="4" height="4" rx="1" fill="white" opacity="0.7"/>
-                        <rect x="111" y="73" width="4" height="4" rx="1" fill="white" opacity="0.9"/>
-                        <rect x="117" y="73" width="4" height="4" rx="1" fill="white"/>
-                        <rect x="123" y="73" width="4" height="4" rx="1" fill="white" opacity="0.9"/>
-                        <rect x="111" y="79" width="4" height="4" rx="1" fill="white" opacity="0.7"/>
-                        <rect x="117" y="79" width="4" height="4" rx="1" fill="white" opacity="0.9"/>
-                        <rect x="123" y="79" width="4" height="4" rx="1" fill="white" opacity="0.9"/>
+                    <ellipse cx="100" cy="110" rx="58" ry="50" fill="url(#nrHead)"/>
+                    <ellipse cx="85" cy="95" rx="30" ry="25" fill="white" opacity="0.2"/>
+                    <!-- Face visor -->
+                    <rect x="55" y="78" width="90" height="68" rx="24" fill="#0F172A"/>
+                    <rect x="55" y="78" width="90" height="34" rx="24" fill="white" opacity="0.04"/>
+                    <!-- Left ear pod -->
+                    <ellipse cx="40" cy="110" rx="10" ry="16" fill="url(#nrEar)"/>
+                    <ellipse cx="42" cy="110" rx="5" ry="10" fill="#38BDF8" opacity="0.4"/>
+                    <!-- Right ear pod -->
+                    <ellipse cx="160" cy="110" rx="10" ry="16" fill="url(#nrEar)"/>
+                    <ellipse cx="158" cy="110" rx="5" ry="10" fill="#38BDF8" opacity="0.4"/>
+                    <!-- Eyes -->
+                    <g id="robot-eyes">
+                        <circle cx="78" cy="110" r="12" fill="#22D3EE"/>
+                        <circle cx="78" cy="110" r="8" fill="#06B6D4"/>
+                        <circle cx="75" cy="107" r="3" fill="white" opacity="0.8"/>
+                        <circle cx="122" cy="110" r="12" fill="#22D3EE"/>
+                        <circle cx="122" cy="110" r="8" fill="#06B6D4"/>
+                        <circle cx="119" cy="107" r="3" fill="white" opacity="0.8"/>
                     </g>
-                    <!-- Smile (digital pixel) -->
-                    <rect x="82" y="92" width="4" height="3" rx="1" fill="#38BDF8"/>
-                    <rect x="88" y="95" width="4" height="3" rx="1" fill="#38BDF8"/>
-                    <rect x="94" y="96" width="4" height="3" rx="1" fill="#38BDF8"/>
-                    <rect x="100" y="95" width="4" height="3" rx="1" fill="#38BDF8"/>
-                    <rect x="106" y="92" width="4" height="3" rx="1" fill="#38BDF8"/>
-                    <!-- Blue accent on head top -->
-                    <rect x="85" y="28" width="30" height="5" rx="2.5" fill="#1E293B" opacity="0.8"/>
+                    <!-- Smile -->
+                    <path id="robot-smile" d="M88 128 Q100 136 112 128" stroke="#22D3EE" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                    <!-- Antenna stem -->
+                    <rect x="97" y="52" width="6" height="16" rx="3" fill="#334155"/>
+                    <!-- Antenna ball -->
+                    <circle id="robot-antenna" cx="100" cy="48" r="8" fill="#1E293B"/>
+                    <circle cx="100" cy="48" r="5" fill="#22D3EE" opacity="0.6"/>
+                    <circle cx="98" cy="46" r="2" fill="white" opacity="0.5"/>
+                    <!-- Head top accents -->
+                    <rect x="82" y="62" width="8" height="3" rx="1.5" fill="#22D3EE" opacity="0.7"/>
+                    <rect x="110" y="62" width="8" height="3" rx="1.5" fill="#22D3EE" opacity="0.7"/>
                     <!-- Defs -->
                     <defs>
-                        <linearGradient id="headGrad3d" x1="42" y1="30" x2="158" y2="125" gradientUnits="userSpaceOnUse">
-                            <stop stop-color="#F8FAFC"/>
+                        <linearGradient id="nrHead" x1="42" y1="60" x2="158" y2="160" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#F0F9FF"/>
                             <stop offset="1" stop-color="#E2E8F0"/>
                         </linearGradient>
-                        <linearGradient id="bodyGrad3d" x1="60" y1="128" x2="140" y2="183" gradientUnits="userSpaceOnUse">
-                            <stop stop-color="#F8FAFC"/>
-                            <stop offset="1" stop-color="#E2E8F0"/>
-                        </linearGradient>
-                        <linearGradient id="armGrad" x1="0" y1="0" x2="1" y2="1">
-                            <stop stop-color="#F1F5F9"/>
+                        <linearGradient id="nrBody" x1="58" y1="150" x2="142" y2="220" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#F0F9FF"/>
                             <stop offset="1" stop-color="#CBD5E1"/>
                         </linearGradient>
-                        <linearGradient id="earGrad" x1="0" y1="0" x2="0" y2="1">
+                        <linearGradient id="nrEar" x1="0" y1="0" x2="0" y2="1">
                             <stop stop-color="#E2E8F0"/>
                             <stop offset="1" stop-color="#94A3B8"/>
                         </linearGradient>
-                        <linearGradient id="baseGrad" x1="70" y1="195" x2="130" y2="220" gradientUnits="userSpaceOnUse">
+                        <linearGradient id="nrBase" x1="72" y1="224" x2="128" y2="246" gradientUnits="userSpaceOnUse">
                             <stop stop-color="#E2E8F0"/>
                             <stop offset="1" stop-color="#94A3B8"/>
                         </linearGradient>
-                        <radialGradient id="hoverGlow" cx="100" cy="210" r="30" gradientUnits="userSpaceOnUse">
-                            <stop stop-color="#38BDF8" stop-opacity="0.3"/>
-                            <stop offset="1" stop-color="#38BDF8" stop-opacity="0"/>
+                        <radialGradient id="nrGlow" cx="100" cy="238" r="28" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#22D3EE" stop-opacity="0.3"/>
+                            <stop offset="1" stop-color="#22D3EE" stop-opacity="0"/>
                         </radialGradient>
-                        <filter id="eyeGlow" x="-20%" y="-20%" width="140%" height="140%">
-                            <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
-                            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                        </filter>
                     </defs>
                 </svg>
             </div>
             <div class="search-box">
-                <input type="text" class="search-input" placeholder="Type your question here...">
+                <input type="text" class="search-input ai-hero-input" placeholder="Type your question here...">
                 <button class="send-btn"><i data-lucide="send"></i></button>
             </div>
             <div class="upload-row">
@@ -414,35 +407,71 @@
     <header class="header">
         <button class="header-back" onclick="showScreen('screen-home')"><i data-lucide="arrow-left"></i></button>
         <div class="header-center" style="display:flex;align-items:center;gap:8px">
-            <div class="user-avatar" style="background:linear-gradient(135deg,#6366F1,#8B5CF6)"><i data-lucide="bot" style="width:16px;height:16px"></i></div>
-            <div><h3 class="header-title">AI Tutor</h3><p style="font-size:9px;color:var(--text3)">Always here to help</p></div>
+            <div class="snorii-avatar"><svg viewBox="0 0 40 40" width="32" height="32"><ellipse cx="20" cy="18" rx="16" ry="14" fill="#F0F9FF"/><rect x="10" y="12" width="20" height="16" rx="6" fill="#0F172A"/><circle cx="15" cy="20" r="3" fill="#22D3EE"/><circle cx="25" cy="20" r="3" fill="#22D3EE"/><path d="M16 25 Q20 28 24 25" stroke="#22D3EE" stroke-width="1.5" stroke-linecap="round" fill="none"/><rect x="18" y="3" width="4" height="6" rx="2" fill="#334155"/><circle cx="20" cy="3" r="2.5" fill="#1E293B"/><circle cx="20" cy="3" r="1.5" fill="#22D3EE" opacity="0.7"/></svg></div>
+            <div><h3 class="header-title">Snorii AI</h3><p style="font-size:9px;color:var(--text3)">Always here to help</p></div>
         </div>
-        <button class="icon-btn" onclick="showToast('Options coming soon!','info')"><i data-lucide="more-vertical"></i></button>
+        <button class="icon-btn" id="chatMenuBtn" onclick="toggleChatMenu()"><i data-lucide="more-vertical"></i></button>
     </header>
+    <div class="chat-dropdown" id="chatDropdown">
+        <div class="chat-dropdown-item" onclick="searchInChat()"><i data-lucide="search"></i> Search in chat</div>
+        <div class="chat-dropdown-item" onclick="openThemePicker()"><i data-lucide="palette"></i> Chat theme</div>
+    </div>
+    <div class="theme-picker-overlay" id="themePickerOverlay" onclick="closeThemePicker()">
+        <div class="theme-picker" onclick="event.stopPropagation()">
+            <div class="theme-picker-header">
+                <h4>Chat Theme</h4>
+                <button class="theme-picker-close" onclick="closeThemePicker()"><i data-lucide="x"></i></button>
+            </div>
+            <div class="theme-grid" id="themeGrid">
+                <div class="theme-thumb active" data-theme="" onclick="applyChatTheme(this)">
+                    <div class="theme-preview" style="background:#FFFFFF;border:1px solid #E2E8F0"></div>
+                    <span>Default</span>
+                </div>
+                <div class="theme-thumb" data-theme="chat-theme-sunset" onclick="applyChatTheme(this)">
+                    <div class="theme-preview" style="background:linear-gradient(135deg,#FFF1EB,#FECDD3)"></div>
+                    <span>Sunset</span>
+                </div>
+                <div class="theme-thumb" data-theme="chat-theme-ocean" onclick="applyChatTheme(this)">
+                    <div class="theme-preview" style="background:linear-gradient(135deg,#E0F2FE,#7DD3FC)"></div>
+                    <span>Ocean</span>
+                </div>
+                <div class="theme-thumb" data-theme="chat-theme-forest" onclick="applyChatTheme(this)">
+                    <div class="theme-preview" style="background:linear-gradient(135deg,#D1FAE5,#6EE7B7)"></div>
+                    <span>Forest</span>
+                </div>
+                <div class="theme-thumb" data-theme="chat-theme-lavender" onclick="applyChatTheme(this)">
+                    <div class="theme-preview" style="background:linear-gradient(135deg,#F3E8FF,#C4B5FD)"></div>
+                    <span>Lavender</span>
+                </div>
+                <div class="theme-thumb" data-theme="chat-theme-night" onclick="applyChatTheme(this)">
+                    <div class="theme-preview" style="background:linear-gradient(135deg,#0F172A,#334155)"></div>
+                    <span>Night</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="chat-search-bar" id="chatSearchBar">
+        <input type="text" class="chat-search-input" id="chatSearchInput" placeholder="Search messages..." oninput="filterChatMessages(this.value)">
+        <button class="chat-search-close" onclick="closeChatSearch()"><i data-lucide="x"></i></button>
+    </div>
     <div class="chat-messages">
         <div class="msg ai">
-            <div class="msg-avatar"><i data-lucide="bot" style="width:16px;height:16px"></i></div>
-            <div class="msg-bubble" id="aiGreeting">Hello Arman! I'm your AI Tutor. How can I help you today?</div>
+            <div class="msg-avatar snorii-avatar-sm"><svg viewBox="0 0 40 40" width="20" height="20"><ellipse cx="20" cy="18" rx="16" ry="14" fill="#F0F9FF"/><rect x="10" y="12" width="20" height="16" rx="6" fill="#0F172A"/><circle cx="15" cy="20" r="3" fill="#22D3EE"/><circle cx="25" cy="20" r="3" fill="#22D3EE"/><path d="M16 25 Q20 28 24 25" stroke="#22D3EE" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg></div>
+            <div class="msg-bubble" id="aiGreeting">Hello! I'm <strong>Snorii AI</strong>. Ask me anything about Math, Science, English and more!</div>
         </div>
         <div class="suggested-prompts">
             <button class="prompt-chip" onclick="sendPrompt(this)">Explain photosynthesis</button>
             <button class="prompt-chip" onclick="sendPrompt(this)">Solve quadratic equations</button>
             <button class="prompt-chip" onclick="sendPrompt(this)">Summarize Chapter 3</button>
         </div>
-        <div class="msg user">
-            <div class="msg-avatar">A</div>
-            <div class="msg-bubble">Explain photosynthesisin simple words</div>
-        </div>
-        <div class="msg ai">
-            <div class="msg-avatar"><i data-lucide="bot" style="width:16px;height:16px"></i></div>
-            <div class="msg-bubble">Photosynthesis is how plants make their own food using sunlight! <br><br>Here's the simple process:<br>1. Plants absorb sunlight through their leaves<br>2. They take in CO from the air<br>3. They absorb water from soil<br>4. Using sun's energy, they convert these into glucose (food) + oxygen<br><br>Equation: 6CO + 6HO + Light  CHO + 6O</div>
-        </div>
     </div>
-    <div class="chat-input-bar">
-        <button class="chat-action-btn"><i data-lucide="image"></i></button>
-        <button class="chat-action-btn"><i data-lucide="mic"></i></button>
-        <input type="text" class="chat-input" placeholder="Ask anything...">
-        <button class="chat-send"><i data-lucide="send"></i></button>
+    <div class="messenger-input-bar">
+        <label class="messenger-attach" title="Attach file"><input type="file" accept="image/*,.pdf,.doc,.docx" style="display:none" onchange="handleChatFile(this,'file')"><i data-lucide="plus-circle"></i></label>
+        <div class="messenger-input-wrap">
+            <input type="text" class="messenger-input" placeholder="Message Snorii...">
+            <label class="messenger-icon-btn" title="Image"><input type="file" accept="image/*" style="display:none" onchange="handleChatFile(this,'image')"><i data-lucide="image"></i></label>
+        </div>
+        <button class="messenger-send"><i data-lucide="send"></i></button>
     </div>
 </div>
 
@@ -1212,7 +1241,7 @@
         <button class="reader-btn prev" onclick="showToast('Previous chapter','info')"><i data-lucide="arrow-left" style="width:14px;height:14px"></i> Previous</button>
         <button class="reader-btn next" onclick="showToast('Next chapter loaded','success')"><i data-lucide="arrow-right" style="width:14px;height:14px"></i> Next</button>
     </div>
-    <button class="ai-fab" onclick="showScreen('screen-chat')"><i data-lucide="bot"></i></button>
+    <button class="ai-fab" onclick="showScreen('screen-chat')"><svg viewBox="0 0 40 40" width="22" height="22"><ellipse cx="20" cy="18" rx="16" ry="14" fill="#F0F9FF"/><rect x="10" y="12" width="20" height="16" rx="6" fill="#0F172A"/><circle cx="15" cy="20" r="3" fill="#22D3EE"/><circle cx="25" cy="20" r="3" fill="#22D3EE"/><path d="M16 25 Q20 28 24 25" stroke="#22D3EE" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg></button>
 </div>
 
 <!-- ========== 13. LIVE CLASS LOBBY ========== -->
