@@ -1,3 +1,43 @@
+<?php
+require_once __DIR__ . '/config/database.php';
+
+if (isLoggedIn()) {
+    redirectByRole($_SESSION['role']);
+}
+
+$error = '';
+$errorType = $_GET['error'] ?? '';
+
+if ($errorType === 'desktop_required') {
+    $error = 'Admin Panel is available only on desktop devices.';
+} elseif ($errorType === 'unauthorized') {
+    $error = 'You do not have access to that area.';
+} elseif ($errorType === 'logout') {
+    $error = 'You have been logged out.';
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = sanitize($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+    
+    if (empty($email) || empty($password)) {
+        $error = 'Please fill in all fields.';
+    } else {
+        $db = getDB();
+        $user = $db->find('users', 'email', $email);
+        
+        if ($user && password_verify($password, $user['password'])) {
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['user_name'] = $user['name'];
+            $_SESSION['role'] = $user['role'];
+            
+            redirectByRole($user['role']);
+        } else {
+            $error = 'Invalid email or password.';
+        }
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,7 +59,6 @@
             position: relative;
         }
 
-        /* ============ SCREEN BADGE ============ */
         .screen-badge {
             position: absolute;
             top: 60px;
@@ -37,7 +76,6 @@
             z-index: 100;
         }
 
-        /* ============ SLIDES ============ */
         .intro-slide {
             position: absolute;
             top: 0; left: 0;
@@ -58,7 +96,6 @@
             visibility: visible;
         }
 
-        /* ============ ROBOT ============ */
         .robot-container {
             width: 220px;
             height: 220px;
@@ -95,7 +132,6 @@
             50% { opacity: 1; transform: translateX(-50%) scale(1.2); }
         }
 
-        /* ============ SPARKLES ============ */
         .sparkles {
             position: absolute;
             top: 0; left: 0;
@@ -125,7 +161,6 @@
             50% { opacity: 1; transform: scale(1); }
         }
 
-        /* ============ TEXT ============ */
         .slide-content {
             text-align: center;
             z-index: 2;
@@ -166,7 +201,6 @@
             margin: 0 auto;
         }
 
-        /* ============ FEATURES CHIPS ============ */
         .features-grid {
             display: flex;
             flex-wrap: wrap;
@@ -196,7 +230,6 @@
         .chip-ai { border-color: rgba(167, 139, 250, 0.4); }
         .chip-teacher { border-color: rgba(52, 211, 153, 0.4); }
 
-        /* ============ TEACHER AVATARS ============ */
         .teacher-avatars {
             display: flex;
             justify-content: center;
@@ -223,7 +256,6 @@
         .teacher-avatar:nth-child(4) { background: linear-gradient(135deg, #F59E0B, #F97316); }
         .teacher-avatar:nth-child(5) { background: linear-gradient(135deg, #3B82F6, #60A5FA); }
 
-        /* ============ BUTTONS ============ */
         .btn-group {
             display: flex;
             flex-direction: column;
@@ -256,9 +288,7 @@
             box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
         }
 
-        .btn-signup:active {
-            transform: scale(0.97);
-        }
+        .btn-signup:active { transform: scale(0.97); }
 
         .btn-signin {
             background: rgba(255, 255, 255, 0.1);
@@ -267,11 +297,8 @@
             border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
-        .btn-signin:active {
-            transform: scale(0.97);
-        }
+        .btn-signin:active { transform: scale(0.97); }
 
-        /* ============ DOTS ============ */
         .dots-container {
             position: absolute;
             bottom: 50px;
@@ -296,6 +323,121 @@
             width: 28px;
             border-radius: 5px;
         }
+
+        /* ============ LOGIN FORM ============ */
+        .login-form-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 28px 22px;
+            width: 100%;
+            max-width: 320px;
+            margin-top: 10px;
+        }
+
+        .login-form-card .form-group { margin-bottom: 14px; }
+
+        .login-form-card label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .login-form-card input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .login-form-card input::placeholder { color: rgba(255, 255, 255, 0.35); }
+        .login-form-card input:focus { border-color: #A78BFA; }
+
+        .login-form-btn {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #8B5CF6, #A78BFA);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 6px;
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .login-form-btn:active { transform: scale(0.97); }
+
+        .error-msg-intro {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #FCA5A5;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-bottom: 14px;
+            text-align: center;
+        }
+
+        .demo-section-intro {
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .demo-section-intro h4 {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .demo-row-intro { display: flex; gap: 8px; margin-bottom: 8px; }
+
+        .demo-btn-intro {
+            flex: 1;
+            padding: 8px;
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            transition: all 0.2s;
+        }
+
+        .demo-btn-intro:hover { border-color: #A78BFA; background: rgba(139, 92, 246, 0.15); }
+        .demo-btn-intro strong { display: block; font-size: 11px; color: white; margin-bottom: 2px; }
+
+        .skip-login {
+            text-align: center;
+            margin-top: 14px;
+        }
+
+        .skip-login a {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .skip-login a:hover { color: rgba(255, 255, 255, 0.8); }
     </style>
 </head>
 <body>
@@ -346,24 +488,43 @@
         </div>
     </div>
 
-    <!-- ========== SLIDE 3: Get Started ========== -->
+    <!-- ========== SLIDE 3: Sign In ========== -->
     <div class="intro-slide" data-slide="2">
-        <div class="robot-container">
-            <svg viewBox="0 0 200 200" fill="none"><ellipse cx="100" cy="85" rx="55" ry="50" fill="url(#rg)"/><ellipse cx="78" cy="78" rx="12" ry="14" fill="#1E1B4B"/><ellipse cx="122" cy="78" rx="12" ry="14" fill="#1E1B4B"/><ellipse cx="78" cy="76" rx="6" ry="7" fill="#60A5FA"/><ellipse cx="122" cy="76" rx="6" ry="7" fill="#60A5FA"/><circle cx="76" cy="74" r="2" fill="white"/><circle cx="120" cy="74" r="2" fill="white"/><path d="M82 100 Q100 115 118 100" stroke="#1E1B4B" stroke-width="3" fill="none" stroke-linecap="round"/><line x1="100" y1="35" x2="100" y2="20" stroke="#A78BFA" stroke-width="4" stroke-linecap="round"/><circle cx="100" cy="16" r="6" fill="#F472B6"/><rect x="42" y="70" width="12" height="24" rx="6" fill="#A78BFA"/><rect x="146" y="70" width="12" height="24" rx="6" fill="#A78BFA"/><rect x="70" y="130" width="60" height="45" rx="15" fill="url(#bg)"/><circle cx="100" cy="150" r="8" fill="#34D399"/><circle cx="100" cy="150" r="4" fill="#A7F3D0"/><rect x="45" y="135" width="20" height="35" rx="10" fill="#8B5CF6"/><rect x="135" y="135" width="20" height="35" rx="10" fill="#8B5CF6"/><defs><linearGradient id="rg" x1="45" y1="35" x2="155" y2="135" gradientUnits="userSpaceOnUse"><stop stop-color="#C4B5FD"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient><linearGradient id="bg" x1="70" y1="130" x2="130" y2="175" gradientUnits="userSpaceOnUse"><stop stop-color="#A78BFA"/><stop offset="1" stop-color="#7C3AED"/></linearGradient></defs></svg>
-            <div class="robot-glow"></div>
-        </div>
-        <div class="slide-content">
-            <div class="slide-label"><i data-lucide="rocket"></i> Start Your Journey</div>
-            <h1 class="slide-title">Ready to Excel?</h1>
-            <p class="slide-desc">Join thousands of students learning smarter with AI and expert teachers.</p>
-            <div class="btn-group">
-                <a href="login.php" class="btn-intro btn-signup">
-                    <i data-lucide="user-plus"></i> Sign Up
-                </a>
-                <a href="login.php" class="btn-intro btn-signin">
-                    <i data-lucide="log-in"></i> Sign In
-                </a>
-            </div>
+        <div class="slide-content" style="width:100%;max-width:340px">
+            <div class="slide-label"><i data-lucide="log-in"></i> Welcome Back</div>
+            <h1 class="slide-title" style="font-size:26px">Sign In to EduAI</h1>
+            <p class="slide-desc" style="font-size:13px;margin-bottom:6px">Enter your credentials to continue</p>
+
+            <?php if ($error): ?>
+                <div class="error-msg-intro"><?php echo htmlspecialchars($error); ?></div>
+            <?php endif; ?>
+
+            <form method="POST" class="login-form-card">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" placeholder="Enter your email" required value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" name="password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="login-form-btn">Sign In</button>
+
+                <div class="demo-section-intro">
+                    <h4>Demo Accounts (password: password)</h4>
+                    <div class="demo-row-intro">
+                        <button type="button" class="demo-btn-intro" onclick="fillDemo('arman@student.com')">
+                            <strong>Student</strong>arman@student.com
+                        </button>
+                        <button type="button" class="demo-btn-intro" onclick="fillDemo('rahim@teacher.com')">
+                            <strong>Teacher</strong>rahim@teacher.com
+                        </button>
+                    </div>
+                    <button type="button" class="demo-btn-intro" onclick="fillDemo('admin@school.com')" style="width:100%">
+                        <strong>Admin</strong>admin@school.com
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -393,7 +554,11 @@
             dots[currentSlide].classList.add('active');
         }
 
-        // Touch/Swipe
+        function fillDemo(email) {
+            document.querySelector('input[name="email"]').value = email;
+            document.querySelector('input[name="password"]').value = 'password';
+        }
+
         document.addEventListener('touchstart', (e) => {
             startX = e.touches[0].clientX;
             isDragging = true;
@@ -413,7 +578,6 @@
             isDragging = false;
         });
 
-        // Mouse drag (for desktop)
         document.addEventListener('mousedown', (e) => {
             startX = e.clientX;
             isDragging = true;
@@ -432,7 +596,6 @@
             isDragging = false;
         });
 
-        // Keyboard
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowRight' && currentSlide < totalSlides - 1) {
                 goToSlide(currentSlide + 1);

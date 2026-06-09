@@ -21,5 +21,5 @@ if (file_exists($landing)) {
     readfile($landing);
     exit;
 }
-header('Location: /login.php');
+header('Location: /intro.php');
 exit;

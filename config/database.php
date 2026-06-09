@@ -498,12 +498,12 @@ function isLoggedIn() {
 }
 
 function requireLogin() {
-    if (!isLoggedIn()) { header('Location: /login.php'); exit; }
+    if (!isLoggedIn()) { header('Location: /intro.php'); exit; }
 }
 
 function requireRole($role) {
     requireLogin();
-    if ($_SESSION['role'] !== $role) { header('Location: /login.php?error=unauthorized'); exit; }
+    if ($_SESSION['role'] !== $role) { header('Location: /intro.php?error=unauthorized'); exit; }
 }
 
 function isMobile() {
@@ -512,7 +512,7 @@ function isMobile() {
 
 function requireDesktop() {
     if (isMobile()) {
-        header('Location: /login.php?error=desktop_required');
+        header('Location: /intro.php?error=desktop_required');
         exit;
     }
 }
@@ -522,7 +522,7 @@ function redirectByRole($role) {
         case 'admin': header('Location: /admin/'); break;
         case 'teacher': header('Location: /?role=teacher#screen-teacher-dash'); break;
         case 'student': header('Location: /?role=student#screen-home'); break;
-        default: header('Location: /login.php'); break;
+        default: header('Location: /intro.php'); break;
     }
     exit;
 }

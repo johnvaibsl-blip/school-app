@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
     _loadSubjectsCache();
     // Auth check: if logged in but no role, redirect to login
     if (!USER_ROLE && window.location.hash && window.location.hash !== '#screen-landing') {
-        window.location.href = '/login.php';
+        window.location.href = '/intro.php';
         return;
     }
     applyRoleVisibility();
