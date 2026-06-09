@@ -33,7 +33,7 @@ body {
     max-width: 430px;
     margin: 0 auto;
     min-height: 100vh;
-    overflow-x: hidden;
+    overflow-x: clip;
     position: relative;
 }
 
@@ -514,15 +514,12 @@ body {
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     padding-bottom: 4px;
-    width: calc(100% + 32px);
-    margin-left: -16px;
-    padding-left: 16px;
-    padding-right: 16px;
 }
 .progress-scroll::-webkit-scrollbar { display: none; }
 
 .stat-card {
     min-width: 110px;
+    width: 110px;
     flex-shrink: 0;
     background: var(--card);
     border-radius: 14px;
@@ -566,6 +563,7 @@ body {
 
 .trophy-card {
     min-width: 130px;
+    width: 130px;
     flex-shrink: 0;
     background: linear-gradient(135deg, #4C1D95, #6D28D9);
     border-radius: 16px;
