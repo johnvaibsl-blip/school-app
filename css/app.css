@@ -576,10 +576,10 @@ body {
 .activity-row {
     display: grid;
     grid-template-columns: 1fr 140px;
+    grid-template-rows: 210px;
     gap: 8px;
-    align-items: stretch;
 }
-#homeActivityFeed { max-height: 210px; overflow-y: auto; }
+#homeActivityFeed { overflow-y: auto; }
 #homeActivityFeed::-webkit-scrollbar { width: 2px; }
 #homeActivityFeed::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 2px; }
 .activity-row .list-item { padding: 6px 8px; gap: 6px; margin-bottom: 3px; border-radius: 10px; }
@@ -631,7 +631,6 @@ body {
 /* Daily Goal */
 .goal-card {
     width: 100%;
-    height: 210px;
     background: var(--card);
     border-radius: 12px;
     padding: 10px;
