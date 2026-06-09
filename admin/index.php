@@ -754,11 +754,13 @@ foreach($allSettings as $s) $sMap[$s['key']] = $s['value'];
 <div class="card"><h3><i data-lucide="brain"></i>AI Configuration</h3>
 <form method="POST"><input type="hidden" name="action" value="update_settings">
 <div class="form-group"><label>AI Status</label><select name="ai_enabled"><option value="1" <?php echo ($sMap['ai_enabled']??'1')==='1'?'selected':''; ?>>Enabled</option><option value="0" <?php echo ($sMap['ai_enabled']??'1')==='0'?'selected':''; ?>>Disabled</option></select></div>
-<div class="form-row"><div class="form-group"><label>AI Provider</label><select name="ai_provider"><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option><option value="claude">Anthropic Claude</option><option value="openrouter">OpenRouter</option></select></div><div class="form-group"><label>Max MCQ Options</label><input type="number" name="max_mcq_options" value="<?php echo htmlspecialchars($sMap['max_mcq_options'] ?? '6'); ?>" min="2" max="10"></div></div>
+<div class="form-row"><div class="form-group"><label>AI Provider</label><select name="ai_provider"><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option><option value="claude">Anthropic Claude</option><option value="openrouter">OpenRouter</option><option value="moondream">Moondream</option></select></div><div class="form-group"><label>Max MCQ Options</label><input type="number" name="max_mcq_options" value="<?php echo htmlspecialchars($sMap['max_mcq_options'] ?? '6'); ?>" min="2" max="10"></div></div>
 <div class="form-group"><label>OpenAI API Key</label><input type="password" name="openai_api_key" placeholder="sk-..."></div>
 <div class="form-group"><label>Gemini API Key</label><input type="password" name="gemini_api_key" placeholder="AIza..."></div>
 <div class="form-group"><label>Claude API Key</label><input type="password" name="claude_api_key" placeholder="sk-ant-..."></div>
 <div class="form-group"><label>OpenRouter API Key</label><input type="password" name="openrouter_api_key" placeholder="sk-or-..."></div>
+<div class="form-group"><label>Moondream API Key</label><input type="password" name="moondream_api_key" placeholder="Get free key at console.moondream.ai"></div>
+<p style="font-size:11px;color:#6b7280;margin-top:-8px">Fallback: Puter.js (free, no key) → Moondream (free $5/mo) → configured provider</p>
 <div class="form-row"><div class="form-group"><label>Temperature (0-1)</label><input type="number" name="ai_temperature" value="<?php echo htmlspecialchars($sMap['ai_temperature'] ?? '0.7'); ?>" step="0.1" min="0" max="1"></div><div class="form-group"><label>Max Tokens</label><input type="number" name="ai_max_tokens" value="<?php echo htmlspecialchars($sMap['ai_max_tokens'] ?? '2048'); ?>" min="256" max="8192"></div></div>
 <button type="submit" class="btn btn-primary">Save AI Settings</button></form></div>
 <div class="card"><h3><i data-lucide="activity"></i>AI Usage Stats</h3>

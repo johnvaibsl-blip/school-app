@@ -295,6 +295,7 @@ class JsonDB {
             ['id'=>10,'key'=>'ai_subtitle','value'=>'Always here to help'],
             ['id'=>11,'key'=>'ai_system_prompt','value'=>'You are a helpful school tutor for Class 8 students. Answer clearly and simply.'],
             ['id'=>12,'key'=>'ai_suggested_prompts','value'=>'Explain photosynthesis|Solve quadratic equations|Summarize Chapter 3'],
+            ['id'=>13,'key'=>'ai_moondream_api_key','value'=>''],
         ];
         
         $this->data['homework_submissions'] = [

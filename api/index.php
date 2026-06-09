@@ -492,23 +492,18 @@ switch ($path) {
         $settings = $db->query('settings');
         $sMap = [];
         foreach ($settings as $s) $sMap[$s['key']] = $s['value'];
-        $provider = $sMap['ai_provider'] ?? 'openai';
+        $provider = $input['provider_override'] ?? ($sMap['ai_provider'] ?? 'openai');
         $apiKey = '';
         $model = 'gpt-4o';
         if ($provider === 'openai') { $apiKey = $sMap['openai_api_key'] ?? ''; $model = 'gpt-4o'; }
         elseif ($provider === 'gemini') { $apiKey = $sMap['gemini_api_key'] ?? ''; $model = 'gemini-1.5-flash'; }
         elseif ($provider === 'claude') { $apiKey = $sMap['claude_api_key'] ?? ''; $model = 'claude-3-haiku-20240307'; }
         elseif ($provider === 'openrouter') { $apiKey = $sMap['openrouter_api_key'] ?? ''; $model = 'openai/gpt-4o'; }
+        elseif ($provider === 'moondream') { $apiKey = $sMap['ai_moondream_api_key'] ?? ''; $model = 'moondream'; }
         $temp = floatval($sMap['ai_temperature'] ?? 0.7);
         $maxTokens = intval($sMap['ai_max_tokens'] ?? 2048);
         if (empty($apiKey)) {
-            $ext = strtolower(pathinfo($imageName, PATHINFO_EXTENSION));
-            $isDiagram = in_array($ext, ['svg','drawio']);
-            $isPhoto = in_array($ext, ['jpg','jpeg','png','webp','heic']);
-            $response = 'I can see the image <strong>' . htmlspecialchars($imageName) . '</strong> (' . ($isPhoto ? 'photo' : ($isDiagram ? 'diagram' : 'file')) . '). ';
-            $response .= 'To enable full AI image analysis, the admin needs to configure an API key in <strong>Admin Panel → AI Settings</strong>. ';
-            $response .= 'Currently configured provider: <strong>' . htmlspecialchars(ucfirst($provider)) . '</strong>.';
-            jsonResponse(['analysis' => $response, 'provider' => $provider, 'configured' => false]);
+            jsonResponse(['analysis' => '', 'provider' => $provider, 'configured' => false, 'needs_fallback' => true]);
             break;
         }
         $headers = [];
@@ -551,6 +546,13 @@ switch ($path) {
                     ['type' => 'text', 'text' => 'Analyze this image: ' . $imageName]
                 ]]]
             ]);
+        } elseif ($provider === 'moondream') {
+            $url = 'https://api.moondream.ai/v1/query';
+            $headers = ['Content-Type: application/json', 'X-Moondream-Auth: ' . $apiKey];
+            $body = json_encode([
+                'image_url' => $imageData,
+                'question' => $systemPrompt . "\n\nAnalyze this image: " . $imageName
+            ]);
         }
         $ch = curl_init($url);
         curl_setopt_array($ch, [
@@ -577,6 +579,8 @@ switch ($path) {
             $analysis = $json['candidates'][0]['content']['parts'][0]['text'] ?? 'Could not analyze image.';
         } elseif ($provider === 'claude') {
             $analysis = $json['content'][0]['text'] ?? 'Could not analyze image.';
+        } elseif ($provider === 'moondream') {
+            $analysis = $json['answer'] ?? $json['result'] ?? 'Could not analyze image.';
         }
         jsonResponse(['analysis' => $analysis, 'provider' => $provider, 'configured' => true]);
         break;
