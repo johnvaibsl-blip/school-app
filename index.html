@@ -498,44 +498,28 @@
 
         <!-- 1. Featured Teacher Hero -->
         <div class="tt-hero-scroll" id="tutorHeroCards">
-            <div class="tt-hero-card" onclick="showScreen('screen-teacher-profile')">
-                <div class="tt-hero-badge"><i data-lucide="award"></i> Featured Teacher</div>
-                <div class="tt-hero-row">
-                    <div class="tt-hero-avatar">R</div>
-                    <div class="tt-hero-info">
-                        <h3>Mr. Rahim Ahmed</h3>
-                        <div class="tt-hero-subject">Mathematics</div>
-                        <div class="tt-hero-stats">
-                            <div class="tt-hero-stat"><span class="val">4.8</span><span class="lbl">Rating</span></div>
-                            <div class="tt-hero-stat"><span class="val">120</span><span class="lbl">Students</span></div>
-                            <div class="tt-hero-stat"><span class="val">500+</span><span class="lbl">Classes</span></div>
-                            <div class="tt-hero-stat"><span class="val">12yr</span><span class="lbl">Exp</span></div>
-                        </div>
+            <!-- Video Player Card (first) -->
+            <div class="tt-hero-video" id="tutorHeroVideo">
+                <div class="tt-video-wrapper">
+                    <div class="tt-video-poster" id="videoPoster" onclick="toggleTutorVideo()">
+                        <div class="tt-video-play-btn"><i data-lucide="play"></i></div>
                     </div>
+                    <div class="tt-video-embed" id="videoEmbed" style="display:none"></div>
+                    <button class="tt-video-close" id="videoClose" onclick="closeTutorVideo()"><i data-lucide="x"></i></button>
                 </div>
-                <button class="tt-hero-cta"><i data-lucide="eye"></i> View Profile</button>
-            </div>
-            <div class="tt-hero-card" style="background:linear-gradient(135deg,#7C3AED,#A855F7)" onclick="showScreen('screen-teacher-profile')">
-                <div class="tt-hero-badge"><i data-lucide="award"></i> Featured Teacher</div>
-                <div class="tt-hero-row">
-                    <div class="tt-hero-avatar" style="background:rgba(255,255,255,0.2)">S</div>
-                    <div class="tt-hero-info">
-                        <h3>Ms. Sarah Khan</h3>
-                        <div class="tt-hero-subject">English Literature</div>
-                        <div class="tt-hero-stats">
-                            <div class="tt-hero-stat"><span class="val">4.9</span><span class="lbl">Rating</span></div>
-                            <div class="tt-hero-stat"><span class="val">95</span><span class="lbl">Students</span></div>
-                            <div class="tt-hero-stat"><span class="val">380+</span><span class="lbl">Classes</span></div>
-                            <div class="tt-hero-stat"><span class="val">8yr</span><span class="lbl">Exp</span></div>
-                        </div>
+                <div class="tt-video-overlay">
+                    <div class="tt-video-badge"><i data-lucide="play-circle"></i> Featured Video</div>
+                    <div class="tt-video-info">
+                        <h3 id="videoTeacherName">Loading...</h3>
+                        <p id="videoTeacherSubject">Loading...</p>
                     </div>
+                    <div class="tt-video-stats" id="videoTeacherStats"></div>
                 </div>
-                <button class="tt-hero-cta"><i data-lucide="eye"></i> View Profile</button>
             </div>
+            <!-- Second card placeholder (filled by JS) -->
         </div>
-        <div class="tt-hero-dots">
+        <div class="tt-hero-dots" id="tutorHeroDots">
             <div class="tt-dot active"></div>
-            <div class="tt-dot"></div>
         </div>
 
         <!-- 2. Quick Stats -->

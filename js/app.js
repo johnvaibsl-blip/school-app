@@ -2307,42 +2307,100 @@ function loadBookContent(chapterId) {
 }
 
 // --- TUTORS SCREEN (Full Dynamic) ---
+var _tutorVideoUrl = '';
 function loadTutorsScreen() {
-    api('teachers').then(function(teachers) {
+    Promise.all([api('teachers'), api('settings')]).then(function(results) {
+        var teachers = results[0] || [];
+        var settings = results[1] || {};
         var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
         var setHtml = function(eid, val) { var el = document.getElementById(eid); if (el) el.innerHTML = val; };
-        var sorted = (teachers || []).sort(function(a, b) { return (b.rating || 0) - (a.rating || 0); });
-        // Stats
+
+        var sorted = teachers.slice().sort(function(a, b) { return (b.rating || 0) - (a.rating || 0); });
+
+        var ftId = parseInt(settings.featured_teacher_id) || 0;
+        var trId = parseInt(settings.top_rated_teacher_id) || 0;
+        var fpId = parseInt(settings.popular_teacher_id) || 0;
+        var fnId = parseInt(settings.new_teacher_id) || 0;
+        _tutorVideoUrl = settings.featured_teacher_video || '';
+
+        function findById(list, id) {
+            if (!id) return null;
+            for (var i = 0; i < list.length; i++) { if (list[i].id === id) return list[i]; }
+            return null;
+        }
+        var ftTeacher = findById(teachers, ftId) || sorted[0];
+        var trTeacher = findById(teachers, trId) || sorted[0];
+        var fpTeacher = findById(teachers, fpId) || sorted.reduce(function(best, t) {
+            return (t.total_students || 0) > (best.total_students || 0) ? t : best;
+        }, sorted[0]);
+        var fnTeacher = findById(teachers, fnId) || sorted.reduce(function(best, t) {
+            return (t.experience || 0) < (best.experience || 999) ? t : best;
+        }, sorted[sorted.length - 1]);
+
         setText('tutorStatActive', teachers.length);
         setText('tutorStatAttended', Math.round(teachers.length * 1.7));
         setText('tutorStatStudyHrs', Math.round(teachers.length * 3.5) + 'h');
-        // Hero cards (first 2)
-        var heroHtml = '';
-        sorted.slice(0, 2).forEach(function(t, i) {
-            var color = i === 0 ? '#4F46E5' : '#EC4899';
-            heroHtml += '<div class="tt-hero-card" onclick="showScreen(\'screen-teacher-profile\')">' +
-                '<div class="tt-hero-top"><div class="tt-hero-avatar" style="background:linear-gradient(135deg,' + color + ',' + color + 'cc)">' + (t.name || 'T')[0] + '</div>' +
-                '<div class="tt-hero-info"><h4>' + t.name + '</h4><p>' + (t.subject || '') + '</p></div></div>' +
-                '<div class="tt-hero-stats"><span><i data-lucide="star"></i> ' + (t.rating || 0) + '</span><span><i data-lucide="users"></i> ' + (t.total_students || 0) + '</span><span><i data-lucide="book-open"></i> ' + (t.lessons || '500+') + '</span><span>' + (t.experience || '5') + 'yr</span></div></div>';
-        });
-        setHtml('tutorHeroCards', heroHtml);
-        // Next class
-        if (sorted[0]) {
-            setText('tutorNextClassTeacher', sorted[0].name);
-            setText('tutorNextClassSubject', 'Math - Algebra Chapter 5');
+
+        if (ftTeacher) {
+            setText('videoTeacherName', ftTeacher.name || 'Featured Teacher');
+            setText('videoTeacherSubject', ftTeacher.subject || '');
+            var statsHtml = '<span><i data-lucide="star"></i> ' + (ftTeacher.rating || 0) + '</span>' +
+                '<span><i data-lucide="users"></i> ' + (ftTeacher.total_students || 0) + ' students</span>' +
+                '<span><i data-lucide="book-open"></i> ' + (ftTeacher.experience || 0) + 'yr exp</span>';
+            setHtml('videoTeacherStats', statsHtml);
+            var poster = document.getElementById('videoPoster');
+            if (poster) {
+                var hue = (ftTeacher.id || 0) * 40;
+                poster.style.background = 'linear-gradient(135deg, hsl(' + hue + ',60%,25%), hsl(' + (hue + 30) + ',70%,40%))';
+            }
         }
-        // Upcoming classes
+
+        var secondTeacher = null;
+        var usedIds = [ftTeacher ? ftTeacher.id : 0];
+        for (var i = 0; i < sorted.length; i++) {
+            if (usedIds.indexOf(sorted[i].id) === -1) { secondTeacher = sorted[i]; break; }
+        }
+        var container = document.getElementById('tutorHeroCards');
+        var existingSecond = container.querySelector('.tt-hero-card');
+        if (existingSecond) existingSecond.remove();
+        if (secondTeacher) {
+            var card2 = document.createElement('div');
+            card2.className = 'tt-hero-card';
+            card2.onclick = function() { showScreen('screen-teacher-profile'); };
+            card2.style.background = 'linear-gradient(135deg, #EC4899, #F472B6)';
+            card2.innerHTML = '<div class="tt-hero-badge"><i data-lucide="award"></i> Featured Teacher</div>' +
+                '<div class="tt-hero-row"><div class="tt-hero-avatar" style="background:rgba(255,255,255,0.2)">' + (secondTeacher.name || 'T')[0] + '</div>' +
+                '<div class="tt-hero-info"><h3>' + secondTeacher.name + '</h3>' +
+                '<div class="tt-hero-subject">' + (secondTeacher.subject || '') + '</div>' +
+                '<div class="tt-hero-stats">' +
+                '<div class="tt-hero-stat"><span class="val">' + (secondTeacher.rating || 0) + '</span><span class="lbl">Rating</span></div>' +
+                '<div class="tt-hero-stat"><span class="val">' + (secondTeacher.total_students || 0) + '</span><span class="lbl">Students</span></div>' +
+                '<div class="tt-hero-stat"><span class="val">' + (secondTeacher.experience || 0) + 'yr</span><span class="lbl">Exp</span></div>' +
+                '</div></div></div>' +
+                '<button class="tt-hero-cta"><i data-lucide="eye"></i> View Profile</button>';
+            container.appendChild(card2);
+        }
+        var dotsEl = document.getElementById('tutorHeroDots');
+        if (dotsEl) {
+            var dotsHtml = '<div class="tt-dot active"></div>';
+            if (secondTeacher) dotsHtml += '<div class="tt-dot"></div>';
+            dotsEl.innerHTML = dotsHtml;
+        }
+
+        if (trTeacher) setText('tutorNextClassTeacher', trTeacher.name);
+
         var upHtml = '';
         var times = ['10:00 AM', '02:00 PM', '04:30 PM'];
         var subs = ['Math - Algebra', 'English - Grammar', 'Science - Physics'];
-        var tNames = sorted.slice(0, 3);
-        tNames.forEach(function(t, i) {
-            upHtml += '<div class="list-item"><div class="list-item-content"><h5>' + subs[i] + '</h5><p>' + (t.name || '') + '</p></div><div style="text-align:right;font-size:11px;color:var(--text3)">' + times[i] + '</div></div>';
+        var tNames = [trTeacher, fpTeacher, fnTeacher].filter(Boolean);
+        tNames.slice(0, 3).forEach(function(t, i) {
+            upHtml += '<div class="list-item"><div class="list-item-content"><h5>' + (subs[i] || '') + '</h5><p>' + (t.name || '') + '</p></div><div style="text-align:right;font-size:11px;color:var(--text3)">' + (times[i] || '') + '</div></div>';
         });
         setHtml('tutorUpcomingClasses', upHtml);
-        // Popular teachers
+
+        var popSorted = teachers.slice().sort(function(a, b) { return (b.total_students || 0) - (a.total_students || 0); });
         var popHtml = '';
-        sorted.slice(0, 3).forEach(function(t) {
+        popSorted.slice(0, 3).forEach(function(t) {
             popHtml += '<div class="tt-popular-card" onclick="showScreen(\'screen-teacher-profile\')">' +
                 '<div class="tt-popular-avatar" style="background:linear-gradient(135deg,#4F46E5,#7C3AED)">' + (t.name || 'T')[0] + '</div>' +
                 '<div class="tt-popular-info"><h4>' + (t.name || '') + '</h4>' +
@@ -2352,17 +2410,47 @@ function loadTutorsScreen() {
                 '<button class="tt-pop-subscribe">Subscribe</button></div>';
         });
         setHtml('tutorPopularList', popHtml);
-        // New teachers
+
+        var newSorted = teachers.slice().sort(function(a, b) { return (a.experience || 0) - (b.experience || 0); });
         var newHtml = '';
-        sorted.slice(-3).forEach(function(t) {
+        newSorted.slice(0, 3).forEach(function(t) {
             newHtml += '<div class="tt-top-card" onclick="showScreen(\'screen-teacher-profile\')">' +
                 '<div class="tt-top-avatar" style="background:linear-gradient(135deg,#06B6D4,#22D3EE)">' + (t.name || 'T')[0] + '</div>' +
                 '<h4>' + (t.name || '') + '</h4><p class="tt-top-subject">' + (t.subject || '') + '</p>' +
-                '<div style="font-size:10px;color:#F59E0B">⭐ ' + (t.rating || 0) + '</div></div>';
+                '<div style="font-size:10px;color:#F59E0B">&#11088; ' + (t.rating || 0) + '</div></div>';
         });
         setHtml('tutorNewList', newHtml);
+
         if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
     });
+}
+
+function toggleTutorVideo() {
+    if (!_tutorVideoUrl) { showToast('No video link configured', 'info'); return; }
+    var vid = '';
+    var m = _tutorVideoUrl.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+    if (m) vid = m[1];
+    if (!vid) { m = _tutorVideoUrl.match(/embed\/([a-zA-Z0-9_-]+)/); if (m) vid = m[1]; }
+    if (!vid) { vid = _tutorVideoUrl.split('/').pop().split('?')[0]; }
+    if (!vid) { showToast('Invalid video URL', 'error'); return; }
+    var embed = document.getElementById('videoEmbed');
+    var poster = document.getElementById('videoPoster');
+    var close = document.getElementById('videoClose');
+    if (embed) {
+        embed.innerHTML = '<iframe src="https://www.youtube.com/embed/' + vid + '?autoplay=1&rel=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
+        embed.style.display = 'block';
+    }
+    if (poster) poster.style.display = 'none';
+    if (close) close.style.display = 'flex';
+}
+
+function closeTutorVideo() {
+    var embed = document.getElementById('videoEmbed');
+    var poster = document.getElementById('videoPoster');
+    var close = document.getElementById('videoClose');
+    if (embed) { embed.innerHTML = ''; embed.style.display = 'none'; }
+    if (poster) poster.style.display = 'flex';
+    if (close) close.style.display = 'none';
 }
 
 // --- TEACHER DASHBOARD STATS ---

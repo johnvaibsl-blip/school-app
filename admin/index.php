@@ -85,7 +85,7 @@ $premiumUsers=count($db->findAll('users','is_premium',1));
 
 $sidebar=[
 ['s'=>'Main','i'=>[['dashboard','layout-dashboard','Dashboard']]],
-['s'=>'User Management','i'=>[['users','users','All Users'],['teachers','user-check','Teachers'],['student_progress','bar-chart-3','Student Progress'],['rankings','trophy','Teacher Rankings']]],
+['s'=>'User Management','i'=>[['users','users','All Users'],['teachers','user-check','Teachers'],['featured_teachers','star','Featured Teachers'],['student_progress','bar-chart-3','Student Progress'],['rankings','trophy','Teacher Rankings']]],
 ['s'=>'Academics','i'=>[['subjects','book-open','Subjects'],['chapters','layers','Chapters'],['class_schedule','clock','Class Schedule']]],
 ['s'=>'Content','i'=>[['homework','file-text','Homework'],['exams','calendar','Exams'],['library','library','Library']]],
 ['s'=>'Assessment','i'=>[['questions','help-circle','Question Bank'],['submissions','inbox','Submissions'],['results','award','Exam Results'],['exam_analytics','bar-chart','Exam Analytics'],['hw_analytics','pie-chart','Homework Analytics'],['reports','file-bar-chart','Reports']]],
@@ -207,7 +207,7 @@ td{color:#374151}
 <div class="main">
 <div class="topbar">
 <h1><?php
-$t=['dashboard'=>'Dashboard','users'=>'All Users','teachers'=>'Teachers','subjects'=>'Subjects','chapters'=>'Chapters','homework'=>'Homework','exams'=>'Exams','questions'=>'Question Bank','submissions'=>'Submissions','results'=>'Exam Results','live_classes'=>'Live Classes','announcements'=>'Announcements','messages'=>'Messages','packages'=>'Packages','revenue'=>'Revenue','settings'=>'General Settings','ai_settings'=>'AI Settings','library'=>'Library','student_progress'=>'Student Progress','rankings'=>'Teacher Rankings','exam_analytics'=>'Exam Analytics','hw_analytics'=>'Homework Analytics','notifications'=>'Notifications','calendar'=>'Calendar'];
+$t=['dashboard'=>'Dashboard','users'=>'All Users','teachers'=>'Teachers','featured_teachers'=>'Featured Teachers','subjects'=>'Subjects','chapters'=>'Chapters','homework'=>'Homework','exams'=>'Exams','questions'=>'Question Bank','submissions'=>'Submissions','results'=>'Exam Results','live_classes'=>'Live Classes','announcements'=>'Announcements','messages'=>'Messages','packages'=>'Packages','revenue'=>'Revenue','settings'=>'General Settings','ai_settings'=>'AI Settings','library'=>'Library','student_progress'=>'Student Progress','rankings'=>'Teacher Rankings','exam_analytics'=>'Exam Analytics','hw_analytics'=>'Homework Analytics','notifications'=>'Notifications','calendar'=>'Calendar'];
 echo $t[$page]??ucfirst(str_replace('_',' ',$page));
 ?></h1>
 <div class="info"><div><div class="name"><?php echo htmlspecialchars($_SESSION['user_name']); ?></div><div class="role">Administrator</div></div></div>
@@ -346,6 +346,85 @@ $ranked=$allTeachers;usort($ranked,fn($a,$b)=>$b['rating'] <=> $a['rating']);
 <td><strong><?php echo htmlspecialchars($rk['name']); ?></strong></td><td><?php echo htmlspecialchars($rk['subject']); ?></td>
 <td><span class="badge bg">&#9733; <?php echo $rk['rating']; ?></span></td><td><?php echo $rk['total_students']; ?></td><td><?php echo $rk['total_classes']; ?></td></tr>
 <?php $rank++;endforeach; ?></table></div>
+
+<?php /* === FEATURED TEACHERS === */ ?>
+<?php elseif($page==='featured_teachers'):
+$ftId=0;$ftVideo='';$trId=0;$fpId=0;$fnId=0;
+foreach($allSettings as $s){
+    if($s['key']==='featured_teacher_id') $ftId=intval($s['value']);
+    if($s['key']==='featured_teacher_video') $ftVideo=$s['value'];
+    if($s['key']==='top_rated_teacher_id') $trId=intval($s['value']);
+    if($s['key']==='popular_teacher_id') $fpId=intval($s['value']);
+    if($s['key']==='new_teacher_id') $fnId=intval($s['value']);
+}
+$ftTeacher=null;foreach($allTeachers as $t){if($t['id']===$ftId){$ftTeacher=$t;break;}}
+?>
+<div class="card">
+<h3><i data-lucide="star"></i>Featured Teacher Selection</h3>
+<p style="font-size:12px;color:#6B7280;margin-bottom:16px">Select teachers for each category on the student app homepage. The featured teacher will appear with a video trailer.</p>
+<form method="POST"><input type="hidden" name="action" value="update_settings">
+<div class="form-row">
+<div class="form-group"><label>Featured Teacher</label><select name="featured_teacher_id"><option value="">-- Select --</option><?php foreach($allTeachers as $t): ?><option value="<?php echo $t['id']; ?>" <?php echo $ftId===$t['id']?'selected':''; ?>><?php echo htmlspecialchars($t['name']); ?> (<?php echo htmlspecialchars($t['subject']); ?>)</option><?php endforeach; ?></select></div>
+<div class="form-group"><label>YouTube Video Link</label><input type="url" name="featured_teacher_video" value="<?php echo htmlspecialchars($ftVideo); ?>" placeholder="https://www.youtube.com/watch?v=..."></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Top Rated Teacher</label><select name="top_rated_teacher_id"><option value="">-- Auto (by rating) --</option><?php foreach($allTeachers as $t): ?><option value="<?php echo $t['id']; ?>" <?php echo $trId===$t['id']?'selected':''; ?>><?php echo htmlspecialchars($t['name']); ?> (<?php echo htmlspecialchars($t['subject']); ?>)</option><?php endforeach; ?></select></div>
+<div class="form-group"><label>Most Popular Teacher</label><select name="popular_teacher_id"><option value="">-- Auto (by students) --</option><?php foreach($allTeachers as $t): ?><option value="<?php echo $t['id']; ?>" <?php echo $fpId===$t['id']?'selected':''; ?>><?php echo htmlspecialchars($t['name']); ?> (<?php echo htmlspecialchars($t['subject']); ?>)</option><?php endforeach; ?></select></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>New Teacher</label><select name="new_teacher_id"><option value="">-- Auto (least experienced) --</option><?php foreach($allTeachers as $t): ?><option value="<?php echo $t['id']; ?>" <?php echo $fnId===$t['id']?'selected':''; ?>><?php echo htmlspecialchars($t['name']); ?> (<?php echo htmlspecialchars($t['subject']); ?>)</option><?php endforeach; ?></select></div>
+</div>
+<div style="margin-top:8px"><button type="submit" class="btn btn-primary"><i data-lucide="save" style="width:14px;height:14px"></i> Save Selection</button></div>
+</form>
+</div>
+
+<?php if($ftTeacher): ?>
+<div class="card">
+<h3><i data-lucide="video"></i>Featured Teacher Preview</h3>
+<div style="display:flex;gap:16px;align-items:start">
+<div style="flex:1">
+<div style="background:linear-gradient(135deg,#4F46E5,#7C3AED);border-radius:14px;padding:20px;color:white;text-align:center">
+<div style="width:64px;height:64px;background:rgba(255,255,255,0.2);border-radius:16px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;border:2px solid rgba(255,255,255,0.3)"><?php echo strtoupper(substr($ftTeacher['name'],0,1)); ?></div>
+<div style="font-size:16px;font-weight:700;margin-bottom:2px"><?php echo htmlspecialchars($ftTeacher['name']); ?></div>
+<div style="font-size:12px;opacity:0.8;margin-bottom:8px"><?php echo htmlspecialchars($ftTeacher['subject']); ?></div>
+<div style="font-size:13px">&#9733; <?php echo $ftTeacher['rating']; ?> | <?php echo $ftTeacher['total_students']; ?> students | <?php echo $ftTeacher['experience']; ?>yr exp</div>
+</div>
+</div>
+<div style="flex:1">
+<div style="font-size:13px;font-weight:600;margin-bottom:8px">Video Trailer</div>
+<?php if($ftVideo): ?>
+<?php
+$vid='';
+if(preg_match('/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]+)/',$ftVideo,$m)) $vid=$m[1];
+if(!$vid && preg_match('/embed\/([a-zA-Z0-9_-]+)/',$ftVideo,$m)) $vid=$m[1];
+?>
+<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px"><iframe src="https://www.youtube.com/embed/<?php echo $vid; ?>" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;border-radius:12px" allowfullscreen></iframe></div>
+<?php else: ?>
+<div style="background:#F3F4F6;border-radius:12px;padding:40px;text-align:center;color:#9CA3AF"><i data-lucide="video-off" style="width:32px;height:32px;margin-bottom:8px"></i><div style="font-size:12px">No video link set</div></div>
+<?php endif; ?>
+</div>
+</div>
+</div>
+<?php endif; ?>
+
+<div class="card">
+<h3><i data-lucide="list"></i>All Teachers (<?php echo count($allTeachers); ?>)</h3>
+<table><tr><th>Teacher</th><th>Subject</th><th>Rating</th><th>Students</th><th>Role</th></tr>
+<?php
+$roleMap=['featured'=>$ftId,'top_rated'=>$trId,'popular'=>$fpId,'new'=>$fnId];
+foreach($allTeachers as $t):
+$role='';
+if($t['id']===$ftId) $role='<span class="badge bo">Featured</span>';
+elseif($t['id']===$trId) $role='<span class="badge bg">Top Rated</span>';
+elseif($t['id']===$fpId) $role='<span class="badge bb">Popular</span>';
+elseif($t['id']===$fnId) $role='<span class="badge bp">New</span>';
+?>
+<tr><td><strong><?php echo htmlspecialchars($t['name']); ?></strong></td>
+<td><?php echo htmlspecialchars($t['subject']); ?></td>
+<td><span class="badge bg">&#9733; <?php echo $t['rating']; ?></span></td>
+<td><?php echo $t['total_students']; ?></td>
+<td><?php echo $role ?: '<span style="color:#9CA3AF">-</span>'; ?></td></tr>
+<?php endforeach; ?></table></div>
 
 <?php /* === SUBJECTS === */ ?>
 <?php elseif($page==='subjects'):
