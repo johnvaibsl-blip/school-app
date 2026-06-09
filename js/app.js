@@ -720,11 +720,28 @@ function handleChatFile(input, type) {
     if (type === 'image' && file.type.startsWith('image/')) {
         var reader = new FileReader();
         reader.onload = function(e) {
-            addChatMessage('<img src="' + e.target.result + '" class="chat-img" alt="' + name + '">', 'user');
+            var imageData = e.target.result;
+            addChatMessage('<img src="' + imageData + '" class="chat-img" alt="' + name + '">', 'user');
             input.value = '';
-            setTimeout(function() {
-                addChatMessage('Nice image! I can see <strong>' + name + '</strong>. What would you like to know about it?', 'ai');
-            }, 1200);
+            var thinking = document.createElement('div');
+            thinking.className = 'msg ai';
+            thinking.innerHTML = '<div class="msg-avatar snorii-avatar-sm"><svg viewBox="0 0 40 40" width="20" height="20"><ellipse cx="20" cy="18" rx="16" ry="14" fill="#F0F9FF"/><rect x="10" y="12" width="20" height="16" rx="6" fill="#0F172A"/><circle cx="15" cy="20" r="3" fill="#22D3EE"/><circle cx="25" cy="20" r="3" fill="#22D3EE"/><path d="M16 25 Q20 28 24 25" stroke="#22D3EE" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg></div><div class="msg-bubble ai-thinking"><span class="thinking-dots"><span></span><span></span><span></span></span> Analyzing image...</div>';
+            var container = document.querySelector('#screen-chat .chat-messages');
+            container.appendChild(thinking);
+            container.scrollTop = container.scrollHeight;
+            var sysPrompt = 'You are a helpful school tutor for Class 8 students. Analyze this image clearly and simply. If it contains a math problem, solve it step by step. If it contains text, read and summarize it. If it is a diagram or science image, explain it educationally. Keep answers concise and student-friendly.';
+            apiRaw('ai_analyze_image', { image: imageData, name: name, system_prompt: sysPrompt }).then(function(res) {
+                thinking.remove();
+                if (res && res.analysis) {
+                    var provLabel = res.configured ? ' <span style="font-size:10px;opacity:0.5">via ' + (res.provider || 'AI') + '</span>' : '';
+                    addChatMessage(res.analysis + provLabel, 'ai');
+                } else {
+                    addChatMessage('I received your image <strong>' + name + '</strong>, but could not analyze it. Please try again.', 'ai');
+                }
+            }).catch(function(err) {
+                thinking.remove();
+                addChatMessage('Image analysis failed. Please check your API key in Admin Panel → AI Settings.', 'ai');
+            });
         };
         reader.readAsDataURL(file);
     } else {
@@ -1081,6 +1098,15 @@ function api(action, params) {
     var url = '/api/index.php?action=' + action;
     if (params) { Object.keys(params).forEach(function(k) { url += '&' + k + '=' + encodeURIComponent(params[k]); }); }
     return fetch(url).then(function(r) { return r.json(); });
+}
+
+function apiRaw(action, data) {
+    return fetch('/api/index.php?action=' + action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+        credentials: 'same-origin'
+    }).then(function(r) { return r.json(); });
 }
 
 function logActivity(type, details) {

@@ -4431,3 +4431,18 @@ textarea.input-field { min-height: 100px; resize: vertical; }
     color: var(--text2);
 }
 .theme-thumb.active span { color: #22D3EE; }
+
+/* === AI THINKING DOTS === */
+.ai-thinking { display: flex; align-items: center; gap: 6px; }
+.thinking-dots { display: inline-flex; gap: 4px; align-items: center; }
+.thinking-dots span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #22D3EE;
+    animation: thinkBounce 1.2s ease-in-out infinite;
+}
+.thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+.thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes thinkBounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-6px); opacity: 1; }
+}

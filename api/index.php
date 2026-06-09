@@ -484,5 +484,102 @@ switch ($path) {
         jsonResponse($db->query('student_evaluations'));
         break;
 
+    case 'ai_analyze_image':
+        $input = json_decode(file_get_contents('php://input'), true);
+        $imageData = $input['image'] ?? '';
+        $imageName = $input['name'] ?? 'image';
+        $systemPrompt = $input['system_prompt'] ?? 'You are a helpful school tutor. Analyze this image and explain what you see in a clear, educational way. If it contains a math problem, solve it. If it contains text, read and summarize it. If it is a diagram, explain it.';
+        $settings = $db->query('settings');
+        $sMap = [];
+        foreach ($settings as $s) $sMap[$s['key']] = $s['value'];
+        $provider = $sMap['ai_provider'] ?? 'openai';
+        $apiKey = '';
+        $model = 'gpt-4o';
+        if ($provider === 'openai') { $apiKey = $sMap['openai_api_key'] ?? ''; $model = 'gpt-4o'; }
+        elseif ($provider === 'gemini') { $apiKey = $sMap['gemini_api_key'] ?? ''; $model = 'gemini-1.5-flash'; }
+        elseif ($provider === 'claude') { $apiKey = $sMap['claude_api_key'] ?? ''; $model = 'claude-3-haiku-20240307'; }
+        elseif ($provider === 'openrouter') { $apiKey = $sMap['openrouter_api_key'] ?? ''; $model = 'openai/gpt-4o'; }
+        $temp = floatval($sMap['ai_temperature'] ?? 0.7);
+        $maxTokens = intval($sMap['ai_max_tokens'] ?? 2048);
+        if (empty($apiKey)) {
+            $ext = strtolower(pathinfo($imageName, PATHINFO_EXTENSION));
+            $isDiagram = in_array($ext, ['svg','drawio']);
+            $isPhoto = in_array($ext, ['jpg','jpeg','png','webp','heic']);
+            $response = 'I can see the image <strong>' . htmlspecialchars($imageName) . '</strong> (' . ($isPhoto ? 'photo' : ($isDiagram ? 'diagram' : 'file')) . '). ';
+            $response .= 'To enable full AI image analysis, the admin needs to configure an API key in <strong>Admin Panel → AI Settings</strong>. ';
+            $response .= 'Currently configured provider: <strong>' . htmlspecialchars(ucfirst($provider)) . '</strong>.';
+            jsonResponse(['analysis' => $response, 'provider' => $provider, 'configured' => false]);
+            break;
+        }
+        $headers = [];
+        $body = '';
+        $url = '';
+        if ($provider === 'openai' || $provider === 'openrouter') {
+            $url = ($provider === 'openai' ? 'https://api.openai.com/v1/chat/completions' : 'https://openrouter.ai/api/v1/chat/completions');
+            $headers = ['Content-Type: application/json', 'Authorization: Bearer ' . $apiKey];
+            $body = json_encode([
+                'model' => $model,
+                'max_tokens' => $maxTokens,
+                'temperature' => $temp,
+                'messages' => [
+                    ['role' => 'system', 'content' => $systemPrompt],
+                    ['role' => 'user', 'content' => [
+                        ['type' => 'text', 'text' => 'Analyze this image: ' . $imageName],
+                        ['type' => 'image_url', 'image_url' => ['url' => $imageData, 'detail' => 'auto']]
+                    ]]
+                ]
+            ]);
+        } elseif ($provider === 'gemini') {
+            $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . $apiKey;
+            $headers = ['Content-Type: application/json'];
+            $body = json_encode([
+                'contents' => [['parts' => [
+                    ['text' => $systemPrompt . "\n\nAnalyze this image: " . $imageName],
+                    ['inline_data' => ['mime_type' => 'image/jpeg', 'data' => str_replace(['data:image/', 'base64,'], '', $imageData)]]
+                ]]],
+                'generationConfig' => ['temperature' => $temp, 'maxOutputTokens' => $maxTokens]
+            ]);
+        } elseif ($provider === 'claude') {
+            $url = 'https://api.anthropic.com/v1/messages';
+            $headers = ['Content-Type: application/json', 'x-api-key' => $apiKey, 'anthropic-version: 2023-06-01'];
+            $body = json_encode([
+                'model' => $model,
+                'max_tokens' => $maxTokens,
+                'system' => $systemPrompt,
+                'messages' => [['role' => 'user', 'content' => [
+                    ['type' => 'image', 'source' => ['type' => 'base64', 'media_type' => 'image/jpeg', 'data' => str_replace(['data:image/', 'base64,'], '', $imageData)]],
+                    ['type' => 'text', 'text' => 'Analyze this image: ' . $imageName]
+                ]]]
+            ]);
+        }
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $body,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_SSL_VERIFYPEER => false
+        ]);
+        $result = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+        if ($error || $httpCode !== 200) {
+            jsonResponse(['analysis' => 'Image received. Analysis temporarily unavailable (API error). Please try again.', 'provider' => $provider, 'configured' => true, 'error' => $error ?: 'HTTP ' . $httpCode]);
+            break;
+        }
+        $json = json_decode($result, true);
+        $analysis = '';
+        if ($provider === 'openai' || $provider === 'openrouter') {
+            $analysis = $json['choices'][0]['message']['content'] ?? 'Could not analyze image.';
+        } elseif ($provider === 'gemini') {
+            $analysis = $json['candidates'][0]['content']['parts'][0]['text'] ?? 'Could not analyze image.';
+        } elseif ($provider === 'claude') {
+            $analysis = $json['content'][0]['text'] ?? 'Could not analyze image.';
+        }
+        jsonResponse(['analysis' => $analysis, 'provider' => $provider, 'configured' => true]);
+        break;
+
     default: jsonResponseError('Unknown action');
 }
