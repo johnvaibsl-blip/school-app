@@ -514,6 +514,10 @@ body {
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     padding-bottom: 4px;
+    width: calc(100% + 32px);
+    margin-left: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
 }
 .progress-scroll::-webkit-scrollbar { display: none; }
 
