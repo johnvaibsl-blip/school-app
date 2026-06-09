@@ -2357,8 +2357,8 @@ function loadTutorsScreen() {
         sorted.slice(-3).forEach(function(t) {
             newHtml += '<div class="tt-top-card" onclick="showScreen(\'screen-teacher-profile\')">' +
                 '<div class="tt-top-avatar" style="background:linear-gradient(135deg,#06B6D4,#22D3EE)">' + (t.name || 'T')[0] + '</div>' +
-                '<h4>' + (t.name || '') + '</h4><p>' + (t.subject || '') + '</p>' +
-                '<div style="font-size:11px;color:#F59E0B">⭐ ' + (t.rating || 0) + '</div></div>';
+                '<h4>' + (t.name || '') + '</h4><p class="tt-top-subject">' + (t.subject || '') + '</p>' +
+                '<div style="font-size:10px;color:#F59E0B">⭐ ' + (t.rating || 0) + '</div></div>';
         });
         setHtml('tutorNewList', newHtml);
         if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
