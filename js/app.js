@@ -1908,10 +1908,16 @@ function loadStudentHomeProgress() {
         setBar('homeBooksBar', Math.min((p.books_read || 0) * 8, 100));
         setBar('homeHwScoreBar', p.homework_score || 0);
         setBar('homeExamScoreBar', p.exam_score || 0);
-        setBar('homeStreakBar', Math.min((p.streak || 0) * 14, 100));
         var goalTasks = Math.min(Math.round((p.homework_score || 0) / 25), 4);
         setText('homeGoalText', goalTasks + ' / 4 Tasks');
         setBar('homeGoalBar', goalTasks * 25);
+    });
+    api('live_schedule').then(function(items) {
+        var count = (items || []).length;
+        var setText = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
+        setText('homeLiveVal', count);
+        var setBar = function(id, pct) { var el = document.getElementById(id); if (el) el.style.width = pct + '%'; };
+        setBar('homeLiveBar', Math.min(count * 25, 100));
     });
 }
 

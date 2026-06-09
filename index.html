@@ -353,33 +353,29 @@
             <a class="section-link"><i data-lucide="chevron-down" style="width:12px;height:12px"></i> This Week</a>
         </div>
         <div class="progress-scroll">
-            <div class="stat-card">
+            <div class="stat-card" onclick="showScreen('screen-my-study')" style="cursor:pointer">
                 <div class="stat-icon green"><i data-lucide="book-open" style="width:18px;height:18px"></i></div>
                 <h5>Books Read</h5>
                 <div class="val"><span id="homeBooksVal">0 / 30</span></div>
                 <div class="stat-bar"><div class="stat-bar-fill" id="homeBooksBar" style="width:40%;background:#22C55E"></div></div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" onclick="showScreen('screen-homework')" style="cursor:pointer">
                 <div class="stat-icon orange"><i data-lucide="file-text" style="width:18px;height:18px"></i></div>
                 <h5>Homework Score</h5>
                 <div class="val"><span id="homeHwScoreVal">0%</span></div>
                 <div class="stat-bar"><div class="stat-bar-fill" id="homeHwScoreBar" style="width:85%;background:#F97316"></div></div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" onclick="showScreen('screen-exam')" style="cursor:pointer">
                 <div class="stat-icon blue"><i data-lucide="target" style="width:18px;height:18px"></i></div>
                 <h5>Exam Score</h5>
                 <div class="val"><span id="homeExamScoreVal">0%</span></div>
                 <div class="stat-bar"><div class="stat-bar-fill" id="homeExamScoreBar" style="width:78%;background:#3B82F6"></div></div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon red"><i data-lucide="flame" style="width:18px;height:18px"></i></div>
-                <h5>Study Streak</h5>
-                <div class="val"><span id="homeStreakVal">0</span> <span>Days</span></div>
-                <div class="stat-bar"><div class="stat-bar-fill" id="homeStreakBar" style="width:100%;background:#EF4444"></div></div>
-            </div>
-            <div class="trophy-card">
-                <div class="trophy-emoji"><i data-lucide="trophy" style="width:32px;height:32px;color:#F59E0B"></i></div>
-                <p>You're doing awesome!</p>
+            <div class="stat-card" onclick="showScreen('screen-live-lobby')" style="cursor:pointer">
+                <div class="stat-icon purple"><i data-lucide="video" style="width:18px;height:18px"></i></div>
+                <h5>Live Classes</h5>
+                <div class="val"><span id="homeLiveVal">0</span> <span>upcoming</span></div>
+                <div class="stat-bar"><div class="stat-bar-fill" id="homeLiveBar" style="width:50%;background:#8B5CF6"></div></div>
             </div>
         </div>
 

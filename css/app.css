@@ -33,7 +33,7 @@ body {
     max-width: 430px;
     margin: 0 auto;
     min-height: 100vh;
-    overflow-x: hidden;
+    overflow-x: clip;
     position: relative;
 }
 
@@ -527,7 +527,9 @@ body {
     border-radius: 14px;
     padding: 12px;
     box-shadow: var(--shadow);
+    transition: transform 0.15s ease;
 }
+.stat-card:active { transform: scale(0.96); }
 
 .stat-icon {
     width: 32px;
@@ -544,6 +546,7 @@ body {
 .stat-icon.orange { background: #FEF3C7; }
 .stat-icon.blue { background: #DBEAFE; }
 .stat-icon.red { background: #FEE2E2; }
+.stat-icon.purple { background: #EDE9FE; }
 
 .stat-card h5 { font-size: 9px; font-weight: 500; color: var(--text3); margin-bottom: 2px; }
 .stat-card .val { font-size: 22px; font-weight: 700; line-height: 1; }
@@ -562,23 +565,6 @@ body {
 .stat-card .lbl { font-size: 9px; color: var(--text3); margin-top: 3px; }
 .stat-card .lbl.good { color: var(--success); }
 .stat-card .lbl.great { color: var(--warning); }
-
-.trophy-card {
-    min-width: 130px;
-    width: 130px;
-    flex-shrink: 0;
-    background: linear-gradient(135deg, #4C1D95, #6D28D9);
-    border-radius: 16px;
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-}
-
-.trophy-emoji { font-size: 44px; margin-bottom: 4px; }
-.trophy-card p { color: white; font-size: 11px; font-weight: 600; }
 
 /* Activity */
 .activity-row {
