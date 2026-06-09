@@ -577,8 +577,11 @@ body {
     display: grid;
     grid-template-columns: 1fr 140px;
     gap: 8px;
-    align-items: start;
+    align-items: stretch;
 }
+#homeActivityFeed { max-height: 210px; overflow-y: auto; }
+#homeActivityFeed::-webkit-scrollbar { width: 2px; }
+#homeActivityFeed::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 2px; }
 .activity-row .list-item { padding: 6px 8px; gap: 6px; margin-bottom: 3px; border-radius: 10px; }
 .activity-row .list-item-content h5 { font-size: 9px; }
 .activity-row .list-item-content p { font-size: 8px; }
