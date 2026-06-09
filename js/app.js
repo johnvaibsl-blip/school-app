@@ -12,7 +12,7 @@ var ROLE_SCREENS = {
         'screen-exam-interface','screen-exam-result','screen-subject',
         'screen-reader','screen-live-lobby','screen-live-class','screen-search',
         'screen-pricing','screen-payment','screen-payment-success','screen-settings','screen-notif',
-        'screen-my-study','screen-library-subject'
+        'screen-my-study','screen-library-subject','screen-messages'
     ],
     teacher: [
         'screen-teacher-dash','screen-upload-content','screen-content-library',
@@ -151,7 +151,7 @@ function showScreen(id) {
     if (id === 'screen-tutors') loadTeacherRankings();
     if (id === 'screen-profile' && USER_ROLE === 'student') loadStudentProfile();
     if (id === 'screen-edit-profile') loadEditProfile();
-    if (id === 'screen-teacher-profile' && USER_ROLE === 'teacher') loadTeacherProfile();
+    if (id === 'screen-teacher-profile') loadTeacherProfile();
     if (id === 'screen-teacher-profile-view') loadTeacherOwnProfile();
     if (id === 'screen-teacher-edit-profile') loadTeacherEditProfile();
     if (id === 'screen-my-students') loadMyStudents();
@@ -391,7 +391,7 @@ function filterMessages() {
     var input = document.getElementById('msgSearchInput');
     if (!input) return;
     var filter = input.value.toLowerCase();
-    var items = document.querySelectorAll('#screen-messages .chat-item');
+    var items = document.querySelectorAll('#messagesList .list-item');
     items.forEach(function(item) {
         var text = item.textContent.toLowerCase();
         item.style.display = text.indexOf(filter) > -1 ? '' : 'none';
@@ -1251,6 +1251,12 @@ function loadStudentHome() {
     // Load badges
     loadHomeBadges();
 
+    // Load activity feed
+    loadActivityFeed();
+
+    // Load daily goals
+    loadDailyGoals();
+
     // Load mentors count
     api('teachers').then(function(teachers) {
         var el = document.getElementById('homeMentors');
@@ -1915,9 +1921,6 @@ function loadStudentHomeProgress(prog) {
         setBar('homeHwScoreBar', p.homework_score || 0);
         setText('homeExamScoreVal', (p.exam_score || 0) + '%');
         setBar('homeExamScoreBar', p.exam_score || 0);
-        var goalTasks = Math.min(Math.round((p.homework_score || 0) / 25), 4);
-        setText('homeGoalText', goalTasks + ' / 4 Tasks');
-        setBar('homeGoalBar', goalTasks * 25);
     }
     if (prog) { render(prog); }
     else { api('student_progress').then(render); }
@@ -1934,9 +1937,8 @@ function loadStudentHomeProgress(prog) {
 function sendChatBubble(text) {
     openChatFromFAB();
     setTimeout(function() {
-        var input = document.getElementById('chatInput');
-        if (input) input.value = text;
-        sendChatMessage();
+        addChatMessage(text, 'user');
+        setTimeout(function() { addChatMessage(getAIResponse(text), 'ai'); }, 800);
     }, 300);
 }
 
@@ -2309,9 +2311,19 @@ function loadBookContent(chapterId) {
 // --- TUTORS SCREEN (Full Dynamic) ---
 var _tutorVideoUrl = '';
 function loadTutorsScreen() {
-    Promise.all([api('teachers'), api('settings')]).then(function(results) {
+    var apis = [api('teachers'), api('settings'), api('live_schedule')];
+    if (USER_ROLE === 'student') apis.push(api('conversations'), api('student_progress'));
+    Promise.all(apis).then(function(results) {
         var teachers = results[0] || [];
-        var settings = results[1] || {};
+        var settings = results[1] || [];
+        var liveSchedule = results[2] || [];
+        var convos = USER_ROLE === 'student' ? (results[3] || []) : [];
+        var progress = USER_ROLE === 'student' ? (results[4] || {}) : {};
+        if (Array.isArray(settings)) {
+            var map = {};
+            settings.forEach(function(s) { map[s.key] = s.value; });
+            settings = map;
+        }
         var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
         var setHtml = function(eid, val) { var el = document.getElementById(eid); if (el) el.innerHTML = val; };
 
@@ -2337,9 +2349,11 @@ function loadTutorsScreen() {
             return (t.experience || 0) < (best.experience || 999) ? t : best;
         }, sorted[sorted.length - 1]);
 
+        // Stats - use real data
         setText('tutorStatActive', teachers.length);
-        setText('tutorStatAttended', Math.round(teachers.length * 1.7));
-        setText('tutorStatStudyHrs', Math.round(teachers.length * 3.5) + 'h');
+        var upcomingCount = liveSchedule.filter(function(c) { return c.status === 'scheduled' || c.status === 'live'; }).length;
+        setText('tutorStatAttended', upcomingCount || '0');
+        setText('tutorStatStudyHrs', (progress.study_hours || 0) + 'h');
 
         if (ftTeacher) {
             setText('videoTeacherName', ftTeacher.name || 'Featured Teacher');
@@ -2394,7 +2408,11 @@ function loadTutorsScreen() {
         var subs = ['Math - Algebra', 'English - Grammar', 'Science - Physics'];
         var tNames = [trTeacher, fpTeacher, fnTeacher].filter(Boolean);
         tNames.slice(0, 3).forEach(function(t, i) {
-            upHtml += '<div class="list-item"><div class="list-item-content"><h5>' + (subs[i] || '') + '</h5><p>' + (t.name || '') + '</p></div><div style="text-align:right;font-size:11px;color:var(--text3)">' + (times[i] || '') + '</div></div>';
+            upHtml += '<div class="tt-upcoming-item" onclick="showScreen(\'screen-live-class\')">' +
+                '<div class="tt-upcoming-time"><div class="t">' + (times[i] || '').split(' ')[0] + '</div><div class="p">' + ((times[i] || '').split(' ')[1] || '') + '</div></div>' +
+                '<div class="tt-upcoming-vline"></div>' +
+                '<div class="tt-upcoming-info"><h4>' + (subs[i] || '') + '</h4><p>' + (t.name || '') + ' - Live Class</p></div>' +
+                '<button class="tt-upcoming-join" onclick="event.stopPropagation();showScreen(\'screen-live-class\')">Join</button></div>';
         });
         setHtml('tutorUpcomingClasses', upHtml);
 
@@ -2420,6 +2438,43 @@ function loadTutorsScreen() {
                 '<div style="font-size:10px;color:#F59E0B">&#11088; ' + (t.rating || 0) + '</div></div>';
         });
         setHtml('tutorNewList', newHtml);
+
+        // My Tutors - load from conversations (students only)
+        if (USER_ROLE === 'student' && convos.length) {
+            var myTutorsHtml = '';
+            convos.slice(0, 5).forEach(function(c) {
+                myTutorsHtml += '<div class="tt-my-tutor" onclick="openChat(' + c.user_id + ',\'' + (c.name || '').replace(/'/g, "\\'") + '\')">' +
+                    '<div class="tt-my-tutor-avatar">' + (c.name || 'U')[0] + '</div>' +
+                    '<div class="tt-my-tutor-info"><h4>' + (c.name || '') + '</h4><p>' + (c.last_message || 'Start a conversation') + '</p></div>' +
+                    '<button class="tt-my-tutor-btn" onclick="event.stopPropagation();openChat(' + c.user_id + ',\'' + (c.name || '').replace(/'/g, "\\'") + '\')">Chat</button></div>';
+            });
+            setHtml('tutorMyTutorsList', myTutorsHtml);
+        }
+
+        // Learning Progress - load from student_progress (students only)
+        if (USER_ROLE === 'student' && progress && progress.id) {
+            var progHtml = '<div class="tt-progress-grid">' +
+                '<div class="tt-progress-item"><i data-lucide="check-circle"></i><span class="tt-prog-val">' + (progress.total_classes || 42) + '</span><span class="tt-prog-lbl">Classes Attended</span></div>' +
+                '<div class="tt-progress-item"><i data-lucide="clock"></i><span class="tt-prog-val">' + (progress.study_hours || 0) + 'h</span><span class="tt-prog-lbl">Study Hours</span></div>' +
+                '<div class="tt-progress-item"><i data-lucide="file-text"></i><span class="tt-prog-val">' + (progress.books_read || 0) + '</span><span class="tt-prog-lbl">Books Read</span></div>' +
+                '<div class="tt-progress-item"><i data-lucide="target"></i><span class="tt-prog-val">' + (progress.homework_score || 0) + '%</span><span class="tt-prog-lbl">Goal Progress</span></div>' +
+                '</div>';
+            var weeklyDone = Math.min(Math.round((progress.homework_score || 0) / 20), 7);
+            progHtml += '<div class="tt-weekly-goal"><div class="tt-weekly-label"><span>Weekly Goal</span><p>' + weeklyDone + ' of 7 classes</p></div>' +
+                '<div class="tt-progress-bar"><div class="tt-progress-fill" style="width:' + Math.min(weeklyDone / 7 * 100, 100) + '%"></div></div></div>';
+            setHtml('tutorLearningProgress', progHtml);
+        }
+
+        // Next Class - load from live_schedule
+        if (liveSchedule.length) {
+            var nextClass = liveSchedule.find(function(c) { return c.status === 'scheduled' || c.status === 'live'; });
+            if (nextClass) {
+                var nextTitle = document.querySelector('.tt-next-class h3');
+                if (nextTitle) nextTitle.textContent = (nextClass.subject || 'Class') + ' - ' + (nextClass.title || 'Upcoming');
+                var nextTime = document.querySelector('.tt-next-time');
+                if (nextTime) nextTime.innerHTML = '<i data-lucide="clock"></i> ' + (nextClass.time || nextClass.start_time || 'Soon');
+            }
+        }
 
         if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
     });
@@ -2451,6 +2506,33 @@ function closeTutorVideo() {
     if (embed) { embed.innerHTML = ''; embed.style.display = 'none'; }
     if (poster) poster.style.display = 'flex';
     if (close) close.style.display = 'none';
+}
+
+function filterTeachersBySubject(subject) {
+    var chips = document.querySelectorAll('.tt-subject-chip');
+    chips.forEach(function(c) { c.style.borderColor = ''; c.style.background = ''; });
+    event.currentTarget.style.borderColor = 'var(--primary)';
+    event.currentTarget.style.background = '#EEF2FF';
+    var container = document.getElementById('teacherRankingsList');
+    if (!container) return;
+    api('teachers').then(function(teachers) {
+        var filtered = (teachers || []).filter(function(t) {
+            return (t.subject || '').toLowerCase().indexOf(subject.toLowerCase()) > -1;
+        });
+        if (!filtered.length) {
+            container.innerHTML = '<p style="padding:12px;font-size:12px;color:var(--text3)">No teachers found for ' + subject + '</p>';
+            return;
+        }
+        var html = '';
+        filtered.forEach(function(t) {
+            html += '<div class="tt-top-card" onclick="showScreen(\'screen-teacher-profile\')">' +
+                '<div class="tt-top-avatar" style="background:linear-gradient(135deg,#4F46E5,#7C3AED)">' + (t.name || 'T')[0] + '</div>' +
+                '<h4>' + (t.name || '') + '</h4><p class="tt-top-subject">' + (t.subject || '') + '</p>' +
+                '<div style="font-size:10px;color:#F59E0B">&#11088; ' + (t.rating || 0) + '</div></div>';
+        });
+        container.innerHTML = html;
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    });
 }
 
 // --- TEACHER DASHBOARD STATS ---

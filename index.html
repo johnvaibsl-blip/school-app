@@ -117,7 +117,7 @@
         <div style="position:absolute;bottom:-20px;left:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.06)"></div>
         <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;position:relative;z-index:1">
             <div style="display:flex;align-items:center;gap:10px">
-                <div class="user-avatar" id="homeUserAvatar" style="background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.4)">A</div>
+                <div class="user-avatar" id="homeUserAvatar" style="background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.4);cursor:pointer" onclick="showScreen('screen-profile')">A</div>
                 <div>
                     <h3 style="font-size:16px;font-weight:700;margin-bottom:1px">Hello, <span id="homeUserName">Student</span> <i data-lucide="hand" style="width:14px;height:14px;vertical-align:middle"></i></h3>
                     <p style="font-size:10px;opacity:0.8"><span id="homeUserClass">Class 8</span> <span class="premium-badge" style="background:linear-gradient(135deg,#FBBF24,#F59E0B);color:#78350F;font-weight:600"><i data-lucide="crown" style="width:8px;height:8px"></i> Premium</span></p>
@@ -669,21 +669,21 @@
             <span class="tt-section-title">Popular Subjects</span>
         </div>
         <div class="tt-subjects-scroll">
-            <div class="tt-subject-chip"><i data-lucide="calculator"></i><span>Mathematics</span></div>
-            <div class="tt-subject-chip"><i data-lucide="book-open"></i><span>English</span></div>
-            <div class="tt-subject-chip"><i data-lucide="atom"></i><span>Physics</span></div>
-            <div class="tt-subject-chip"><i data-lucide="flask-conical"></i><span>Chemistry</span></div>
-            <div class="tt-subject-chip"><i data-lucide="leaf"></i><span>Biology</span></div>
-            <div class="tt-subject-chip"><i data-lucide="languages"></i><span>Bangla</span></div>
-            <div class="tt-subject-chip"><i data-lucide="monitor"></i><span>ICT</span></div>
-            <div class="tt-subject-chip"><i data-lucide="globe"></i><span>Geography</span></div>
+            <div class="tt-subject-chip" onclick="filterTeachersBySubject('Mathematics')"><i data-lucide="calculator"></i><span>Mathematics</span></div>
+            <div class="tt-subject-chip" onclick="filterTeachersBySubject('English')"><i data-lucide="book-open"></i><span>English</span></div>
+            <div class="tt-subject-chip" onclick="filterTeachersBySubject('Physics')"><i data-lucide="atom"></i><span>Physics</span></div>
+            <div class="tt-subject-chip" onclick="filterTeachersBySubject('Chemistry')"><i data-lucide="flask-conical"></i><span>Chemistry</span></div>
+            <div class="tt-subject-chip" onclick="filterTeachersBySubject('Biology')"><i data-lucide="leaf"></i><span>Biology</span></div>
+            <div class="tt-subject-chip" onclick="filterTeachersBySubject('Bangla')"><i data-lucide="languages"></i><span>Bangla</span></div>
+            <div class="tt-subject-chip" onclick="filterTeachersBySubject('ICT')"><i data-lucide="monitor"></i><span>ICT</span></div>
+            <div class="tt-subject-chip" onclick="filterTeachersBySubject('Geography')"><i data-lucide="globe"></i><span>Geography</span></div>
         </div>
 
         <!-- 10. Learning Progress -->
         <div class="tt-section-header" style="margin-top:6px">
             <span class="tt-section-title">Learning Progress</span>
         </div>
-        <div class="tt-progress-card">
+        <div class="tt-progress-card" id="tutorLearningProgress">
             <div class="tt-progress-grid">
                 <div class="tt-progress-item">
                     <i data-lucide="check-circle"></i>
@@ -971,6 +971,11 @@
             <div class="menu-item" onclick="showScreen('screen-edit-profile');loadEditProfile()">
                 <div class="menu-icon purple"><i data-lucide="user"></i></div>
                 <div class="menu-text"><h5>Edit Profile</h5><p>Name, email, phone</p></div>
+                <span class="menu-arrow"><i data-lucide="chevron-right"></i></span>
+            </div>
+            <div class="menu-item" onclick="showScreen('screen-messages')">
+                <div class="menu-icon green"><i data-lucide="message-circle"></i></div>
+                <div class="menu-text"><h5>Messages</h5><p>Chat with teachers & students</p></div>
                 <span class="menu-arrow"><i data-lucide="chevron-right"></i></span>
             </div>
             <div class="menu-item" onclick="showScreen('screen-pricing')">
@@ -2080,7 +2085,7 @@
     <!-- Conversation List View -->
     <div id="msgListView">
         <header class="header glass-header">
-            <button class="header-back" onclick="showScreen('screen-teacher-dash')"><i data-lucide="arrow-left"></i></button>
+            <button class="header-back" onclick="showScreen(USER_ROLE==='teacher'?'screen-teacher-dash':'screen-home')"><i data-lucide="arrow-left"></i></button>
             <h3 class="header-title">Messages</h3>
             <button class="icon-btn glass-card-sm" onclick="showToast('New message coming soon!','info')"><i data-lucide="edit"></i></button>
         </header>

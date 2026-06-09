@@ -10,7 +10,7 @@ if (file_exists($landing)) {
     if (isLoggedIn()) {
         $html = file_get_contents($landing);
         // Inject role data before closing </head>
-        $roleData = '<script>window.__USER_ROLE="' . htmlspecialchars($_SESSION['role']) . '";window.__USER_NAME="' . htmlspecialchars($_SESSION['user_name'] ?? '') . '";window.__USER_CLASS="' . htmlspecialchars($_SESSION['user_class'] ?? 'Class 8') . '";</script>';
+        $roleData = '<script>window.__USER_ROLE="' . htmlspecialchars($_SESSION['role']) . '";window.__USER_ID=' . intval($_SESSION['user_id'] ?? 0) . ';window.__USER_NAME="' . htmlspecialchars($_SESSION['user_name'] ?? '') . '";window.__USER_CLASS="' . htmlspecialchars($_SESSION['user_class'] ?? 'Class 8') . '";</script>';
         $html = str_replace('</head>', $roleData . '</head>', $html);
         header('Content-Type: text/html; charset=UTF-8');
         echo $html;
