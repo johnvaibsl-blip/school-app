@@ -948,8 +948,8 @@ body {
     background: rgba(255,255,255,0.2);
     padding: 4px 10px;
     border-radius: 20px;
-    font-size: 9px;
-    font-weight: 700;
+    font-size: 10px;
+    font-weight: 600;
     margin-bottom: 12px;
     backdrop-filter: blur(6px);
 }
@@ -976,8 +976,8 @@ body {
 }
 
 .tt-hero-info { flex: 1; }
-.tt-hero-info h3 { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
-.tt-hero-info .tt-hero-subject { font-size: 11px; opacity: 0.85; margin-bottom: 8px; }
+.tt-hero-info h3 { font-size: 17px; font-weight: 700; margin-bottom: 2px; letter-spacing: -0.3px; }
+.tt-hero-info .tt-hero-subject { font-size: 12px; opacity: 0.85; margin-bottom: 8px; font-weight: 500; }
 
 .tt-hero-stats {
     display: flex;
@@ -988,8 +988,8 @@ body {
     flex-direction: column;
     align-items: center;
 }
-.tt-hero-stat .val { font-size: 14px; font-weight: 700; }
-.tt-hero-stat .lbl { font-size: 8px; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.3px; }
+.tt-hero-stat .val { font-size: 15px; font-weight: 700; }
+.tt-hero-stat .lbl { font-size: 10px; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.3px; }
 
 .tt-hero-cta {
     margin-top: 14px;
@@ -1002,7 +1002,7 @@ body {
     border: none;
     border-radius: 12px;
     padding: 11px;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     cursor: pointer;
     width: 100%;
@@ -1053,17 +1053,17 @@ body {
     margin-bottom: 6px;
 }
 .tt-stat-card .tt-stat-val {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 800;
     color: var(--text);
     display: block;
     letter-spacing: -0.3px;
 }
 .tt-stat-card .tt-stat-lbl {
-    font-size: 8px;
+    font-size: 10px;
     color: var(--text3);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
     font-weight: 600;
 }
 
@@ -1075,13 +1075,13 @@ body {
     margin-bottom: 10px;
 }
 .tt-section-title {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
     color: var(--text);
     letter-spacing: -0.3px;
 }
 .tt-section-link {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--primary);
     font-weight: 600;
     cursor: pointer;
@@ -1143,15 +1143,15 @@ body {
     align-items: center;
     justify-content: center;
 }
-.tt-top-card h4 { font-size: 12px; font-weight: 700; margin-bottom: 2px; color: var(--text); letter-spacing: -0.2px; }
-.tt-top-card .tt-top-subject { font-size: 9px; color: var(--text3); margin-bottom: 8px; font-weight: 500; }
+.tt-top-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 2px; color: var(--text); letter-spacing: -0.2px; }
+.tt-top-card .tt-top-subject { font-size: 10px; color: var(--text3); margin-bottom: 8px; font-weight: 500; }
 .tt-top-meta {
     display: flex;
     justify-content: center;
     gap: 8px;
 }
 .tt-top-meta span {
-    font-size: 9px;
+    font-size: 10px;
     color: var(--text2);
     display: flex;
     align-items: center;
@@ -1189,15 +1189,15 @@ body {
     box-shadow: 0 3px 10px rgba(99,102,241,0.25);
 }
 .tt-my-tutor-info { flex: 1; min-width: 0; }
-.tt-my-tutor-info h4 { font-size: 13px; font-weight: 700; margin-bottom: 2px; color: var(--text); letter-spacing: -0.2px; }
-.tt-my-tutor-info p { font-size: 10px; color: var(--text3); font-weight: 500; }
+.tt-my-tutor-info h4 { font-size: 14px; font-weight: 700; margin-bottom: 2px; color: var(--text); letter-spacing: -0.2px; }
+.tt-my-tutor-info p { font-size: 11px; color: var(--text3); font-weight: 500; }
 .tt-my-tutor-btn {
     padding: 7px 14px;
     border-radius: 10px;
     background: var(--primary);
     color: white;
     border: none;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
@@ -1234,14 +1234,14 @@ body {
     background: rgba(255,255,255,0.2);
     padding: 4px 10px;
     border-radius: 10px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
     margin-bottom: 10px;
     backdrop-filter: blur(4px);
 }
 .tt-next-class-badge i { width: 10px; height: 10px; }
-.tt-next-class h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.3px; }
-.tt-next-class .tt-next-teacher { font-size: 11px; opacity: 0.8; margin-bottom: 12px; font-weight: 500; }
+.tt-next-class h3 { font-size: 17px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.3px; }
+.tt-next-class .tt-next-teacher { font-size: 12px; opacity: 0.8; margin-bottom: 12px; font-weight: 500; }
 .tt-next-class-row {
     display: flex;
     align-items: center;
@@ -1251,7 +1251,7 @@ body {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
 }
 .tt-next-time i { width: 14px; height: 14px; }
@@ -1261,7 +1261,7 @@ body {
     border: none;
     border-radius: 10px;
     padding: 8px 18px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     cursor: pointer;
 }
@@ -1286,7 +1286,7 @@ body {
     min-width: 46px;
 }
 .tt-upcoming-time .t { font-size: 13px; font-weight: 700; color: var(--primary); }
-.tt-upcoming-time .p { font-size: 8px; color: var(--text3); }
+.tt-upcoming-time .p { font-size: 10px; color: var(--text3); }
 .tt-upcoming-vline {
     width: 2px;
     height: 32px;
@@ -1294,15 +1294,15 @@ body {
     border-radius: 1px;
 }
 .tt-upcoming-info { flex: 1; }
-.tt-upcoming-info h4 { font-size: 11px; font-weight: 600; margin-bottom: 1px; }
-.tt-upcoming-info p { font-size: 9px; color: var(--text3); }
+.tt-upcoming-info h4 { font-size: 12px; font-weight: 600; margin-bottom: 1px; }
+.tt-upcoming-info p { font-size: 10px; color: var(--text3); }
 .tt-upcoming-join {
     padding: 5px 12px;
     border-radius: 8px;
     background: var(--primary);
     color: white;
     border: none;
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 600;
     cursor: pointer;
 }
@@ -1339,13 +1339,13 @@ body {
 }
 .tt-popular-info { flex: 1; min-width: 0; }
 .tt-popular-info h4 { font-size: 14px; font-weight: 700; margin-bottom: 2px; color: var(--text); letter-spacing: -0.2px; }
-.tt-popular-info .tt-pop-subject { font-size: 10px; color: var(--text3); margin-bottom: 5px; font-weight: 500; }
+.tt-popular-info .tt-pop-subject { font-size: 11px; color: var(--text3); margin-bottom: 5px; font-weight: 500; }
 .tt-pop-meta {
     display: flex;
     gap: 10px;
 }
 .tt-pop-meta span {
-    font-size: 10px;
+    font-size: 11px;
     color: var(--text2);
     display: flex;
     align-items: center;
@@ -1360,7 +1360,7 @@ body {
     background: var(--primary);
     color: white;
     border: none;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
@@ -1378,7 +1378,7 @@ body {
     color: #16A34A;
     padding: 2px 6px;
     border-radius: 6px;
-    font-size: 8px;
+    font-size: 9px;
     font-weight: 700;
 }
 
@@ -1410,7 +1410,7 @@ body {
 .tt-subject-chip:hover { border-color: var(--primary-light); box-shadow: 0 4px 12px rgba(99,102,241,0.1); }
 .tt-subject-chip:active { border-color: var(--primary); background: #EEF2FF; transform: scale(0.97); }
 .tt-subject-chip i { width: 18px; height: 18px; color: var(--primary); }
-.tt-subject-chip span { font-size: 12px; font-weight: 600; color: var(--text); }
+.tt-subject-chip span { font-size: 13px; font-weight: 600; color: var(--text); }
 
 /* 10. Learning Progress */
 .tt-progress-card {
@@ -1433,8 +1433,8 @@ body {
     text-align: center;
 }
 .tt-progress-item i { width: 18px; height: 18px; color: var(--primary); margin-bottom: 4px; }
-.tt-progress-item .tt-prog-val { font-size: 16px; font-weight: 700; color: var(--text); display: block; }
-.tt-progress-item .tt-prog-lbl { font-size: 9px; color: var(--text3); }
+.tt-progress-item .tt-prog-val { font-size: 17px; font-weight: 700; color: var(--text); display: block; }
+.tt-progress-item .tt-prog-lbl { font-size: 10px; color: var(--text3); }
 
 .tt-weekly-goal { margin-top: 4px; }
 .tt-weekly-label {
@@ -1442,8 +1442,8 @@ body {
     justify-content: space-between;
     margin-bottom: 6px;
 }
-.tt-weekly-label span { font-size: 11px; font-weight: 600; color: var(--text); }
-.tt-weekly-label p { font-size: 10px; color: var(--text3); }
+.tt-weekly-label span { font-size: 12px; font-weight: 600; color: var(--text); }
+.tt-weekly-label p { font-size: 11px; color: var(--text3); }
 .tt-progress-bar {
     height: 8px;
     background: #E5E7EB;
@@ -1619,7 +1619,7 @@ body {
 .sp-action-btn .sp-action-icon.blue { background: linear-gradient(135deg, #3B82F6, #2563EB); }
 
 .sp-action-btn span {
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 600;
     color: var(--text2);
 }
@@ -1642,7 +1642,7 @@ body {
 
 .sp-stat-card i { width: 16px; height: 16px; color: var(--primary); margin-bottom: 3px; }
 .sp-stat-card .sp-stat-val { font-size: 15px; font-weight: 700; color: var(--text); display: block; }
-.sp-stat-card .sp-stat-lbl { font-size: 8px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.3px; }
+.sp-stat-card .sp-stat-lbl { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.3px; }
 
 /* Achievement Chips - horizontal scroll */
 .sp-badges-scroll {
@@ -1781,7 +1781,7 @@ body {
 .ptag {
     padding: 4px 10px;
     border-radius: 20px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
 }
 .ptag-green { background: #DCFCE7; color: #16A34A; }
@@ -1804,7 +1804,7 @@ body {
     color: var(--text);
 }
 .pstat-lbl {
-    font-size: 9px;
+    font-size: 10px;
     color: var(--text3);
     text-transform: uppercase;
     letter-spacing: 0.3px;
@@ -1918,7 +1918,7 @@ body {
 .ptag {
     padding: 4px 10px;
     border-radius: 20px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
 }
 
@@ -2120,21 +2120,22 @@ body {
 }
 
 .tutor-info h3 {
-    font-size: 15px;
+    font-size: 17px;
     font-weight: 700;
     color: var(--text);
     margin-bottom: 2px;
+    letter-spacing: -0.3px;
 }
 
 .tutor-subject {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--primary);
     font-weight: 600;
     margin-bottom: 2px;
 }
 
 .tutor-exp {
-    font-size: 10px;
+    font-size: 11px;
     color: var(--text3);
 }
 
@@ -2184,10 +2185,10 @@ body {
 }
 
 .tutor-stat-item .stat-lbl {
-    font-size: 9px;
+    font-size: 10px;
     color: var(--text3);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
 }
 
 .pstat { flex: 1; text-align: center; }
@@ -2221,11 +2222,11 @@ body {
 }
 
 .profile-section h4 {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--text3);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
     margin-bottom: 10px;
     padding-left: 4px;
 }
@@ -2262,7 +2263,7 @@ body {
 
 .menu-text { flex: 1; }
 .menu-text h5 { font-size: 13px; font-weight: 600; }
-.menu-text p { font-size: 10px; color: var(--text3); }
+.menu-text p { font-size: 11px; color: var(--text3); }
 
 .menu-arrow { color: var(--border); font-size: 12px; }
 
