@@ -194,6 +194,7 @@ body {
 }
 .chat-bubble:nth-child(2) { margin-left: 12px; }
 .chat-bubble:nth-child(3) { margin-left: 24px; }
+.chat-bubble:hover { background: rgba(255,255,255,0.2); }
 
 .robot-mascot {
     position: absolute;
@@ -396,8 +397,6 @@ body {
 }
 
 .quick-card-icon { font-size: 16px; }
-
-.mentor-avatar { display: none; }
 
 .live-badge {
     background: var(--danger);

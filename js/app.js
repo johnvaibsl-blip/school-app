@@ -150,6 +150,7 @@ function showScreen(id) {
     if (id === 'screen-pricing') loadPackages();
     if (id === 'screen-tutors') loadTeacherRankings();
     if (id === 'screen-profile' && USER_ROLE === 'student') loadStudentProfile();
+    if (id === 'screen-edit-profile') loadEditProfile();
     if (id === 'screen-teacher-profile' && USER_ROLE === 'teacher') loadTeacherProfile();
     if (id === 'screen-teacher-profile-view') loadTeacherOwnProfile();
     if (id === 'screen-teacher-edit-profile') loadTeacherEditProfile();
@@ -158,7 +159,6 @@ function showScreen(id) {
     if (id === 'screen-messages') loadMessages();
     if (id === 'screen-earnings') loadEarnings();
     if (id === 'screen-live-lobby') loadLiveSchedule();
-    if (id === 'screen-home' && USER_ROLE === 'student') { loadStudentHomeProgress(); loadActivityFeed(); loadDailyGoals(); }
     if (id === 'screen-my-study') { loadMyStudyStats(); loadSubjectChapters(1); }
     if (id === 'screen-tutors' && USER_ROLE === 'student') loadTutorsScreen();
     if (id === 'screen-teacher-dash' && USER_ROLE === 'teacher') loadTeacherDashStats();
@@ -1199,18 +1199,11 @@ function loadStudentHome() {
             var levelEl = document.getElementById('homeLevel');
             var xpEl = document.getElementById('homeXP');
             var xpBar = document.getElementById('homeXPBar');
-            var booksEl = document.getElementById('homeBooksVal');
-            var hwScoreEl = document.getElementById('homeHwScoreVal');
-            var examScoreEl = document.getElementById('homeExamScoreVal');
-            var streakBadge = document.getElementById('homeStreakBadge');
             if (streakEl) streakEl.textContent = prog.streak || 0;
-            if (streakBadge) streakBadge.textContent = prog.streak || 0;
             if (levelEl) levelEl.textContent = 'Level ' + Math.floor((prog.books_read || 0) / 2 + 1) + ' Learner';
             if (xpEl) xpEl.textContent = ((prog.study_hours || 0) * 50) + ' / 3,000 XP';
             if (xpBar) xpBar.style.width = Math.min(((prog.study_hours || 0) * 50 / 3000) * 100, 100) + '%';
-            if (booksEl) booksEl.textContent = (prog.books_read || 0) + ' / 30';
-            if (hwScoreEl) hwScoreEl.textContent = (prog.homework_score || 0) + '%';
-            if (examScoreEl) examScoreEl.textContent = (prog.exam_score || 0) + '%';
+            loadStudentHomeProgress(prog);
         }
     }).catch(function(){});
 
@@ -1236,16 +1229,27 @@ function loadStudentHome() {
     }).catch(function(){});
 
     // Load live class
-    api('live_classes').then(function(classes) {
-        var next = (classes || []).find(function(c) { return c.status === 'live' || c.status === 'scheduled'; });
+    api('live_schedule').then(function(items) {
+        var all = items || [];
+        var live = all.find(function(c) { return c.status === 'live'; });
+        var next = live || all.find(function(c) { return c.status === 'scheduled'; });
         var el = document.getElementById('homeLiveClass');
+        var teacherEl = document.getElementById('homeLiveTeacher');
+        var avatarEl = document.getElementById('homeMentorAvatar');
+        var liveBadge = document.querySelector('.live-badge');
+        if (liveBadge) liveBadge.style.display = live ? '' : 'none';
         if (el && next) {
-            var subjName = getSubjectName(next.subject_id);
-            el.textContent = subjName + ' - ' + (next.start_time || '');
+            var subjName = next.subject || getSubjectName(next.subject_id);
+            el.textContent = subjName + ' - ' + (next.start_time || next.time || '');
+            if (teacherEl && next.teacher_name) teacherEl.textContent = next.teacher_name;
+            if (avatarEl && next.teacher_name) avatarEl.textContent = next.teacher_name[0];
         } else if (el) {
             el.textContent = 'No upcoming class';
         }
     }).catch(function(){});
+
+    // Load badges
+    loadHomeBadges();
 
     // Load mentors count
     api('teachers').then(function(teachers) {
@@ -1900,18 +1904,23 @@ function loadActivityFeed() {
 }
 
 // --- STUDENT HOME PROGRESS BARS ---
-function loadStudentHomeProgress() {
-    api('student_progress').then(function(p) {
+function loadStudentHomeProgress(prog) {
+    function render(p) {
         if (!p) return;
         var setBar = function(id, pct) { var el = document.getElementById(id); if (el) el.style.width = pct + '%'; };
         var setText = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
+        setText('homeBooksVal', (p.books_read || 0) + ' / 30');
         setBar('homeBooksBar', Math.min((p.books_read || 0) * 8, 100));
+        setText('homeHwScoreVal', (p.homework_score || 0) + '%');
         setBar('homeHwScoreBar', p.homework_score || 0);
+        setText('homeExamScoreVal', (p.exam_score || 0) + '%');
         setBar('homeExamScoreBar', p.exam_score || 0);
         var goalTasks = Math.min(Math.round((p.homework_score || 0) / 25), 4);
         setText('homeGoalText', goalTasks + ' / 4 Tasks');
         setBar('homeGoalBar', goalTasks * 25);
-    });
+    }
+    if (prog) { render(prog); }
+    else { api('student_progress').then(render); }
     api('live_schedule').then(function(items) {
         var count = (items || []).length;
         var setText = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
@@ -1919,6 +1928,49 @@ function loadStudentHomeProgress() {
         var setBar = function(id, pct) { var el = document.getElementById(id); if (el) el.style.width = pct + '%'; };
         setBar('homeLiveBar', Math.min(count * 25, 100));
     });
+}
+
+// --- CHAT BUBBLE CLICK ---
+function sendChatBubble(text) {
+    openChatFromFAB();
+    setTimeout(function() {
+        var input = document.getElementById('chatInput');
+        if (input) input.value = text;
+        sendChatMessage();
+    }, 300);
+}
+
+// --- NOTIFICATION FILTER ---
+function filterNotifications(type, btn) {
+    document.querySelectorAll('#screen-notif .filter-chip').forEach(function(c) { c.classList.remove('active'); });
+    btn.classList.add('active');
+    var items = document.querySelectorAll('#screen-notif .notif-item');
+    items.forEach(function(item) {
+        if (type === 'all') { item.style.display = ''; return; }
+        var text = (item.textContent || '').toLowerCase();
+        item.style.display = text.indexOf(type) > -1 ? '' : 'none';
+    });
+}
+
+// --- HOME BADGES ---
+function loadHomeBadges() {
+    var earned = [];
+    try { earned = JSON.parse(localStorage.getItem('earnedBadges_' + (USER_NAME || ''))) || []; } catch(e) {}
+    if (!earned.length) {
+        earned = ['First HW', '7-Day Streak', 'Speed Star'];
+        try { localStorage.setItem('earnedBadges_' + (USER_NAME || ''), JSON.stringify(earned)); } catch(e) {}
+    }
+    api('badges').then(function(badges) {
+        var grid = document.getElementById('homeBadgeGrid');
+        if (!grid || !badges || !badges.length) return;
+        grid.innerHTML = '';
+        var icons = { 'First HW': '&#127942;', '7-Day Streak': '&#128293;', 'Speed Star': '&#128640;', 'Top Scorer': '&#127941;', 'Perfect Attendance': '&#127881;' };
+        var colors = { 'First HW': '#FEF3C7', '7-Day Streak': '#DCFCE7', 'Speed Star': '#DBEAFE', 'Top Scorer': '#F3F4F6', 'Perfect Attendance': '#EDE9FE' };
+        badges.slice(0, 4).forEach(function(b) {
+            var isEarned = earned.indexOf(b.name) > -1;
+            grid.innerHTML += '<div class="badge-item' + (isEarned ? '' : ' locked') + '"><div class="badge-icon" style="background:' + (colors[b.name] || '#F3F4F6') + '">' + (icons[b.name] || '&#127942;') + '</div><div class="badge-name">' + b.name + '</div></div>';
+        });
+    }).catch(function(){});
 }
 
 // --- DAILY GOALS (localStorage) ---

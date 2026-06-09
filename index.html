@@ -153,9 +153,9 @@
                 <p class="hero-subtitle">Summarize this chapter</p>
             </div>
             <div class="chat-bubbles">
-                <div class="chat-bubble">Explain photosynthesis</div>
-                <div class="chat-bubble">Solve this math problem</div>
-                <div class="chat-bubble">Summarize this chapter</div>
+                <div class="chat-bubble" onclick="sendChatBubble('Explain photosynthesis')" style="cursor:pointer">Explain photosynthesis</div>
+                <div class="chat-bubble" onclick="sendChatBubble('Solve this math problem')" style="cursor:pointer">Solve this math problem</div>
+                <div class="chat-bubble" onclick="sendChatBubble('Summarize this chapter')" style="cursor:pointer">Summarize this chapter</div>
             </div>
             <div class="robot-mascot" onclick="openChatFromFAB()" style="cursor:pointer">
                 <svg viewBox="0 0 200 260" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -290,7 +290,6 @@
 
         <div class="section-header">
             <h2 class="section-title"><i data-lucide="zap" style="width:16px;height:16px;color:var(--warning)"></i> Quick Access</h2>
-            <a class="section-link">Customize</a>
         </div>
         <div class="quick-grid">
             <div class="quick-card red" onclick="showScreen('screen-live-class')">
@@ -300,9 +299,9 @@
                 </div>
                 <h4>Live Class</h4>
                 <p id="homeLiveClass">No upcoming class</p>
-                <p>Mr. Rahim</p>
-                <div class="mentor-avatar">R</div>
-                <button class="quick-card-btn">Join Now</button>
+                <p id="homeLiveTeacher">-</p>
+                <div class="mentor-avatar" id="homeMentorAvatar">R</div>
+                <button class="quick-card-btn" onclick="event.stopPropagation();showScreen('screen-live-class')">Join Now</button>
             </div>
             <div class="quick-card orange" onclick="showScreen('screen-homework')">
                 <div class="quick-card-header"><span class="quick-card-icon"><i data-lucide="file-text" style="width:20px;height:20px"></i></span></div>
@@ -314,7 +313,7 @@
                 <div class="quick-card-header"><span class="quick-card-icon"><i data-lucide="calendar" style="width:20px;height:20px"></i></span></div>
                 <h4>Upcoming Exam</h4>
                 <p id="homeExamUpcoming">0 upcoming</p>
-                <button class="quick-card-btn">View Details</button>
+                <button class="quick-card-btn" onclick="event.stopPropagation();showScreen('screen-exam')">View Details</button>
             </div>
             <div class="quick-card green" onclick="showScreen('screen-tutors')">
                 <div class="quick-card-header"><span class="quick-card-icon"><i data-lucide="users" style="width:20px;height:20px"></i></span></div>
@@ -329,7 +328,7 @@
             <h2 class="section-title"><i data-lucide="award" style="width:16px;height:16px;color:#F59E0B"></i> My Achievements</h2>
             <a class="section-link" onclick="showScreen('screen-profile')">View All</a>
         </div>
-        <div class="badge-grid">
+        <div class="badge-grid" id="homeBadgeGrid">
             <div class="badge-item">
                 <div class="badge-icon" style="background:#FEF3C7">&#127942;</div>
                 <div class="badge-name">First HW</div>
@@ -350,7 +349,6 @@
 
         <div class="section-header">
             <h2 class="section-title">Study Progress</h2>
-            <a class="section-link"><i data-lucide="chevron-down" style="width:12px;height:12px"></i> This Week</a>
         </div>
         <div class="progress-scroll">
             <div class="stat-card" onclick="showScreen('screen-my-study')" style="cursor:pointer">
@@ -1320,10 +1318,10 @@
     </header>
     <div class="main-content">
         <div style="display:flex;gap:6px;margin-bottom:16px">
-            <button class="filter-chip active">All</button>
-            <button class="filter-chip">Homework</button>
-            <button class="filter-chip">Exams</button>
-            <button class="filter-chip">Classes</button>
+            <button class="filter-chip active" onclick="filterNotifications('all', this)">All</button>
+            <button class="filter-chip" onclick="filterNotifications('homework', this)">Homework</button>
+            <button class="filter-chip" onclick="filterNotifications('exam', this)">Exams</button>
+            <button class="filter-chip" onclick="filterNotifications('class', this)">Classes</button>
         </div>
         <div id="notifList">
             <!-- Dynamic: loaded by loadNotifications() -->
