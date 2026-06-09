@@ -628,7 +628,7 @@ body {
 /* Daily Goal */
 .goal-card {
     width: 100%;
-    height: 180px;
+    height: 210px;
     background: var(--card);
     border-radius: 12px;
     padding: 10px;
