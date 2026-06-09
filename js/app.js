@@ -2,6 +2,7 @@
 var USER_ROLE = window.__USER_ROLE || '';
 var USER_NAME = window.__USER_NAME || '';
 var USER_CLASS = window.__USER_CLASS || 'Class 8';
+var _previousScreen = 'screen-home';
 
 var ROLE_SCREENS = {
     landing: ['screen-landing'],
@@ -180,6 +181,16 @@ function navTo(btn, screenId) {
     document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
     btn.classList.add('active');
     showScreen(screenId);
+}
+
+function goBackFromChat() {
+    showScreen(_previousScreen);
+}
+
+function openChatFromFAB() {
+    var activeScreen = document.querySelector('.screen.active');
+    _previousScreen = activeScreen ? activeScreen.id : 'screen-home';
+    showScreen('screen-chat');
 }
 
 // === OPEN SUBJECT FOLDER ===
@@ -411,6 +422,7 @@ function bindEvents() {
             if (input && input.value.trim()) {
                 var msg = input.value.trim();
                 input.value = '';
+                _previousScreen = 'screen-home';
                 showScreen('screen-chat');
                 addChatMessage(msg, 'user');
                 setTimeout(function() { addChatMessage(getAIResponse(msg), 'ai'); }, 1000);
