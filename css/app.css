@@ -33,7 +33,7 @@ body {
     max-width: 430px;
     margin: 0 auto;
     min-height: 100vh;
-    overflow-x: clip;
+    overflow-x: hidden;
     position: relative;
 }
 
@@ -514,6 +514,8 @@ body {
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     padding-bottom: 4px;
+    width: 100%;
+    max-width: 100%;
 }
 .progress-scroll::-webkit-scrollbar { display: none; }
 
