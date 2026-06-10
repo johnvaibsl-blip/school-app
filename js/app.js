@@ -631,7 +631,7 @@ function bindEvents() {
                 inp.onchange = function() { if (inp.files[0]) analyzeChatImage(inp.files[0]); };
                 inp.click();
             } else {
-                showToast('Voice input requires microphone permission', 'info');
+                startVoiceInput();
             }
             return;
         }
@@ -950,6 +950,36 @@ function tryMoondreamFallback(imageData, name, sysPrompt, thinking, container) {
         thinking.remove();
         addChatMessage('Image analysis unavailable. Please configure an API key in <strong>Admin Panel → AI Settings</strong>.', 'ai');
     });
+}
+
+function startVoiceInput() {
+    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) { showToast('Voice input not supported in this browser', 'error'); return; }
+    var recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+    showToast('Listening... Speak now', 'info');
+    var chatInput = document.getElementById('chatInput');
+    recognition.onresult = function(e) {
+        var transcript = '';
+        for (var i = e.resultIndex; i < e.results.length; i++) {
+            transcript += e.results[i][0].transcript;
+        }
+        if (chatInput) chatInput.value = transcript;
+    };
+    recognition.onend = function() {
+        showToast('Voice input captured!', 'success');
+        if (chatInput && chatInput.value) {
+            var sendBtn = document.querySelector('.messenger-send');
+            if (sendBtn) sendBtn.click();
+        }
+    };
+    recognition.onerror = function(e) {
+        if (e.error === 'not-allowed') showToast('Microphone permission denied', 'error');
+        else showToast('Voice input error: ' + e.error, 'error');
+    };
+    recognition.start();
 }
 
 function analyzeChatImage(file) {
