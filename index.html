@@ -1027,6 +1027,12 @@
     </div>
     <div class="profile-menu">
         <div class="profile-section">
+            <h4>Achievements</h4>
+            <div id="profileBadges" class="sp-badges-scroll" style="margin-bottom:8px">
+                <!-- Dynamic: loaded by loadStudentProfile() -->
+            </div>
+        </div>
+        <div class="profile-section">
             <h4>Quick Actions</h4>
             <div class="sp-action-grid">
                 <div class="sp-action-item" onclick="showScreen('screen-edit-profile')">
@@ -1046,10 +1052,8 @@
                     <span>Badges</span>
                 </div>
             </div>
-            <h4>Achievements</h4>
-            <div id="profileBadges" class="sp-badges-scroll" style="margin-bottom:8px">
-                <!-- Dynamic: loaded by loadStudentProfile() -->
-            </div>
+        </div>
+        <div class="profile-section">
             <h4>Account</h4>
             <div class="menu-item" onclick="showScreen('screen-edit-profile')">
                 <div class="menu-icon purple"><i data-lucide="user"></i></div>
