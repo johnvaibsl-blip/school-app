@@ -972,10 +972,8 @@
         <div class="sp-cover">
             <div class="sp-cover-orb sp-cover-orb-1"></div>
             <div class="sp-cover-orb sp-cover-orb-2"></div>
-            <div class="sp-cover-orb sp-cover-orb-3"></div>
         </div>
         <div class="sp-body">
-            <!-- Avatar -->
             <div class="sp-hero">
                 <div class="sp-avatar-wrap">
                     <div class="sp-avatar-ring"></div>
@@ -983,61 +981,36 @@
                     <div class="sp-pro-badge" style="display:none">PRO</div>
                 </div>
                 <h2 class="sp-name" id="profileUserName">Loading...</h2>
-                <div class="sp-age" id="profileUserClass"></div>
+                <div class="sp-subtitle" id="profileUserClass"></div>
                 <p class="sp-bio" id="profileUserEmail"></p>
-            </div>
-
-            <!-- Stats Row -->
-            <div class="sp-stats">
-                <div class="sp-stat">
-                    <div class="sp-stat-num" id="profileStat1">0</div>
-                    <div class="sp-stat-label">Books</div>
-                </div>
-                <div class="sp-stat-divider"></div>
-                <div class="sp-stat">
-                    <div class="sp-stat-num" id="profileStat2">0%</div>
-                    <div class="sp-stat-label">Score</div>
-                </div>
-                <div class="sp-stat-divider"></div>
-                <div class="sp-stat">
-                    <div class="sp-stat-num" id="profileStat3">0</div>
-                    <div class="sp-stat-label">Streak</div>
-                </div>
-                <div class="sp-stat-divider"></div>
-                <div class="sp-stat">
-                    <div class="sp-stat-num" id="profileStat4">0</div>
-                    <div class="sp-stat-label">Badges</div>
-                </div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="sp-actions">
-                <button class="sp-action-btn" onclick="showScreen('screen-edit-profile')">
-                    <div class="sp-action-icon sp-action-purple"><i data-lucide="pencil"></i></div>
-                    <span>Edit Profile</span>
-                </button>
-                <button class="sp-action-btn" onclick="showScreen('screen-my-study')">
-                    <div class="sp-action-icon sp-action-green"><i data-lucide="bar-chart-3"></i></div>
-                    <span>My Study</span>
-                </button>
-                <button class="sp-action-btn" onclick="var el=document.getElementById('profileBadges');if(el)el.scrollIntoView({behavior:'smooth'})">
-                    <div class="sp-action-icon sp-action-amber"><i data-lucide="award"></i></div>
-                    <span>Badges</span>
-                </button>
-                <button class="sp-action-btn" onclick="showScreen('screen-pricing')">
-                    <div class="sp-action-icon sp-action-indigo"><i data-lucide="crown"></i></div>
-                    <span>Upgrade</span>
-                </button>
-            </div>
-
-            <!-- Achievement Chips -->
-            <div id="profileBadges" class="sp-badges-scroll">
-                <!-- Dynamic: loaded by loadStudentProfile() -->
             </div>
         </div>
     </div>
     <div class="profile-menu">
         <div class="profile-section">
+            <h4>Quick Actions</h4>
+            <div class="sp-action-grid">
+                <div class="sp-action-item" onclick="showScreen('screen-edit-profile')">
+                    <div class="sp-action-icon sp-action-purple"><i data-lucide="pencil"></i></div>
+                    <span>Edit Profile</span>
+                </div>
+                <div class="sp-action-item" onclick="showScreen('screen-my-study')">
+                    <div class="sp-action-icon sp-action-green"><i data-lucide="bar-chart-3"></i></div>
+                    <span>My Study</span>
+                </div>
+                <div class="sp-action-item" onclick="showScreen('screen-pricing')">
+                    <div class="sp-action-icon sp-action-indigo"><i data-lucide="crown"></i></div>
+                    <span>Upgrade</span>
+                </div>
+                <div class="sp-action-item" onclick="var el=document.getElementById('profileBadges');if(el)el.scrollIntoView({behavior:'smooth'})">
+                    <div class="sp-action-icon sp-action-amber"><i data-lucide="award"></i></div>
+                    <span>Badges</span>
+                </div>
+            </div>
+            <h4>Achievements</h4>
+            <div id="profileBadges" class="sp-badges-scroll" style="margin-bottom:8px">
+                <!-- Dynamic: loaded by loadStudentProfile() -->
+            </div>
             <h4>Account</h4>
             <div class="menu-item" onclick="showScreen('screen-edit-profile')">
                 <div class="menu-icon purple"><i data-lucide="user"></i></div>
