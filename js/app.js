@@ -4,6 +4,9 @@ var USER_NAME = window.__USER_NAME || '';
 var USER_CLASS = window.__USER_CLASS || 'Class 8';
 var USER_EMAIL = window.__USER_EMAIL || '';
 var _previousScreen = 'screen-home';
+var _isPremium = false;
+
+var PREMIUM_LOCKED_SCREENS = ['screen-homework','screen-hw-detail','screen-exam','screen-exam-interface','screen-exam-result','screen-live-lobby','screen-live-class','screen-reader','screen-my-study'];
 
 var ROLE_SCREENS = {
     landing: ['screen-landing'],
@@ -57,7 +60,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     applyRoleVisibility();
     buildBottomNav();
-    handleHashRoute();
+    if (USER_ROLE === 'student') checkPremiumAccess().then(function() { handleHashRoute(); });
+    else handleHashRoute();
     bindEvents();
     if (USER_ROLE === 'student') loadLibraryGrid();
     if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -117,12 +121,39 @@ function showToast(message, type) {
     setTimeout(function() { toast.style.opacity='0'; toast.style.transition='opacity 0.3s'; setTimeout(function(){toast.remove();},300); }, 2500);
 }
 
+// === PREMIUM ACCESS CHECK ===
+function checkPremiumAccess() {
+    return api('is_premium').then(function(data) {
+        _isPremium = data.is_premium || false;
+        if (_isPremium && data.expires_at) {
+            var exp = new Date(data.expires_at);
+            if (exp < new Date()) { _isPremium = false; }
+        }
+        return _isPremium;
+    }).catch(function() { return false; });
+}
+
+function showPremiumOverlay() {
+    var overlay = document.getElementById('premiumOverlay');
+    if (overlay) overlay.style.display = 'flex';
+}
+
+function closePremiumOverlay() {
+    var overlay = document.getElementById('premiumOverlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
 // === SCREEN NAVIGATION ===
 function showScreen(id) {
     // Role check: only allow screens for current role
     if (USER_ROLE && ROLE_SCREENS[USER_ROLE]) {
         var allowed = ROLE_SCREENS[USER_ROLE].concat(['screen-landing']);
         if (allowed.indexOf(id) === -1) return; // block cross-panel access
+    }
+    // Premium gating for students
+    if (USER_ROLE === 'student' && PREMIUM_LOCKED_SCREENS.indexOf(id) !== -1 && !_isPremium) {
+        showPremiumOverlay();
+        return;
     }
     document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
     var target = document.getElementById(id);
@@ -148,9 +179,9 @@ function showScreen(id) {
     if (id === 'screen-announcements') loadAnnouncements();
     if (id !== 'screen-chat') _chatSettingsLoaded = false;
     if (id === 'screen-chat') loadChatSettings();
-    if (id === 'screen-pricing') loadPackages();
+    if (id === 'screen-pricing') { loadPackages(); checkPremiumAccess(); }
     if (id === 'screen-tutors') loadTeacherRankings();
-    if (id === 'screen-profile' && USER_ROLE === 'student') loadStudentProfile();
+    if (id === 'screen-profile' && USER_ROLE === 'student') { loadStudentProfile(); checkPremiumAccess(); }
     if (id === 'screen-edit-profile') loadEditProfile();
     if (id === 'screen-teacher-profile') loadTeacherProfile();
     if (id === 'screen-teacher-profile-view') loadTeacherOwnProfile();
@@ -175,7 +206,6 @@ function showScreen(id) {
     if (id === 'screen-library-mgmt') loadLibraryMgmt();
     if (id === 'screen-evaluate') loadStudentEvaluation();
     if (id === 'screen-give-report') loadGiveReportStudents();
-    if (id === 'screen-pricing') loadPricingDynamic();
     if (id === 'screen-hw-detail' && _currentHwId) loadHomeworkDetail(_currentHwId);
     if (id === 'screen-exam-result') loadExamResult();
 }
@@ -1206,6 +1236,11 @@ function loadStudentHome() {
     if (avatarEl) avatarEl.textContent = (USER_NAME || 'U')[0].toUpperCase();
     var classEl = document.getElementById('homeUserClass');
     if (classEl) classEl.textContent = USER_CLASS || 'Class 8';
+    // Premium badge
+    var premBadge = document.querySelector('.premium-badge');
+    if (premBadge) premBadge.style.display = _isPremium ? '' : 'none';
+    var premBanner = document.getElementById('homePremiumBanner');
+    if (premBanner) premBanner.style.display = _isPremium ? 'none' : '';
 
     // Load progress
     api('student_progress').then(function(prog) {
@@ -1476,7 +1511,7 @@ function loadPackages() {
                 '<div style="font-size:28px;font-weight:800;color:var(--primary);margin:12px 0">৳' + price + '</div>' +
                 '<p style="font-size:10px;color:var(--text3);margin-bottom:12px">' + (p.duration || 30) + ' days</p>' +
                 '<div style="text-align:left;padding:0 8px;margin-bottom:16px">' + featureHtml + '</div>' +
-                '<button class="btn-primary glass-btn" style="width:100%" onclick="showScreen(\'screen-payment\')">Choose Plan</button></div>';
+                '<button class="btn-primary glass-btn" style="width:100%" onclick="selectPlatformPackage(' + p.id + ',\'' + (p.name||'').replace(/'/g,"\\'") + '\',' + (p.price||0) + ',' + (p.duration||30) + ')">Choose Plan</button></div>';
         });
         if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No packages available</p>';
         container.innerHTML = html;
@@ -1523,16 +1558,26 @@ function loadStudentProfile() {
         setEl('profileUserName', u.name || USER_NAME);
         setEl('profileUserEmail', u.email || USER_EMAIL);
         var classText = u.class || USER_CLASS;
-        if (u.is_premium) classText += ' - Premium Student';
+        if (_isPremium) classText += ' - Premium Student';
         setEl('profileUserClass', classText);
         var avatarEl = document.getElementById('profileUserAvatar');
         if (avatarEl) avatarEl.textContent = (u.name || USER_NAME || 'S')[0].toUpperCase();
         var proBadge = document.querySelector('.sp-pro-badge');
-        if (proBadge) proBadge.style.display = u.is_premium ? '' : 'none';
+        if (proBadge) proBadge.style.display = _isPremium ? '' : 'none';
         setEl('profileStat1', p.books_read || 0);
         setEl('profileStat2', (p.homework_score || 0) + '%');
         setEl('profileStat3', p.streak || 0);
         setEl('profileStat4', p.badges_count || 0);
+        // Subscription status in profile menu
+        var subText = document.getElementById('profileSubText');
+        var subDesc = document.getElementById('profileSubDesc');
+        if (_isPremium) {
+            if (subText) subText.textContent = 'Premium Active';
+            if (subDesc) subDesc.textContent = 'View subscription details';
+        } else {
+            if (subText) subText.textContent = 'Go Premium';
+            if (subDesc) subDesc.textContent = 'Unlock all features';
+        }
         var badgeContainer = document.getElementById('profileBadges');
         if (badgeContainer && data.badges && data.badges.length > 0) {
             var colors = ['gold','green','blue','purple','red'];
@@ -1895,20 +1940,45 @@ function loadMyStudents() {
     if (!container) return;
     api('my_students').then(function(students) {
         if (statEl) {
+            var pendingSubs = students.filter(function(s){ return s.sub_status === 'pending'; }).length;
             statEl.innerHTML = '<div style="text-align:center"><div style="font-size:20px;font-weight:800;color:#4F46E5">' + students.length + '</div><div style="font-size:10px;color:var(--text3)">Total</div></div>' +
                 '<div style="text-align:center"><div style="font-size:20px;font-weight:800;color:#10B981">' + students.filter(function(s){ return s.avg_score > 70; }).length + '</div><div style="font-size:10px;color:var(--text3)">Active</div></div>' +
-                '<div style="text-align:center"><div style="font-size:20px;font-weight:800;color:#F59E0B">' + students.filter(function(s){ return s.avg_score <= 70; }).length + '</div><div style="font-size:10px;color:var(--text3)">Needs Help</div></div>';
+                '<div style="text-align:center"><div style="font-size:20px;font-weight:800;color:#F59E0B">' + pendingSubs + '</div><div style="font-size:10px;color:var(--text3)">Sub Requests</div></div>';
         }
         var html = '';
         students.forEach(function(s) {
             var color = s.avg_score >= 80 ? '#10B981' : s.avg_score >= 60 ? '#F59E0B' : '#EF4444';
+            var subBadge = '';
+            if (s.sub_status === 'pending') {
+                subBadge = '<div style="display:flex;align-items:center;gap:4px;margin-top:4px">' +
+                    '<button class="btn btn-sm" style="background:#10B981;color:white;padding:3px 8px;font-size:10px" onclick="event.stopPropagation();approveTeacherSub(' + s.sub_id + ',\'approve\',this)"><i data-lucide="check" style="width:10px;height:10px"></i> Accept</button>' +
+                    '<button class="btn btn-danger btn-sm" style="padding:3px 8px;font-size:10px" onclick="event.stopPropagation();approveTeacherSub(' + s.sub_id + ',\'reject\',this)"><i data-lucide="x" style="width:10px;height:10px"></i> Reject</button>' +
+                    '</div>';
+            } else if (s.sub_status === 'teacher_approved') {
+                subBadge = '<div style="margin-top:4px"><span style="padding:2px 8px;border-radius:6px;font-size:9px;font-weight:600;background:#EDE9FE;color:#7C3AED">Pending Admin</span></div>';
+            } else if (s.sub_status === 'approved') {
+                subBadge = '<div style="margin-top:4px"><span style="padding:2px 8px;border-radius:6px;font-size:9px;font-weight:600;background:#DCFCE7;color:#10B981">Subscribed</span></div>';
+            }
             html += '<div class="list-item" style="cursor:pointer" onclick="openStudentDetail(' + s.id + ')">' +
                 '<div class="user-avatar" style="background:linear-gradient(135deg,' + color + ',' + color + '80);width:36px;height:36px;font-size:14px">' + (s.name || 'S')[0] + '</div>' +
-                '<div class="list-item-content"><h5>' + (s.name || '') + '</h5><p>' + (s.class || '') + ' · Streak: ' + (s.streak || 0) + 'd</p></div>' +
+                '<div class="list-item-content"><h5>' + (s.name || '') + '</h5><p>' + (s.class || '') + ' · Streak: ' + (s.streak || 0) + 'd</p>' + subBadge + '</div>' +
                 '<div style="text-align:right"><div style="font-size:14px;font-weight:700;color:' + color + '">' + (s.avg_score || 0) + '%</div></div></div>';
         });
         if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No students found</p>';
         container.innerHTML = html;
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    });
+}
+
+function approveTeacherSub(subId, action, btn) {
+    api('approve_teacher_subscription', {
+        method: 'POST',
+        body: JSON.stringify({ id: subId, action: action })
+    }).then(function(res) {
+        showToast(action === 'approve' ? 'Subscription approved!' : 'Subscription rejected', action === 'approve' ? 'success' : 'info');
+        loadMyStudents();
+    }).catch(function(err) {
+        showToast(err.message || 'Failed', 'error');
     });
 }
 
@@ -3102,4 +3172,124 @@ function loadGiveReportStudents() {
 function loadAiChatGreeting() {
     var greeting = document.getElementById('aiGreeting');
     if (greeting) greeting.textContent = 'Hello ' + USER_NAME.split(' ')[0] + '! I\'m your AI Tutor. How can I help you today?';
+}
+
+// === PLATFORM SUBSCRIPTION ===
+window._selectedPlatformPkg = null;
+
+function selectPlatformPackage(pkgId, pkgName, price, duration) {
+    window._selectedPlatformPkg = { id: pkgId, name: pkgName, price: price, duration: duration };
+    showScreen('screen-payment');
+    renderPaymentScreen();
+}
+
+function renderPaymentScreen() {
+    var pkg = window._selectedPlatformPkg;
+    if (!pkg) return;
+    var fee = 10;
+    var total = pkg.price + fee;
+    var summary = document.getElementById('paymentSummary');
+    if (summary) {
+        summary.innerHTML = '<h4 style="font-size:13px;font-weight:600;margin-bottom:8px">Order Summary</h4>' +
+            '<div class="payment-row"><span>' + pkg.name + '</span><span>৳' + pkg.price.toLocaleString() + '</span></div>' +
+            '<div class="payment-row"><span>Processing fee</span><span>৳' + fee + '</span></div>' +
+            '<div class="payment-row total"><span>Total</span><span>৳' + total.toLocaleString() + '</span></div>';
+    }
+    var payBtn = document.getElementById('paymentSubmitBtn');
+    if (payBtn) {
+        payBtn.textContent = 'Pay ৳' + total.toLocaleString();
+        payBtn.onclick = function() { submitPlatformSubscription(); };
+    }
+    window._selectedPaymentMethod = 'bkash';
+}
+
+function selectPayment(el) {
+    document.querySelectorAll('.payment-method').forEach(function(m) { m.classList.remove('selected'); });
+    el.classList.add('selected');
+    var name = el.querySelector('.payment-name h5');
+    if (name) window._selectedPaymentMethod = name.textContent.toLowerCase().replace('pay with ', '');
+}
+
+function submitPlatformSubscription() {
+    var pkg = window._selectedPlatformPkg;
+    if (!pkg) { showToast('Please select a package', 'error'); return; }
+    var txId = document.getElementById('paymentTxId');
+    var txVal = txId ? txId.value.trim() : '';
+    if (!txVal) { showToast('Please enter transaction ID', 'error'); return; }
+    var fee = 10;
+    var total = pkg.price + fee;
+    var payBtn = document.getElementById('paymentSubmitBtn');
+    if (payBtn) { payBtn.textContent = 'Submitting...'; payBtn.disabled = true; }
+    api('subscribe_platform', {
+        method: 'POST',
+        body: JSON.stringify({
+            package_id: pkg.id,
+            amount: total,
+            transaction_id: txVal,
+            payment_method: window._selectedPaymentMethod || 'bkash'
+        })
+    }).then(function(res) {
+        if (payBtn) { payBtn.textContent = 'Pay ৳' + total.toLocaleString(); payBtn.disabled = false; }
+        window._paymentResult = {
+            package_name: pkg.name,
+            amount: total,
+            tx_id: txVal,
+            date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            status: 'pending',
+            duration: pkg.duration
+        };
+        showScreen('screen-payment-success');
+        renderPaymentSuccess();
+    }).catch(function(err) {
+        if (payBtn) { payBtn.textContent = 'Pay ৳' + total.toLocaleString(); payBtn.disabled = false; }
+        showToast(err.message || 'Failed to submit', 'error');
+    });
+}
+
+function renderPaymentSuccess() {
+    var data = window._paymentResult;
+    if (!data) return;
+    var el = document.getElementById('paymentSuccessContent');
+    if (!el) return;
+    el.innerHTML = '<div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#F59E0B,#F97316);display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><i data-lucide="clock" style="width:40px;height:40px;color:white"></i></div>' +
+        '<h2 style="font-size:22px;font-weight:800;margin-bottom:8px">Subscription Pending!</h2>' +
+        '<p style="font-size:13px;color:var(--text3);margin-bottom:24px">Your payment of ৳' + data.amount.toLocaleString() + ' is being reviewed. Admin will approve within 24 hours.</p>' +
+        '<div style="background:var(--card);border-radius:12px;padding:16px;margin-bottom:20px;text-align:left">' +
+        '<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:12px;color:var(--text3)">Plan</span><span style="font-size:12px;font-weight:600">' + data.package_name + '</span></div>' +
+        '<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:12px;color:var(--text3)">Amount</span><span style="font-size:12px;font-weight:600">৳' + data.amount.toLocaleString() + '</span></div>' +
+        '<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:12px;color:var(--text3)">Duration</span><span style="font-size:12px;font-weight:600">' + data.duration + ' days</span></div>' +
+        '<div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--text3)">Transaction ID</span><span style="font-size:12px;font-weight:600">' + data.tx_id + '</span></div></div>' +
+        '<button class="btn-primary" onclick="showScreen(\'screen-profile\')" style="width:100%">Go to Profile</button>';
+    if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+}
+
+function checkPlatformSubscription() {
+    return api('my_platform_subscription').then(function(data) {
+        return data;
+    });
+}
+
+function showMyPlatformSubscription() {
+    checkPlatformSubscription().then(function(data) {
+        var c = document.getElementById('myPlatformSubContent');
+        if (!c) return;
+        if (!data.subscription && !data.is_premium) {
+            c.innerHTML = '<div style="text-align:center;padding:30px"><i data-lucide="crown" style="width:48px;height:48px;color:var(--text3);margin-bottom:12px"></i><p style="font-size:14px;font-weight:600;margin-bottom:4px">No Active Subscription</p><p style="font-size:12px;color:var(--text3);margin-bottom:16px">Upgrade to access all premium features</p><button class="btn-primary" onclick="showScreen(\'screen-pricing\')">Upgrade Now</button></div>';
+        } else {
+            var sub = data.subscription;
+            var statusColor = data.is_premium ? '#10B981' : (sub && sub.status === 'pending' ? '#F59E0B' : '#EF4444');
+            var statusText = data.is_premium ? 'Active' : (sub ? sub.status.charAt(0).toUpperCase() + sub.status.slice(1) : 'Expired');
+            c.innerHTML = '<div class="hw-card" style="margin-bottom:12px">' +
+                '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h4>' + (sub ? sub.package_name : 'Premium') + '</h4><span style="padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600;background:' + statusColor + '20;color:' + statusColor + '">' + statusText + '</span></div>' +
+                (sub ? '<div style="font-size:12px;color:var(--text2);margin-bottom:4px">Amount: ৳' + sub.amount.toLocaleString() + '</div>' : '') +
+                (sub ? '<div style="font-size:12px;color:var(--text2);margin-bottom:4px">Submitted: ' + sub.created_at + '</div>' : '') +
+                (data.is_premium && data.expires_at ? '<div style="font-size:12px;color:var(--text2)">Expires: ' + data.expires_at + '</div>' : '') +
+                (sub && sub.status === 'pending' ? '<div style="font-size:11px;color:#F59E0B;margin-top:8px">Admin will verify your payment shortly</div>' : '') +
+                '</div>';
+            if (!data.is_premium && sub && sub.status === 'pending') {
+                c.innerHTML += '<button class="btn-primary" style="width:100%" onclick="showScreen(\'screen-pricing\')">Subscribe Now</button>';
+            }
+        }
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    });
 }

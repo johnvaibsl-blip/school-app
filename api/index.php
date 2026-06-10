@@ -28,7 +28,8 @@ switch ($path) {
             'password' => password_hash($input['password'] ?? '', PASSWORD_DEFAULT),
             'role' => sanitize($input['role'] ?? 'student'),
             'class' => sanitize($input['class'] ?? ''),
-            'is_premium' => 0
+            'is_premium' => 0,
+            'premium_expires_at' => null
         ]);
         jsonResponse(['success'=>true,'id'=>$id]);
         break;
@@ -157,16 +158,10 @@ switch ($path) {
             $allSubs = $db->query('subscriptions');
             $hasSub = false;
             foreach ($allSubs as $s) {
+                if (($s['type'] ?? 'teacher') !== 'teacher') continue;
                 if (intval($s['student_id']) === $senderId && intval($s['teacher_id']) === $toId && $s['status'] === 'approved') {
                     $hasSub = true;
                     break;
-                }
-                if (intval($s['student_id']) === $senderId) {
-                    $teacherRec = $db->find('teachers', 'user_id', $toId);
-                    if ($teacherRec && intval($s['teacher_id']) === intval($teacherRec['id']) && $s['status'] === 'approved') {
-                        $hasSub = true;
-                        break;
-                    }
                 }
             }
             if (!$hasSub) jsonResponseError('You need an active subscription to message this teacher');
@@ -190,14 +185,9 @@ switch ($path) {
             $allSubs = $db->query('subscriptions');
             $hasSub = false;
             foreach ($allSubs as $s) {
+                if (($s['type'] ?? 'teacher') !== 'teacher') continue;
                 if (intval($s['student_id']) === $uid && intval($s['teacher_id']) === $otherId && $s['status'] === 'approved') {
                     $hasSub = true; break;
-                }
-                if (intval($s['student_id']) === $uid) {
-                    $teacherRec = $db->find('teachers', 'user_id', $otherId);
-                    if ($teacherRec && intval($s['teacher_id']) === intval($teacherRec['id']) && $s['status'] === 'approved') {
-                        $hasSub = true; break;
-                    }
                 }
             }
             if (!$hasSub) jsonResponseError('Subscription required to view messages');
@@ -309,7 +299,10 @@ switch ($path) {
 
     case 'my_students':
         if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $uid = intval($_SESSION['user_id']);
+        $role = $_SESSION['role'] ?? '';
         $students = $db->findAll('users', 'role', 'student');
+        $allSubs = $db->query('subscriptions');
         $result = [];
         foreach ($students as $s) {
             $prog = $db->find('student_progress', 'student_id', $s['id']);
@@ -318,13 +311,27 @@ switch ($path) {
             if (count($examRes) > 0) {
                 $avg = round(array_sum(array_column($examRes, 'score')) / count($examRes));
             }
+            $subStatus = null;
+            $subId = null;
+            if ($role === 'teacher') {
+                foreach ($allSubs as $sub) {
+                    if (($sub['type'] ?? 'teacher') !== 'teacher') continue;
+                    if (intval($sub['student_id']) === intval($s['id']) && intval($sub['teacher_id']) === $uid) {
+                        $subStatus = $sub['status'];
+                        $subId = $sub['id'];
+                        break;
+                    }
+                }
+            }
             $result[] = [
                 'id' => $s['id'],
                 'name' => $s['name'],
                 'email' => $s['email'],
                 'class' => $s['class'] ?? '',
                 'avg_score' => $avg,
-                'streak' => $prog['streak'] ?? 0
+                'streak' => $prog['streak'] ?? 0,
+                'sub_status' => $subStatus,
+                'sub_id' => $subId
             ];
         }
         jsonResponse($result);
@@ -385,11 +392,8 @@ switch ($path) {
         $allSubs = $db->query('subscriptions');
         function _isSubscribed($uid, $otherId, $allSubs, $db) {
             foreach ($allSubs as $s) {
+                if (($s['type'] ?? 'teacher') !== 'teacher') continue;
                 if (intval($s['student_id']) === $uid && intval($s['teacher_id']) === $otherId && $s['status'] === 'approved') return true;
-                if (intval($s['student_id']) === $uid) {
-                    $teacherRec = $db->find('teachers', 'user_id', $otherId);
-                    if ($teacherRec && intval($s['teacher_id']) === intval($teacherRec['id']) && $s['status'] === 'approved') return true;
-                }
             }
             return false;
         }
@@ -649,8 +653,10 @@ switch ($path) {
         if (!$teacherId || !$packageId || !$amount || !$txId) jsonResponseError('teacher_id, package_id, amount, and transaction_id required');
         $existing = $db->query('subscriptions');
         foreach ($existing as $s) {
-            if (intval($s['student_id']) === intval($_SESSION['user_id']) && intval($s['teacher_id']) === $teacherId && $s['status'] === 'approved') {
-                jsonResponseError('Already subscribed to this teacher');
+            if (($s['type'] ?? 'teacher') !== 'teacher') continue;
+            if (intval($s['student_id']) === intval($_SESSION['user_id']) && intval($s['teacher_id']) === $teacherId) {
+                if ($s['status'] === 'approved') jsonResponseError('Already subscribed to this teacher');
+                if ($s['status'] === 'pending') jsonResponseError('You already have a pending subscription for this teacher');
             }
         }
         $id = $db->insert('subscriptions', [
@@ -660,6 +666,7 @@ switch ($path) {
             'amount' => $amount,
             'transaction_id' => $txId,
             'status' => 'pending',
+            'type' => 'teacher',
             'created_at' => date('Y-m-d H:i:s'),
             'approved_at' => null
         ]);
@@ -672,6 +679,7 @@ switch ($path) {
         $allSubs = $db->query('subscriptions');
         $result = [];
         foreach ($allSubs as $s) {
+            if (($s['type'] ?? 'teacher') !== 'teacher') continue;
             if (intval($s['student_id']) === $uid) {
                 $teacher = null;
                 $teachers = $db->query('teachers');
@@ -708,9 +716,17 @@ switch ($path) {
         $allSubs = $db->query('subscriptions');
         $found = null;
         foreach ($allSubs as $s) {
+            if (($s['type'] ?? 'teacher') !== 'teacher') continue;
             if (intval($s['student_id']) === $uid && intval($s['teacher_id']) === $teacherId) {
                 $found = $s;
                 break;
+            }
+            if (intval($s['student_id']) === $uid) {
+                $teacherRec = $db->find('teachers', 'user_id', $teacherId);
+                if ($teacherRec && intval($s['teacher_id']) === intval($teacherRec['id'])) {
+                    $found = $s;
+                    break;
+                }
             }
         }
         jsonResponse([
@@ -723,9 +739,12 @@ switch ($path) {
     case 'subscription_requests':
         if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
         if ($_SESSION['role'] !== 'admin') jsonResponseError('Admin only', 403);
+        $type = $_GET['type'] ?? 'teacher';
         $allSubs = $db->query('subscriptions');
         $result = [];
         foreach ($allSubs as $s) {
+            $subType = $s['type'] ?? 'teacher';
+            if ($subType !== $type) continue;
             $student = $db->find('users', 'id', $s['student_id']);
             $teacher = null;
             $teachers = $db->query('teachers');
@@ -743,12 +762,13 @@ switch ($path) {
                 'student_name' => $student ? $student['name'] : 'Unknown',
                 'student_email' => $student ? $student['email'] : '',
                 'teacher_id' => $s['teacher_id'],
-                'teacher_name' => $teacherUser ? $teacherUser['name'] : 'Unknown',
-                'teacher_subject' => $teacher ? $teacher['subject'] : '',
+                'teacher_name' => $type === 'teacher' ? ($teacherUser ? $teacherUser['name'] : 'Unknown') : '-',
+                'teacher_subject' => $type === 'teacher' ? ($teacher ? $teacher['subject'] : '') : '',
                 'package_name' => $pkg ? $pkg['name'] : '',
                 'amount' => $s['amount'],
                 'transaction_id' => $s['transaction_id'],
                 'status' => $s['status'],
+                'type' => $subType,
                 'created_at' => $s['created_at'],
                 'approved_at' => $s['approved_at']
             ];
@@ -765,10 +785,129 @@ switch ($path) {
         if (!$subId || !in_array($action, ['approve', 'reject'])) jsonResponseError('id and action (approve/reject) required');
         $sub = $db->find('subscriptions', 'id', $subId);
         if (!$sub) jsonResponseError('Subscription not found');
+        if (($sub['status'] ?? '') !== 'pending' && ($sub['status'] ?? '') !== 'teacher_approved') jsonResponseError('Subscription is not pending approval');
         $newStatus = $action === 'approve' ? 'approved' : 'rejected';
         $updateData = ['status' => $newStatus];
         if ($action === 'approve') $updateData['approved_at'] = date('Y-m-d H:i:s');
         $db->update('subscriptions', $subId, $updateData);
+        if ($action === 'approve' && ($sub['type'] ?? 'teacher') === 'platform') {
+            $pkg = $db->find('packages', 'id', $sub['package_id']);
+            $duration = $pkg ? intval($pkg['duration']) : 30;
+            $expiresAt = date('Y-m-d H:i:s', strtotime('+' . $duration . ' days'));
+            $db->update('users', $sub['student_id'], ['is_premium' => 1, 'premium_expires_at' => $expiresAt]);
+        }
+        jsonResponse(['success' => true, 'status' => $newStatus]);
+        break;
+
+    case 'subscribe_platform':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        if ($_SESSION['role'] !== 'student') jsonResponseError('Only students can subscribe', 403);
+        $input = json_decode(file_get_contents('php://input'), true);
+        $packageId = intval($input['package_id'] ?? 0);
+        $amount = floatval($input['amount'] ?? 0);
+        $txId = sanitize($input['transaction_id'] ?? '');
+        $payMethod = sanitize($input['payment_method'] ?? 'bkash');
+        if (!$packageId || !$amount || !$txId) jsonResponseError('package_id, amount, and transaction_id required');
+        $uid = intval($_SESSION['user_id']);
+        $existing = $db->query('subscriptions');
+        foreach ($existing as $s) {
+            if (($s['type'] ?? '') !== 'platform') continue;
+            if (intval($s['student_id']) === $uid && ($s['status'] === 'approved' || $s['status'] === 'pending')) {
+                jsonResponseError('You already have an active or pending platform subscription');
+            }
+        }
+        $id = $db->insert('subscriptions', [
+            'student_id' => $uid,
+            'teacher_id' => null,
+            'package_id' => $packageId,
+            'amount' => $amount,
+            'transaction_id' => $txId,
+            'status' => 'pending',
+            'type' => 'platform',
+            'created_at' => date('Y-m-d H:i:s'),
+            'approved_at' => null
+        ]);
+        jsonResponse(['success' => true, 'id' => $id]);
+        break;
+
+    case 'my_platform_subscription':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $uid = intval($_SESSION['user_id']);
+        $user = $db->find('users', 'id', $uid);
+        $allSubs = $db->query('subscriptions');
+        $found = null;
+        foreach ($allSubs as $s) {
+            if (($s['type'] ?? '') !== 'platform') continue;
+            if (intval($s['student_id']) === $uid && ($s['status'] === 'approved' || $s['status'] === 'pending')) {
+                $found = $s;
+                if ($s['status'] === 'approved') break;
+            }
+        }
+        $pkg = $found ? $db->find('packages', 'id', $found['package_id']) : null;
+        jsonResponse([
+            'is_premium' => intval($user['is_premium'] ?? 0) === 1,
+            'expires_at' => $user['premium_expires_at'] ?? null,
+            'subscription' => $found ? [
+                'id' => $found['id'],
+                'package_name' => $pkg ? $pkg['name'] : '',
+                'amount' => $found['amount'],
+                'status' => $found['status'],
+                'created_at' => $found['created_at'],
+                'approved_at' => $found['approved_at']
+            ] : null
+        ]);
+        break;
+
+    case 'is_premium':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $uid = intval($_SESSION['user_id']);
+        $user = $db->find('users', 'id', $uid);
+        jsonResponse([
+            'is_premium' => intval($user['is_premium'] ?? 0) === 1,
+            'expires_at' => $user['premium_expires_at'] ?? null
+        ]);
+        break;
+
+    case 'teacher_subscription_requests':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        if ($_SESSION['role'] !== 'teacher') jsonResponseError('Teachers only', 403);
+        $uid = intval($_SESSION['user_id']);
+        $allSubs = $db->query('subscriptions');
+        $result = [];
+        foreach ($allSubs as $s) {
+            if (($s['type'] ?? 'teacher') !== 'teacher') continue;
+            if (intval($s['teacher_id']) !== $uid) continue;
+            $student = $db->find('users', 'id', $s['student_id']);
+            $pkg = $db->find('packages', 'id', $s['package_id']);
+            $result[] = [
+                'id' => $s['id'],
+                'student_id' => $s['student_id'],
+                'student_name' => $student ? $student['name'] : 'Unknown',
+                'student_class' => $student ? ($student['class'] ?? '') : '',
+                'package_name' => $pkg ? $pkg['name'] : '',
+                'amount' => $s['amount'],
+                'status' => $s['status'],
+                'created_at' => $s['created_at']
+            ];
+        }
+        jsonResponse($result);
+        break;
+
+    case 'approve_teacher_subscription':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        if ($_SESSION['role'] !== 'teacher') jsonResponseError('Teachers only', 403);
+        $uid = intval($_SESSION['user_id']);
+        $input = json_decode(file_get_contents('php://input'), true);
+        $subId = intval($input['id'] ?? 0);
+        $action = $input['action'] ?? '';
+        if (!$subId || !in_array($action, ['approve', 'reject'])) jsonResponseError('id and action (approve/reject) required');
+        $sub = $db->find('subscriptions', 'id', $subId);
+        if (!$sub) jsonResponseError('Subscription not found');
+        if (($sub['type'] ?? '') !== 'teacher') jsonResponseError('Not a teacher subscription');
+        if (intval($sub['teacher_id']) !== $uid) jsonResponseError('Not your subscription');
+        if ($sub['status'] !== 'pending') jsonResponseError('Subscription is not pending');
+        $newStatus = $action === 'approve' ? 'teacher_approved' : 'rejected';
+        $db->update('subscriptions', $subId, ['status' => $newStatus]);
         jsonResponse(['success' => true, 'status' => $newStatus]);
         break;
 

@@ -149,16 +149,16 @@ class JsonDB {
         $hash = password_hash('password', PASSWORD_DEFAULT);
         
         $this->data['users'] = [
-            ['id'=>1,'name'=>'Arman Khan','email'=>'arman@student.com','password'=>$hash,'role'=>'student','avatar'=>'','class'=>'8','phone'=>'01712345678','school'=>'Green Valley School','is_premium'=>1,'created_at'=>'2026-01-15 08:00:00'],
-            ['id'=>2,'name'=>'Rahim Ahmed','email'=>'rahim@teacher.com','password'=>$hash,'role'=>'teacher','avatar'=>'','class'=>'','phone'=>'01798765432','school'=>'Green Valley School','is_premium'=>0,'created_at'=>'2026-01-10 09:00:00'],
-            ['id'=>3,'name'=>'Admin User','email'=>'admin@school.com','password'=>$hash,'role'=>'admin','avatar'=>'','class'=>'','phone'=>'01700000000','school'=>'Green Valley School','is_premium'=>0,'created_at'=>'2026-01-01 08:00:00'],
-            ['id'=>4,'name'=>'Sarah Khan','email'=>'sarah@teacher.com','password'=>$hash,'role'=>'teacher','avatar'=>'','class'=>'','phone'=>'01711111111','school'=>'Green Valley School','is_premium'=>0,'created_at'=>'2026-01-10 09:00:00'],
-            ['id'=>5,'name'=>'Sakib Hasan','email'=>'sakib@student.com','password'=>$hash,'role'=>'student','avatar'=>'','class'=>'8','phone'=>'01722222222','school'=>'Green Valley School','is_premium'=>0,'created_at'=>'2026-02-01 10:00:00'],
-            ['id'=>6,'name'=>'Nusrat Jahan','email'=>'nusrat@student.com','password'=>$hash,'role'=>'student','avatar'=>'','class'=>'8','phone'=>'01733333333','school'=>'Green Valley School','is_premium'=>0,'created_at'=>'2026-02-05 10:00:00'],
-            ['id'=>7,'name'=>'Tanvir Rahman','email'=>'tanvir@student.com','password'=>$hash,'role'=>'student','avatar'=>'','class'=>'9','phone'=>'01744444444','school'=>'Green Valley School','is_premium'=>1,'created_at'=>'2026-01-20 10:00:00'],
-            ['id'=>8,'name'=>'Fatima Begum','email'=>'fatima@teacher.com','password'=>$hash,'role'=>'teacher','avatar'=>'','class'=>'','phone'=>'01755555555','school'=>'Green Valley School','is_premium'=>0,'created_at'=>'2026-01-12 09:00:00'],
-            ['id'=>9,'name'=>'Kamal Hossain','email'=>'kamal@student.com','password'=>$hash,'role'=>'student','avatar'=>'','class'=>'9','phone'=>'01766666666','school'=>'Green Valley School','is_premium'=>0,'created_at'=>'2026-03-01 10:00:00'],
-            ['id'=>10,'name'=>'Ruma Akter','email'=>'ruma@student.com','password'=>$hash,'role'=>'student','avatar'=>'','class'=>'8','phone'=>'01777777777','school'=>'Green Valley School','is_premium'=>0,'created_at'=>'2026-03-05 10:00:00'],
+            ['id'=>1,'name'=>'Arman Khan','email'=>'arman@student.com','password'=>$hash,'role'=>'student','avatar'=>'','class'=>'8','phone'=>'01712345678','school'=>'Green Valley School','is_premium'=>1,'premium_expires_at'=>'2026-12-31 23:59:59','created_at'=>'2026-01-15 08:00:00'],
+            ['id'=>2,'name'=>'Rahim Ahmed','email'=>'rahim@teacher.com','password'=>$hash,'role'=>'teacher','avatar'=>'','class'=>'','phone'=>'01798765432','school'=>'Green Valley School','is_premium'=>0,'premium_expires_at'=>null,'created_at'=>'2026-01-10 09:00:00'],
+            ['id'=>3,'name'=>'Admin User','email'=>'admin@school.com','password'=>$hash,'role'=>'admin','avatar'=>'','class'=>'','phone'=>'01700000000','school'=>'Green Valley School','is_premium'=>0,'premium_expires_at'=>null,'created_at'=>'2026-01-01 08:00:00'],
+            ['id'=>4,'name'=>'Sarah Khan','email'=>'sarah@teacher.com','password'=>$hash,'role'=>'teacher','avatar'=>'','class'=>'','phone'=>'01711111111','school'=>'Green Valley School','is_premium'=>0,'premium_expires_at'=>null,'created_at'=>'2026-01-10 09:00:00'],
+            ['id'=>5,'name'=>'Sakib Hasan','email'=>'sakib@student.com','password'=>$hash,'role'=>'student','avatar'=>'','class'=>'8','phone'=>'01722222222','school'=>'Green Valley School','is_premium'=>0,'premium_expires_at'=>null,'created_at'=>'2026-02-01 10:00:00'],
+            ['id'=>6,'name'=>'Nusrat Jahan','email'=>'nusrat@student.com','password'=>$hash,'role'=>'student','avatar'=>'','class'=>'8','phone'=>'01733333333','school'=>'Green Valley School','is_premium'=>0,'premium_expires_at'=>null,'created_at'=>'2026-02-05 10:00:00'],
+            ['id'=>7,'name'=>'Tanvir Rahman','email'=>'tanvir@student.com','password'=>$hash,'role'=>'student','avatar'=>'','class'=>'9','phone'=>'01744444444','school'=>'Green Valley School','is_premium'=>1,'premium_expires_at'=>'2026-12-31 23:59:59','created_at'=>'2026-01-20 10:00:00'],
+            ['id'=>8,'name'=>'Fatima Begum','email'=>'fatima@teacher.com','password'=>$hash,'role'=>'teacher','avatar'=>'','class'=>'','phone'=>'01755555555','school'=>'Green Valley School','is_premium'=>0,'premium_expires_at'=>null,'created_at'=>'2026-01-12 09:00:00'],
+            ['id'=>9,'name'=>'Kamal Hossain','email'=>'kamal@student.com','password'=>$hash,'role'=>'student','avatar'=>'','class'=>'9','phone'=>'01766666666','school'=>'Green Valley School','is_premium'=>0,'premium_expires_at'=>null,'created_at'=>'2026-03-01 10:00:00'],
+            ['id'=>10,'name'=>'Ruma Akter','email'=>'ruma@student.com','password'=>$hash,'role'=>'student','avatar'=>'','class'=>'8','phone'=>'01777777777','school'=>'Green Valley School','is_premium'=>0,'premium_expires_at'=>null,'created_at'=>'2026-03-05 10:00:00'],
         ];
         
         $this->data['teachers'] = [
@@ -503,9 +503,12 @@ class JsonDB {
         ];
 
         $this->data['subscriptions'] = [
-            ['id'=>1,'student_id'=>1,'teacher_id'=>1,'package_id'=>2,'amount'=>499,'transaction_id'=>'BK1234567890','status'=>'approved','created_at'=>'2026-06-01 10:00:00','approved_at'=>'2026-06-02 09:00:00'],
-            ['id'=>2,'student_id'=>5,'teacher_id'=>1,'package_id'=>1,'amount'=>299,'transaction_id'=>'NAG9876543210','status'=>'pending','created_at'=>'2026-06-09 14:30:00','approved_at'=>null],
-            ['id'=>3,'student_id'=>6,'teacher_id'=>2,'package_id'=>2,'amount'=>499,'transaction_id'=>'BK1122334455','status'=>'approved','created_at'=>'2026-06-05 11:00:00','approved_at'=>'2026-06-05 16:00:00'],
+            ['id'=>1,'student_id'=>1,'teacher_id'=>2,'package_id'=>2,'amount'=>499,'transaction_id'=>'BK1234567890','status'=>'approved','type'=>'teacher','created_at'=>'2026-06-01 10:00:00','approved_at'=>'2026-06-02 09:00:00'],
+            ['id'=>2,'student_id'=>5,'teacher_id'=>2,'package_id'=>1,'amount'=>299,'transaction_id'=>'NAG9876543210','status'=>'pending','type'=>'teacher','created_at'=>'2026-06-09 14:30:00','approved_at'=>null],
+            ['id'=>3,'student_id'=>6,'teacher_id'=>4,'package_id'=>2,'amount'=>499,'transaction_id'=>'BK1122334455','status'=>'approved','type'=>'teacher','created_at'=>'2026-06-05 11:00:00','approved_at'=>'2026-06-05 16:00:00'],
+            ['id'=>4,'student_id'=>1,'teacher_id'=>null,'package_id'=>3,'amount'=>4999,'transaction_id'=>'BK9988776655','status'=>'approved','type'=>'platform','created_at'=>'2026-06-01 10:00:00','approved_at'=>'2026-06-01 10:30:00'],
+            ['id'=>5,'student_id'=>5,'teacher_id'=>null,'package_id'=>1,'amount'=>299,'transaction_id'=>'NAG5544332211','status'=>'pending','type'=>'platform','created_at'=>'2026-06-10 09:00:00','approved_at'=>null],
+            ['id'=>6,'student_id'=>7,'teacher_id'=>null,'package_id'=>2,'amount'=>499,'transaction_id'=>'BK1122339988','status'=>'approved','type'=>'platform','created_at'=>'2026-05-15 10:00:00','approved_at'=>'2026-05-15 11:00:00'],
         ];
     }
 }

@@ -146,6 +146,13 @@
     </header>
 
     <div class="main-content">
+        <div id="homePremiumBanner" class="card-enter" style="background:linear-gradient(135deg,#FEF3C7,#FDE68A);border-radius:14px;padding:14px 16px;margin-bottom:12px;display:none;cursor:pointer" onclick="showScreen('screen-pricing')">
+            <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#F59E0B,#D97706);display:flex;align-items:center;justify-content:center"><i data-lucide="crown" style="width:18px;height:18px;color:white"></i></div>
+                <div style="flex:1"><h5 style="font-size:13px;font-weight:700;color:#92400E;margin-bottom:2px">Upgrade to Premium</h5><p style="font-size:10px;color:#A16207">Unlock all features — homework, exams, library & more</p></div>
+                <i data-lucide="chevron-right" style="width:16px;height:16px;color:#92400E"></i>
+            </div>
+        </div>
         <div class="ai-hero card-enter">
             <div class="hero-content">
                 <p class="hero-label"><i data-lucide="sparkles" style="width:14px;height:14px"></i> Your Personal</p>
@@ -411,6 +418,17 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- ========== PREMIUM OVERLAY ========== -->
+<div id="premiumOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:300;align-items:center;justify-content:center" onclick="closePremiumOverlay()">
+    <div style="background:var(--card);border-radius:20px;padding:32px 24px;max-width:340px;width:90%;text-align:center;animation:slideUp 0.3s ease" onclick="event.stopPropagation()">
+        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#FBBF24,#F59E0B);display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><i data-lucide="crown" style="width:32px;height:32px;color:#78350F"></i></div>
+        <h3 style="font-size:18px;font-weight:700;margin-bottom:8px">Premium Required</h3>
+        <p style="font-size:13px;color:var(--text3);margin-bottom:20px">Subscribe to access this feature. Unlock homework, exams, library, live classes and more!</p>
+        <button class="btn-primary" style="width:100%;margin-bottom:8px" onclick="closePremiumOverlay();showScreen('screen-pricing')">Upgrade Now</button>
+        <button style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;padding:8px" onclick="closePremiumOverlay()">Maybe Later</button>
     </div>
 </div>
 
@@ -1031,7 +1049,7 @@
             </div>
             <div class="menu-item" onclick="showScreen('screen-pricing')">
                 <div class="menu-icon orange"><i data-lucide="crown"></i></div>
-                <div class="menu-text"><h5>Premium Subscription</h5><p>Manage your plan</p></div>
+                <div class="menu-text"><h5 id="profileSubText">Premium Subscription</h5><p id="profileSubDesc">Manage your plan</p></div>
                 <span class="menu-arrow"><i data-lucide="chevron-right"></i></span>
             </div>
             <div class="menu-item" onclick="showToast('Academic info coming soon!','info')">
@@ -1434,10 +1452,8 @@
         <h3 class="header-title">Payment</h3>
     </header>
     <div class="main-content">
-        <div class="payment-summary">
-            <h4 style="font-size:13px;font-weight:600;margin-bottom:8px">Order Summary</h4>
-            <div class="payment-row"><span>Premium Plan (Monthly)</span><span>৳499</span></div>
-            <div class="payment-row"><span>Processing fee</span><span>৳10</span></div>            <div class="payment-row total"><span>Total</span><span>৳509</span></div>
+        <div id="paymentSummary" class="payment-summary">
+            <!-- Dynamic: loaded by renderPaymentScreen() -->
         </div>
 
         <div class="section-header"><h2 class="section-title">Payment Method</h2></div>
@@ -1452,38 +1468,23 @@
                 <div class="payment-name"><h5>Nagad</h5><p>Pay with Nagad</p></div>
                 <div class="payment-check"></div>
             </div>
-            <div class="payment-method" onclick="selectPayment(this)">
-                <div class="payment-logo ssl">SSL</div>
-                <div class="payment-name"><h5>SSLCommerz</h5><p>Card, Mobile Banking</p></div>
-                <div class="payment-check"></div>
-            </div>
-            <div class="payment-method" onclick="selectPayment(this)">
-                <div class="payment-logo stripe">S</div>
-                <div class="payment-name"><h5>Stripe</h5><p>Credit/Debit Card</p></div>
-                <div class="payment-check"></div>
-            </div>
         </div>
-        <button class="btn-primary" style="margin-top:16px;padding:14px" onclick="showScreen('screen-payment-success')">Pay ৳509</button>
-        <p style="text-align:center;font-size:10px;color:var(--text3);margin-top:12px"><i data-lucide="lock"></i> Secure checkout powered by SSLCommerz</p>
+        <div style="margin-top:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Transaction ID</label>
+            <input type="text" id="paymentTxId" class="input-field glass-input" placeholder="Enter bKash/Nagad Transaction ID">
+        </div>
+        <button id="paymentSubmitBtn" class="btn-primary" style="margin-top:16px;padding:14px;width:100%" onclick="submitPlatformSubscription()">Pay</button>
+        <p style="text-align:center;font-size:10px;color:var(--text3);margin-top:12px"><i data-lucide="lock"></i> Secure checkout</p>
     </div>
 </div>
 
 <!-- ========== PAYMENT SUCCESS ========== -->
 <div id="screen-payment-success" class="screen">
     <header class="header">
-        <h3 class="header-title">Payment Complete</h3>
+        <h3 class="header-title">Payment Status</h3>
     </header>
-    <div class="main-content" style="text-align:center;padding-top:40px">
-        <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#10B981,#059669);display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><i data-lucide="check" style="width:40px;height:40px;color:white"></i></div>
-        <h2 style="font-size:22px;font-weight:800;margin-bottom:8px">Welcome to Premium!</h2>
-        <p style="font-size:13px;color:var(--text3);margin-bottom:24px">Your payment of ৳509 was successful. You now have access to all premium features.</p>
-        <div style="background:var(--card);border-radius:12px;padding:16px;margin-bottom:20px;text-align:left">
-            <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:12px;color:var(--text3)">Plan</span><span style="font-size:12px;font-weight:600">Premium Monthly</span></div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:12px;color:var(--text3)">Amount</span><span style="font-size:12px;font-weight:600">৳509</span></div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:12px;color:var(--text3)">Valid Until</span><span style="font-size:12px;font-weight:600">Jun 08, 2026</span></div>
-            <div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--text3)">Transaction ID</span><span style="font-size:12px;font-weight:600">TXN847291</span></div>
-        </div>
-        <button class="btn-primary" onclick="showScreen('screen-home')" style="width:100%">Start Exploring Premium Features</button>
+    <div id="paymentSuccessContent" class="main-content" style="text-align:center;padding-top:40px">
+        <!-- Dynamic: loaded by renderPaymentSuccess() -->
     </div>
 </div>
     </div>

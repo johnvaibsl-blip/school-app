@@ -783,6 +783,7 @@ $ep=$edit>0?$db->find('packages','id',$edit):null; ?>
 
 <?php /* === SUBSCRIPTIONS === */ ?>
 <?php elseif($page==='subscriptions'):
+$tab=$_GET['tab']??'platform';
 $allSubs=$db->query('subscriptions');
 $pendingCount=0;$approvedCount=0;$rejectedCount=0;
 foreach($allSubs as $s){if($s['status']==='pending')$pendingCount++;if($s['status']==='approved')$approvedCount++;if($s['status']==='rejected')$rejectedCount++;}
@@ -791,15 +792,23 @@ if($_SERVER['REQUEST_METHOD']==='POST'&&isset($_POST['action'])){
     $sa=$_POST['action'];
     if($sa==='approve_sub'){
         $sid=intval($_POST['id']);
+        $sub=$db->find('subscriptions','id',$sid);
         $db->update('subscriptions',$sid,['status'=>'approved','approved_at'=>date('Y-m-d H:i:s')]);
-        header('Location: ?page=subscriptions&msg=approved');exit;
+        if($sub&&($sub['type']??'teacher')==='platform'){
+            $pkg=$db->find('packages','id',$sub['package_id']);
+            $duration=$pkg?intval($pkg['duration']):30;
+            $expiresAt=date('Y-m-d H:i:s',strtotime('+'.$duration.' days'));
+            $db->update('users',$sub['student_id'],['is_premium'=>1,'premium_expires_at'=>$expiresAt]);
+        }
+        header('Location: ?page=subscriptions&tab='.$tab.'&msg=approved');exit;
     }
     if($sa==='reject_sub'){
         $sid=intval($_POST['id']);
         $db->update('subscriptions',$sid,['status'=>'rejected']);
-        header('Location: ?page=subscriptions&msg=rejected');exit;
+        header('Location: ?page=subscriptions&tab='.$tab.'&msg=rejected');exit;
     }
 }
+$filteredSubs=array_filter($allSubs,function($s)use($tab){return($s['type']??'teacher')===$tab;});
 ?>
 <div class="sg">
 <div class="sc"><div class="si y"><i data-lucide="clock"></i></div><div class="st"><h3><?php echo $pendingCount; ?></h3><p>Pending</p></div></div>
@@ -807,27 +816,34 @@ if($_SERVER['REQUEST_METHOD']==='POST'&&isset($_POST['action'])){
 <div class="sc"><div class="si r"><i data-lucide="x-circle"></i></div><div class="st"><h3><?php echo $rejectedCount; ?></h3><p>Rejected</p></div></div>
 <div class="sc"><div class="si p"><i data-lucide="users"></i></div><div class="st"><h3><?php echo count($allSubs); ?></h3><p>Total Requests</p></div></div></div>
 
+<div style="display:flex;gap:8px;margin-bottom:16px">
+<a href="?page=subscriptions&tab=platform" style="padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;<?php echo $tab==='platform'?'background:#4F46E5;color:white':'background:#F3F4F6;color:#374151'; ?>">Platform Subscriptions</a>
+<a href="?page=subscriptions&tab=teacher" style="padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;<?php echo $tab==='teacher'?'background:#4F46E5;color:white':'background:#F3F4F6;color:#374151'; ?>">Teacher Subscriptions</a>
+</div>
+
 <div class="card">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="margin-bottom:0"><i data-lucide="user-check"></i>Subscription Requests</h3></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="margin-bottom:0"><i data-lucide="user-check"></i><?php echo $tab==='platform'?'Platform':'Teacher'; ?> Subscription Requests</h3></div>
 <div class="search-bar"><i data-lucide="search"></i><input type="text" placeholder="Search subscriptions..." oninput="filterTable(this,'subs-table')"></div>
-<table id="subs-table"><tr><th>Student</th><th>Teacher</th><th>Package</th><th>Amount</th><th>Transaction ID</th><th>Status</th><th>Date</th><th>Actions</th></tr>
-<?php foreach($allSubs as $s):
+<table id="subs-table"><tr><th>Student</th><?php if($tab==='teacher'):?><th>Teacher</th><?php endif;?><th>Package</th><th>Amount</th><th>Transaction ID</th><th>Status</th><th>Date</th><th>Actions</th></tr>
+<?php foreach($filteredSubs as $s):
 $student=$db->find('users','id',$s['student_id']);
 $teacherUser=null;
-$teachers=$db->query('teachers');
-foreach($teachers as $t){if(intval($t['user_id'])===intval($s['teacher_id'])||intval($t['id'])===intval($s['teacher_id'])){$teacherUser=$db->find('users','id',$t['user_id']);break;}}
+if($tab==='teacher'){
+    $teachers=$db->query('teachers');
+    foreach($teachers as $t){if(intval($t['user_id'])===intval($s['teacher_id'])){$teacherUser=$db->find('users','id',$t['user_id']);break;}}
+}
 $pkg=$db->find('packages','id',$s['package_id']);
 ?>
 <tr>
 <td><strong><?php echo htmlspecialchars($student['name']??'Unknown'); ?></strong><br><span style="font-size:10px;color:#9CA3AF"><?php echo htmlspecialchars($student['email']??''); ?></span></td>
-<td><strong><?php echo htmlspecialchars($teacherUser['name']??'Unknown'); ?></strong><br><span style="font-size:10px;color:#9CA3AF"><?php echo htmlspecialchars($s['teacher_id']); ?></span></td>
+<?php if($tab==='teacher'):?><td><strong><?php echo htmlspecialchars($teacherUser['name']??'Unknown'); ?></strong></td><?php endif;?>
 <td><?php echo htmlspecialchars($pkg['name']??'Unknown'); ?></td>
 <td><strong style="color:#4F46E5"><?php echo number_format($s['amount'],0); ?> BDT</strong></td>
 <td><code style="background:#1E293B;padding:2px 6px;border-radius:4px;font-size:11px"><?php echo htmlspecialchars($s['transaction_id']); ?></code></td>
-<td><span class="badge <?php echo $s['status']==='approved'?'bg':($s['status']==='rejected'?'br':'bo'); ?>"><?php echo ucfirst($s['status']); ?></span></td>
+<td><span class="badge <?php echo $s['status']==='approved'?'bg':($s['status']==='rejected'?'br':($s['status']==='teacher_approved'?'bp':'bo')); ?>"><?php echo ucfirst(str_replace('_',' ',$s['status'])); ?></span></td>
 <td style="font-size:11px"><?php echo date('M d, Y',strtotime($s['created_at'])); ?></td>
 <td class="actions">
-<?php if($s['status']==='pending'): ?>
+<?php if($s['status']==='pending'||$s['status']==='teacher_approved'):?>
 <form method="POST" style="display:inline"><input type="hidden" name="action" value="approve_sub"><input type="hidden" name="id" value="<?php echo $s['id']; ?>"><button type="submit" class="btn btn-sm" style="background:#10B981;color:white" onclick="return confirm('Approve this subscription?')"><i data-lucide="check" style="width:12px;height:12px"></i></button></form>
 <form method="POST" style="display:inline"><input type="hidden" name="action" value="reject_sub"><input type="hidden" name="id" value="<?php echo $s['id']; ?>"><button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Reject this subscription?')"><i data-lucide="x" style="width:12px;height:12px"></i></button></form>
 <?php else: ?>
@@ -838,20 +854,29 @@ $pkg=$db->find('packages','id',$s['package_id']);
 
 <?php /* === REVENUE === */ ?>
 <?php elseif($page==='revenue'):
-$pu=count($db->findAll('users','is_premium',1));$tr=0;$pc=[];
-foreach($allPackages as $p){$c=rand(5,25);$pc[$p['name']]=$c;$tr+=$p['price']*($c);}
+$pu=count($db->findAll('users','is_premium',1));
+$approvedSubs=array_filter($db->query('subscriptions'),function($s){return$s['status']==='approved';});
+$tr=0;
+foreach($approvedSubs as $s){$tr+=floatval($s['amount']);}
+$platformSubs=array_filter($approvedSubs,function($s){return($s['type']??'teacher')==='platform';});
+$teacherSubs=array_filter($approvedSubs,function($s){return($s['type']??'teacher')==='teacher';});
+$platformRevenue=0;foreach($platformSubs as $s){$platformRevenue+=floatval($s['amount']);}
+$teacherRevenue=0;foreach($teacherSubs as $s){$teacherRevenue+=floatval($s['amount']);}
 ?>
 <div class="sg">
-<div class="sc"><div class="si g"><i data-lucide="dollar-sign"></i></div><div class="st"><h3><?php echo $tr; ?> BDT</h3><p>Total Revenue</p></div></div>
+<div class="sc"><div class="si g"><i data-lucide="dollar-sign"></i></div><div class="st"><h3><?php echo number_format($tr); ?> BDT</h3><p>Total Revenue</p></div></div>
 <div class="sc"><div class="si p"><i data-lucide="users"></i></div><div class="st"><h3><?php echo $pu; ?></h3><p>Premium Users</p></div></div>
-<div class="sc"><div class="si o"><i data-lucide="credit-card"></i></div><div class="st"><h3><?php echo count($allPackages); ?></h3><p>Active Packages</p></div></div>
-<div class="sc"><div class="si b"><i data-lucide="trending-up"></i></div><div class="st"><h3><?php echo $pu>0?round($tr/$pu):0; ?> BDT</h3><p>Avg per User</p></div></div></div>
+<div class="sc"><div class="si b"><i data-lucide="monitor"></i></div><div class="st"><h3><?php echo number_format($platformRevenue); ?> BDT</h3><p>Platform Revenue</p></div></div>
+<div class="sc"><div class="si o"><i data-lucide="graduation-cap"></i></div><div class="st"><h3><?php echo number_format($teacherRevenue); ?> BDT</h3><p>Teacher Revenue</p></div></div></div>
 <div class="card"><h3><i data-lucide="bar-chart-3"></i>Revenue by Package</h3>
 <table><tr><th>Package</th><th>Price</th><th>Subscribers</th><th>Revenue</th></tr>
-<?php foreach($allPackages as $p): ?>
-<tr><td><strong><?php echo htmlspecialchars($p['name']); ?></strong></td><td><?php echo $p['price']; ?> BDT</td><td><?php echo $pc[$p['name']]; ?></td><td><strong style="color:#10B981"><?php echo $p['price']*$pc[$p['name']]; ?> BDT</strong></td></tr>
+<?php foreach($allPackages as $p):
+$pSubs=array_filter($approvedSubs,function($s)use($p){returnintval($s['package_id'])===intval($p['id']);});
+$pRev=0;foreach($pSubs as $s){$pRev+=floatval($s['amount']);}
+?>
+<tr><td><strong><?php echo htmlspecialchars($p['name']); ?></strong></td><td><?php echo number_format($p['price']); ?> BDT</td><td><?php echo count($pSubs); ?></td><td><strong style="color:#10B981"><?php echo number_format($pRev); ?> BDT</strong></td></tr>
 <?php endforeach; ?>
-<tr style="background:#F9FAFB;font-weight:700"><td>Total</td><td></td><td><?php echo $pu; ?></td><td style="color:#10B981"><?php echo $tr; ?> BDT</td></tr></table></div>
+<tr style="background:#F9FAFB;font-weight:700"><td>Total</td><td></td><td><?php echo count($approvedSubs); ?></td><td style="color:#10B981"><?php echo number_format($tr); ?> BDT</td></tr></table></div>
 
 <?php /* === SETTINGS === */ ?>
 <?php elseif($page==='settings'): ?>
