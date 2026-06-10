@@ -868,8 +868,8 @@ $pkg=$db->find('packages','id',$s['package_id']);
 <td style="font-size:11px"><?php echo date('M d, Y',strtotime($s['created_at'])); ?></td>
 <td class="actions">
 <?php if($s['status']==='pending'||$s['status']==='teacher_approved'):?>
-<form method="POST" style="display:inline"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="approve_sub"><input type="hidden" name="id" value="<?php echo $s['id']; ?>"><button type="submit" class="btn btn-sm" style="background:#10B981;color:white" onclick="return confirm('Approve this subscription?')"><i data-lucide="check" style="width:12px;height:12px"></i></button></form>
-<form method="POST" style="display:inline"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="reject_sub"><input type="hidden" name="id" value="<?php echo $s['id']; ?>"><button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Reject this subscription?')"><i data-lucide="x" style="width:12px;height:12px"></i></button></form>
+<form method="POST" style="display:inline"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="approve_sub"><input type="hidden" name="id" value="<?php echo $s['id']; ?>"><button type="submit" class="btn btn-sm" style="background:#10B981;color:white;padding:6px 12px" onclick="return confirm('Approve this subscription?')">Approve</button></form>
+<form method="POST" style="display:inline"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="reject_sub"><input type="hidden" name="id" value="<?php echo $s['id']; ?>"><button type="submit" class="btn btn-danger btn-sm" style="padding:6px 12px" onclick="return confirm('Reject this subscription?')">Reject</button></form>
 <?php else: ?>
 <span style="font-size:10px;color:#9CA3AF"><?php echo $s['approved_at']?date('M d',strtotime($s['approved_at'])):'-'; ?></span>
 <?php endif; ?>
@@ -1103,8 +1103,8 @@ $ssPkg=$db->find('packages','id',$ss['package_id']);
 <td style="font-size:11px"><?php echo date('M d, Y',strtotime($ss['created_at'])); ?></td>
 <td class="actions">
 <?php if($ss['status']==='pending'):?>
-<form method="POST" style="display:inline"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="approve_student_sub"><input type="hidden" name="id" value="<?php echo $ss['id']; ?>"><button type="submit" class="btn btn-sm" style="background:#10B981;color:white" onclick="return confirm('Approve?')"><i data-lucide="check" style="width:12px;height:12px"></i></button></form>
-<form method="POST" style="display:inline"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="reject_student_sub"><input type="hidden" name="id" value="<?php echo $ss['id']; ?>"><button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Reject?')"><i data-lucide="x" style="width:12px;height:12px"></i></button></form>
+<form method="POST" style="display:inline"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="approve_student_sub"><input type="hidden" name="id" value="<?php echo $ss['id']; ?>"><button type="submit" class="btn btn-sm" style="background:#10B981;color:white;padding:6px 12px" onclick="return confirm('Approve?')">Approve</button></form>
+<form method="POST" style="display:inline"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="reject_student_sub"><input type="hidden" name="id" value="<?php echo $ss['id']; ?>"><button type="submit" class="btn btn-danger btn-sm" style="padding:6px 12px" onclick="return confirm('Reject?')">Reject</button></form>
 <?php else: ?>
 <span style="font-size:10px;color:#9CA3AF"><?php echo $ss['approved_at']?date('M d',strtotime($ss['approved_at'])):'-'; ?></span>
 <?php endif; ?>
