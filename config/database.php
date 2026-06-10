@@ -163,9 +163,9 @@ class JsonDB {
         ];
         
         $this->data['teachers'] = [
-            ['id'=>1,'user_id'=>2,'subject'=>'Mathematics','experience'=>12,'bio'=>'Passionate mathematics teacher with expertise in algebra and geometry. Makes complex concepts simple and fun for students.','rating'=>4.8,'total_students'=>120,'total_classes'=>500,'is_featured'=>1,'is_active'=>1],
-            ['id'=>2,'user_id'=>4,'subject'=>'English Literature','experience'=>8,'bio'=>'English literature specialist focusing on creative writing, grammar, and literature analysis. Loves inspiring young writers.','rating'=>4.9,'total_students'=>95,'total_classes'=>380,'is_featured'=>1,'is_active'=>1],
-            ['id'=>3,'user_id'=>8,'subject'=>'Science','experience'=>6,'bio'=>'Science teacher with hands-on approach to physics, chemistry, and biology. Believes in learning by doing experiments.','rating'=>4.7,'total_students'=>85,'total_classes'=>320,'is_featured'=>0,'is_active'=>1],
+            ['id'=>1,'user_id'=>2,'subject'=>'Mathematics','class_name'=>'Class 8','experience'=>12,'bio'=>'Passionate mathematics teacher with expertise in algebra and geometry. Makes complex concepts simple and fun for students.','rating'=>4.8,'total_students'=>120,'total_classes'=>500,'is_featured'=>1,'is_active'=>1],
+            ['id'=>2,'user_id'=>4,'subject'=>'English Literature','class_name'=>'Class 9 Science','experience'=>8,'bio'=>'English literature specialist focusing on creative writing, grammar, and literature analysis. Loves inspiring young writers.','rating'=>4.9,'total_students'=>95,'total_classes'=>380,'is_featured'=>1,'is_active'=>1],
+            ['id'=>3,'user_id'=>8,'subject'=>'Science','class_name'=>'Class 7','experience'=>6,'bio'=>'Science teacher with hands-on approach to physics, chemistry, and biology. Believes in learning by doing experiments.','rating'=>4.7,'total_students'=>85,'total_classes'=>320,'is_featured'=>0,'is_active'=>1],
         ];
         
         $this->data['subjects'] = [

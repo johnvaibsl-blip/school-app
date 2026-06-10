@@ -16,9 +16,8 @@ if (file_exists($landing)) {
         echo $html;
         exit;
     }
-    // Not logged in — serve raw landing page
-    header('Content-Type: text/html; charset=UTF-8');
-    readfile($landing);
+    // Not logged in — go to intro/login
+    header('Location: /intro.php');
     exit;
 }
 header('Location: /intro.php');

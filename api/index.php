@@ -77,7 +77,20 @@ switch ($path) {
         break;
     case 'homework_submissions':
         if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
-        jsonResponse($db->queryAll('SELECT * FROM homework_submissions ORDER BY id DESC'));
+        $role = $_SESSION['role'] ?? '';
+        $uid = intval($_SESSION['user_id'] ?? 0);
+        if ($role === 'admin') {
+            jsonResponse($db->queryAll('SELECT * FROM homework_submissions ORDER BY id DESC'));
+        } elseif ($role === 'teacher') {
+            $teacher = $db->find('teachers', 'user_id', $uid);
+            $tId = $teacher ? $teacher['id'] : 0;
+            $allSubs = $db->queryAll('SELECT * FROM homework_submissions ORDER BY id DESC');
+            $hw = $db->queryAll('SELECT * FROM homework');
+            $tHwIds = array_column(array_filter($hw, function($h) use ($tId) { return ($h['teacher_id'] ?? 0) == $tId; }), 'id');
+            jsonResponse(array_filter($allSubs, function($s) use ($tHwIds) { return in_array($s['homework_id'] ?? 0, $tHwIds); }));
+        } else {
+            jsonResponse($db->findAll('homework_submissions', 'student_id', $uid));
+        }
         break;
     case 'exam_results':
         if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
@@ -399,6 +412,9 @@ switch ($path) {
     case 'student_detail':
         if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
         $sid = intval($_GET['student_id'] ?? 0);
+        $role = $_SESSION['role'] ?? '';
+        $uid = intval($_SESSION['user_id'] ?? 0);
+        if ($role === 'student' && $sid !== $uid) jsonResponseError('Access denied', 403);
         $u = $db->find('users', 'id', $sid);
         $prog = $db->find('student_progress', 'student_id', $sid);
         $examRes = $db->findAll('exam_results', 'student_id', $sid);
@@ -579,6 +595,7 @@ switch ($path) {
 
     case 'admin_stats':
         if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        if (($_SESSION['role'] ?? '') !== 'admin') jsonResponseError('Admin access required', 403);
         $users = $db->query('users');
         $students = count(array_filter($users, function($u) { return ($u['role'] ?? '') === 'student'; }));
         $teachers = count(array_filter($users, function($u) { return ($u['role'] ?? '') === 'teacher'; }));
@@ -641,6 +658,7 @@ switch ($path) {
         break;
 
     case 'ai_analyze_image':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
         $input = json_decode(file_get_contents('php://input'), true);
         $imageData = $input['image'] ?? '';
         $imageName = $input['name'] ?? 'image';
