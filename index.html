@@ -1002,6 +1002,15 @@
         <div class="materials-grid-4 card-enter" style="animation-delay:0.3s" id="myMaterialsGrid">
             <!-- Dynamic: loaded by loadLibraryGrid() -->
         </div>
+
+        <!-- Question Bank CTA -->
+        <div class="glass-card card-enter" style="animation-delay:0.35s;padding:16px;margin-top:16px;cursor:pointer" onclick="showScreen('screen-question-bank')">
+            <div style="display:flex;align-items:center;gap:14px">
+                <div class="icon-box" style="background:linear-gradient(135deg,#8B5CF6,#A78BFA);color:white"><i data-lucide="help-circle" style="width:22px;height:22px"></i></div>
+                <div style="flex:1"><h4 style="font-size:14px;font-weight:700;color:var(--text)">Question Bank</h4><p style="font-size:11px;color:var(--text3)">Practice MCQ, Written & CQ questions</p></div>
+                <i data-lucide="chevron-right" style="width:18px;height:18px;color:var(--text3)"></i>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -3336,6 +3345,29 @@
 </div>
 
 <!-- ========== 31. QUESTION BANK ========== -->
+<div id="screen-question-bank" class="screen">
+    <header class="header">
+        <button class="header-back" onclick="showScreen('screen-my-study')"><i data-lucide="arrow-left"></i></button>
+        <h3 class="header-title">Question Bank</h3>
+        <button class="icon-btn" onclick="showQuestionFilterSheet()"><i data-lucide="sliders-horizontal"></i></button>
+    </header>
+    <div class="main-content">
+        <div style="display:flex;gap:6px;margin-bottom:16px;overflow-x:auto" id="qbFilters">
+            <button class="filter-chip active" onclick="filterQB(this,'all')">All</button>
+            <button class="filter-chip" onclick="filterQB(this,'mcq')">MCQ</button>
+            <button class="filter-chip" onclick="filterQB(this,'written')">Written</button>
+            <button class="filter-chip" onclick="filterQB(this,'cq')">CQ</button>
+        </div>
+        <div id="questionBankList">
+            <p style="text-align:center;padding:40px;color:var(--text3);font-size:13px">Loading questions...</p>
+        </div>
+        <div id="qbEmpty" style="display:none;text-align:center;padding:40px">
+            <div style="font-size:40px;margin-bottom:12px"></div>
+            <h4 style="font-size:14px;color:var(--text);margin-bottom:4px">No Questions Yet</h4>
+            <p style="font-size:12px;color:var(--text3)">Questions will appear here once added by admin.</p>
+        </div>
+    </div>
+</div>
 
 
 <!-- ========== BOTTOM NAVIGATION ========== -->

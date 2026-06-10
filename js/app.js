@@ -16,7 +16,7 @@ var ROLE_SCREENS = {
         'screen-exam-interface','screen-exam-result','screen-subject',
         'screen-reader','screen-live-lobby','screen-live-class','screen-search',
         'screen-pricing','screen-payment','screen-payment-success','screen-settings','screen-notif',
-        'screen-my-study','screen-library-subject','screen-messages'
+        'screen-my-study','screen-library-subject','screen-messages','screen-question-bank'
     ],
     teacher: [
         'screen-teacher-dash','screen-upload-content','screen-content-library',
@@ -290,6 +290,7 @@ function showScreen(id) {
     if (id === 'screen-homework') loadHomeworkList();
     if (id === 'screen-exam') loadExamList();
     if (id === 'screen-announcements') loadAnnouncements();
+    if (id === 'screen-question-bank') loadQuestionBank();
     if (id !== 'screen-chat') _chatSettingsLoaded = false;
     if (id === 'screen-chat') loadChatSettings();
     if (id === 'screen-pricing') { loadPackages(); checkPremiumAccess(); }
@@ -3188,6 +3189,71 @@ function loadClassSchedule() {
         c.innerHTML = html;
         if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
     });
+}
+
+// --- QUESTION BANK ---
+var _qbData = [];
+var _qbFilter = 'all';
+
+function loadQuestionBank() {
+    api('question_bank').then(function(questions) {
+        _qbData = questions || [];
+        renderQuestionBank();
+    });
+}
+
+function filterQB(btn, type) {
+    _qbFilter = type;
+    var chips = document.querySelectorAll('#qbFilters .filter-chip');
+    chips.forEach(function(c) { c.classList.remove('active'); });
+    btn.classList.add('active');
+    renderQuestionBank();
+}
+
+function renderQuestionBank() {
+    var container = document.getElementById('questionBankList');
+    var emptyEl = document.getElementById('qbEmpty');
+    if (!container) return;
+    var filtered = _qbFilter === 'all' ? _qbData : _qbData.filter(function(q) { return q.type === _qbFilter; });
+    if (filtered.length === 0) {
+        container.innerHTML = '';
+        if (emptyEl) emptyEl.style.display = 'block';
+        return;
+    }
+    if (emptyEl) emptyEl.style.display = 'none';
+    var html = '';
+    filtered.forEach(function(q) {
+        var typeColor = q.type === 'mcq' ? 'var(--purple)' : q.type === 'cq' ? 'var(--orange)' : 'var(--blue)';
+        var diffColor = q.difficulty === 'hard' ? 'var(--red)' : q.difficulty === 'medium' ? 'var(--orange)' : 'var(--green)';
+        var opts = [];
+        if (q.options) {
+            opts = typeof q.options === 'string' ? JSON.parse(q.options) : q.options;
+        }
+        html += '<div class="hw-card" style="margin-bottom:12px">' +
+            '<div class="hw-header"><span class="badge" style="background:' + typeColor + '20;color:' + typeColor + '">' + (q.type || '').toUpperCase() + '</span>' +
+            '<span class="badge" style="background:' + diffColor + '20;color:' + diffColor + '">' + (q.difficulty || 'easy') + '</span>' +
+            '<span style="font-size:10px;color:var(--text3)">' + (q.marks || 1) + ' marks</span></div>' +
+            '<h4 style="font-size:13px;margin:8px 0">' + escapeHtml(q.question || '') + '</h4>';
+        if (q.type === 'mcq' && opts.length > 0) {
+            html += '<div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">';
+            opts.forEach(function(opt, i) {
+                var isCorrect = parseInt(q.correct) === i;
+                html += '<div style="padding:8px 12px;border-radius:8px;font-size:12px;background:' + (isCorrect ? 'rgba(16,185,129,0.1)' : 'rgba(255,255,255,0.05)') + ';border:1px solid ' + (isCorrect ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.1)') + '">' +
+                    '<span style="font-weight:600;margin-right:6px">' + String.fromCharCode(65 + i) + '.</span> ' + escapeHtml(opt) +
+                    (isCorrect ? ' <span style="color:var(--green);font-weight:700;margin-left:4px">✓</span>' : '') +
+                    '</div>';
+            });
+            html += '</div>';
+        } else if (q.correct) {
+            html += '<div style="margin-top:8px;padding:8px 12px;border-radius:8px;font-size:12px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3)"><span style="font-weight:600">Answer:</span> ' + escapeHtml(q.correct) + '</div>';
+        }
+        html += '</div>';
+    });
+    container.innerHTML = html;
+}
+
+function showQuestionFilterSheet() {
+    showToast('Use the filter chips at the top to filter by type', 'info');
 }
 
 // --- CALENDAR ---
