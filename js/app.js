@@ -312,11 +312,7 @@ function showScreen(id) {
     if (id === 'screen-reports') loadReports();
     if (id === 'screen-class-schedule') loadClassSchedule();
     if (id === 'screen-calendar') loadCalendar();
-    if (id === 'screen-admin') loadAdminDashboard();
-    if (id === 'screen-teacher-ranking') loadAdminRankings();
-    if (id === 'screen-question-bank') loadQuestionBankScreen();
-    if (id === 'screen-chapter-mgmt') loadChapterManager();
-    if (id === 'screen-library-mgmt') loadLibraryMgmt();
+
     if (id === 'screen-packages') loadAdminPackages();
     if (id === 'screen-evaluate') loadStudentEvaluation();
     if (id === 'screen-give-report') loadGiveReportStudents();
@@ -3247,88 +3243,6 @@ function loadCalendar() {
     });
 }
 
-// --- ADMIN DASHBOARD ---
-function loadAdminDashboard() {
-    api('admin_stats').then(function(data) {
-        var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
-        setText('adminStudents', (data.students || 0).toLocaleString());
-        setText('adminTeachers', data.teachers || 0);
-        setText('adminClasses', data.live_classes || 0);
-        setText('adminHw', data.homework || 0);
-        setText('adminExams', data.exams || 0);
-    });
-}
-
-// --- ADMIN TEACHER RANKINGS ---
-function loadAdminRankings() {
-    api('teachers').then(function(teachers) {
-        var c = document.getElementById('adminRankingsList');
-        if (!c) return;
-        var sorted = (teachers || []).sort(function(a, b) { return (b.rating || 0) - (a.rating || 0); });
-        var html = '';
-        sorted.forEach(function(t, i) {
-            var medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1);
-            html += '<div class="list-item"><div style="min-width:28px;text-align:center;font-size:14px">' + medal + '</div>' +
-                '<div class="user-avatar" style="background:linear-gradient(135deg,#4F46E5,#7C3AED);width:36px;height:36px;font-size:14px">' + (t.name || 'T')[0] + '</div>' +
-                '<div class="list-item-content"><h5>' + t.name + '</h5><p>' + (t.subject || '') + '</p></div>' +
-                '<div style="text-align:right"><div style="font-size:13px;font-weight:700;color:#F59E0B">⭐ ' + (t.rating || 0) + '</div><div style="font-size:9px;color:var(--text3)">' + (t.total_students || 0) + ' students</div></div></div>';
-        });
-        c.innerHTML = html;
-    });
-}
-
-// --- QUESTION BANK ---
-function loadQuestionBankScreen() {
-    api('question_bank').then(function(questions) {
-        var c = document.getElementById('questionBankList');
-        if (!c) return;
-        var html = '';
-        (questions || []).forEach(function(q) {
-            var diffColor = q.difficulty === 'easy' ? '#10B981' : q.difficulty === 'medium' ? '#F59E0B' : '#EF4444';
-            html += '<div class="hw-card" style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:6px"><h5 style="font-size:12px;flex:1">' + (q.question || '') + '</h5>' +
-                '<span style="font-size:9px;padding:2px 8px;border-radius:8px;background:' + diffColor + '20;color:' + diffColor + '">' + (q.difficulty || '') + '</span></div>' +
-                '<p style="font-size:10px;color:var(--text3)">' + getSubjectName(q.subject_id) + ' · ' + (q.chapter || '') + ' · ' + (q.marks || 0) + ' marks</p></div>';
-        });
-        if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No questions in bank</p>';
-        c.innerHTML = html;
-    });
-}
-
-// --- CHAPTER MANAGER ---
-function loadChapterManager() {
-    api('chapters&subject_id=1').then(function(chapters) {
-        var c = document.getElementById('chapterManagerList');
-        if (!c) return;
-        var html = '';
-        (chapters || []).forEach(function(ch) {
-            var locked = ch.status === 'locked';
-            html += '<div class="list-item" style="' + (locked ? 'opacity:0.5;' : '') + '">' +
-                '<div class="icon-box sm" style="background:' + (locked ? '#9CA3AF' : '#4F46E5') + '20;color:' + (locked ? '#9CA3AF' : '#4F46E5') + '"><i data-lucide="' + (locked ? 'lock' : 'unlock') + '" class="icon-sm"></i></div>' +
-                '<div class="list-item-content"><h5>' + ch.title + '</h5><p>' + ch.pages + ' pages · ' + ch.status.replace('_', ' ') + '</p></div></div>';
-        });
-        c.innerHTML = html;
-        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
-    });
-}
-
-// --- LIBRARY MANAGEMENT ---
-function loadLibraryMgmt() {
-    api('library').then(function(items) {
-        var c = document.getElementById('libraryMgmtList');
-        if (!c) return;
-        var html = '';
-        (items || []).forEach(function(item) {
-            var statusColor = item.is_active ? '#10B981' : '#9CA3AF';
-            html += '<div class="list-item"><div class="list-item-content"><h5>' + (item.title || '') + '</h5><p>' + (item.type || '') + ' · ' + (item.class || '') + '</p></div>' +
-                '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;padding:2px 8px;border-radius:8px;background:' + statusColor + '20;color:' + statusColor + '">' + (item.is_active ? 'Active' : 'Draft') + '</span>' +
-                '<button onclick="deleteLibraryItem(' + item.id + ')" style="background:none;border:none;cursor:pointer;padding:4px" title="Delete"><i data-lucide="trash-2" style="width:14px;height:14px;color:#EF4444"></i></button></div></div>';
-        });
-        if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No library items</p>';
-        c.innerHTML = html;
-        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
-    });
-}
-
 function deleteLibraryItem(id) {
     if (!confirm('Are you sure you want to delete this library item?')) return;
     fetch('/api/index.php?action=library_delete&id=' + id, {
@@ -3337,7 +3251,6 @@ function deleteLibraryItem(id) {
     }).then(function(r) { return r.json(); }).then(function(data) {
         if (data.success) {
             showToast('Library item deleted', 'success');
-            loadLibraryMgmt();
         } else {
             showToast(data.error || 'Failed to delete', 'error');
         }
@@ -3569,7 +3482,6 @@ function submitAddBook() {
         if (data.success) {
             closeAddBookModal();
             showToast('Book added successfully!', 'success');
-            loadLibraryMgmt();
         } else {
             errEl.textContent = data.error || 'Failed to add book';
             errEl.style.display = 'block';
@@ -3653,7 +3565,6 @@ function submitAddQuestion() {
         if (data.success) {
             closeAddQuestionModal();
             showToast('Question added successfully!', 'success');
-            loadQuestionBankScreen();
         } else {
             errEl.textContent = data.error || 'Failed to add question';
             errEl.style.display = 'block';

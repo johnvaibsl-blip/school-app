@@ -26,7 +26,7 @@ switch ($path) {
             'name' => sanitize($input['name'] ?? ''),
             'email' => sanitize($input['email'] ?? ''),
             'password' => password_hash($input['password'] ?? '', PASSWORD_DEFAULT),
-            'role' => sanitize($input['role'] ?? 'student'),
+            'role' => 'student',
             'class' => sanitize($input['class'] ?? ''),
             'is_premium' => 0,
             'premium_expires_at' => null
@@ -36,6 +36,7 @@ switch ($path) {
 
     case 'subjects': jsonResponse($db->query('subjects')); break;
     case 'settings':
+        if (!isLoggedIn() || $_SESSION['role'] !== 'admin') jsonResponseError('Admin only', 403);
         $settings = $db->query('settings');
         $map = [];
         foreach ($settings as $s) $map[$s['key']] = $s['value'];

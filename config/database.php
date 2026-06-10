@@ -267,10 +267,21 @@ class JsonDB {
 
         
         $this->data['chapters'] = [
-            ['id'=>1,'subject_id'=>1,'title'=>'Algebra - Linear Equations','chapter_no'=>1,'description'=>'Introduction to linear equations and their solutions.','is_active'=>1],
-            ['id'=>2,'subject_id'=>1,'title'=>'Geometry - Triangles','chapter_no'=>2,'description'=>'Properties of triangles and theorems.','is_active'=>1],
-            ['id'=>3,'subject_id'=>2,'title'=>'Parts of Speech','chapter_no'=>1,'description'=>'Nouns, verbs, adjectives and other parts of speech.','is_active'=>1],
-            ['id'=>4,'subject_id'=>5,'title'=>'Newton Laws of Motion','chapter_no'=>1,'description'=>'Three laws of motion by Isaac Newton.','is_active'=>1],
+            ['id'=>1,'subject_id'=>1,'title'=>'Algebra - Linear Equations','chapter_no'=>1,'description'=>'Introduction to linear equations and their solutions.','status'=>'in_progress','pages'=>15,'order'=>2,'is_active'=>1],
+            ['id'=>2,'subject_id'=>1,'title'=>'Geometry - Triangles','chapter_no'=>2,'description'=>'Properties of triangles and theorems.','status'=>'not_started','pages'=>14,'order'=>4,'is_active'=>1],
+            ['id'=>3,'subject_id'=>2,'title'=>'Parts of Speech','chapter_no'=>1,'description'=>'Nouns, verbs, adjectives and other parts of speech.','status'=>'not_started','pages'=>11,'order'=>3,'is_active'=>1],
+            ['id'=>4,'subject_id'=>5,'title'=>'Newton Laws of Motion','chapter_no'=>1,'description'=>'Three laws of motion by Isaac Newton.','status'=>'not_started','pages'=>10,'order'=>1,'is_active'=>1],
+            ['id'=>5,'subject_id'=>1,'title'=>'Rational Numbers','chapter_no'=>3,'description'=>'Understanding rational numbers and their properties.','status'=>'completed','pages'=>12,'order'=>1,'is_active'=>1],
+            ['id'=>6,'subject_id'=>1,'title'=>'Quadrilaterals','chapter_no'=>4,'description'=>'Types and properties of quadrilaterals.','status'=>'in_progress','pages'=>18,'order'=>3,'is_active'=>1],
+            ['id'=>7,'subject_id'=>1,'title'=>'Data Handling','chapter_no'=>5,'description'=>'Collecting, organizing and presenting data.','status'=>'not_started','pages'=>14,'order'=>4,'is_active'=>1],
+            ['id'=>8,'subject_id'=>1,'title'=>'Squares & Square Roots','chapter_no'=>6,'description'=>'Square numbers, square roots and their properties.','status'=>'locked','pages'=>16,'order'=>5,'is_active'=>1],
+            ['id'=>9,'subject_id'=>1,'title'=>'Cubes & Cube Roots','chapter_no'=>7,'description'=>'Cube numbers, cube roots and their properties.','status'=>'locked','pages'=>13,'order'=>6,'is_active'=>1],
+            ['id'=>10,'subject_id'=>2,'title'=>'Food: Where Does It Come From?','chapter_no'=>2,'description'=>'Sources and components of food.','status'=>'completed','pages'=>10,'order'=>1,'is_active'=>1],
+            ['id'=>11,'subject_id'=>2,'title'=>'Components of Food','chapter_no'=>3,'description'=>'Nutrients and food components.','status'=>'in_progress','pages'=>12,'order'=>2,'is_active'=>1],
+            ['id'=>12,'subject_id'=>2,'title'=>'Fibre to Fabric','chapter_no'=>4,'description'=>'Textile fibres and fabric production.','status'=>'not_started','pages'=>11,'order'=>3,'is_active'=>1],
+            ['id'=>13,'subject_id'=>3,'title'=>'The Happy Prince','chapter_no'=>1,'description'=>'Oscar Wilde\'s fairy tale about selflessness and compassion.','status'=>'completed','pages'=>8,'order'=>1,'is_active'=>1],
+            ['id'=>14,'subject_id'=>3,'title'=>'The Ball Poem','chapter_no'=>2,'description'=>'John Berryman\'s reflective poem about loss.','status'=>'in_progress','pages'=>9,'order'=>2,'is_active'=>1],
+            ['id'=>15,'subject_id'=>3,'title'=>'Photosynthesis','chapter_no'=>3,'description'=>'How plants make food from sunlight, water and CO2.','status'=>'not_started','pages'=>10,'order'=>3,'is_active'=>1],
         ];
         
         $this->data['questions'] = [
@@ -416,20 +427,6 @@ class JsonDB {
             ['id'=>8,'user_id'=>5,'type'=>'quiz','title'=>'Quiz: Physics Laws of Motion','subject'=>'Physics','time'=>'Yesterday, 11:00 AM','icon'=>'help-circle'],
             ['id'=>9,'user_id'=>1,'type'=>'exam','title'=>'Exam: Mid-term Math Test (Upcoming)','subject'=>'Mathematics','time'=>'Jun 20, 2026','icon'=>'clipboard'],
             ['id'=>10,'user_id'=>1,'type'=>'ai','title'=>'AI Tutor: Geometry Proofs Help','subject'=>'Mathematics','time'=>'2 days ago','icon'=>'bot'],
-        ];
-
-        $this->data['chapters'] = [
-            ['id'=>1,'subject_id'=>1,'title'=>'Rational Numbers','status'=>'completed','pages'=>12,'order'=>1],
-            ['id'=>2,'subject_id'=>1,'title'=>'Linear Equations','status'=>'completed','pages'=>15,'order'=>2],
-            ['id'=>3,'subject_id'=>1,'title'=>'Quadrilaterals','status'=>'in_progress','pages'=>18,'order'=>3],
-            ['id'=>4,'subject_id'=>1,'title'=>'Data Handling','status'=>'not_started','pages'=>14,'order'=>4],
-            ['id'=>5,'subject_id'=>1,'title'=>'Squares & Square Roots','status'=>'locked','pages'=>16,'order'=>5],
-            ['id'=>6,'subject_id'=>1,'title'=>'Cubes & Cube Roots','status'=>'locked','pages'=>13,'order'=>6],
-            ['id'=>7,'subject_id'=>2,'title'=>'Food: Where Does It Come From?','status'=>'completed','pages'=>10,'order'=>1],
-            ['id'=>8,'subject_id'=>2,'title'=>'Components of Food','status'=>'in_progress','pages'=>12,'order'=>2],
-            ['id'=>9,'subject_id'=>2,'title'=>'Fibre to Fabric','status'=>'not_started','pages'=>11,'order'=>3],
-            ['id'=>10,'subject_id'=>3,'title'=>'The Happy Prince','status'=>'completed','pages'=>8,'order'=>1],
-            ['id'=>11,'subject_id'=>3,'title'=>'The Ball Poem','status'=>'in_progress','pages'=>9,'order'=>2],
         ];
 
         $this->data['book_content'] = [

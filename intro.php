@@ -604,6 +604,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </select>
                 </div>
                 <button type="submit" class="login-form-btn">Create Account</button>
+                <p style="text-align:center;font-size:11px;color:rgba(255,255,255,0.45);margin-top:12px">Want to teach? <span style="color:#818CF8;font-weight:600">Contact Us</span> for teacher registration.</p>
             </form>
         </div>
     </div>

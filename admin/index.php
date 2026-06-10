@@ -3,15 +3,20 @@ require_once __DIR__ . '/../config/database.php';
 requireRole('admin');
 requireDesktop();
 $db = getDB();
+if (empty($_SESSION['csrf_token'])) $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 $page = $_GET['page'] ?? 'dashboard';
 $edit = isset($_GET['edit']) ? intval($_GET['edit']) : 0;
 $view = isset($_GET['view']) ? intval($_GET['view']) : 0;
 $msg = $_GET['msg'] ?? '';
 
-if ($edit > 0 && isset($_GET['del_table'])) { $db->delete($_GET['del_table'], $edit); header("Location: ?page=$page&msg=deleted"); exit; }
+if ($edit > 0 && isset($_GET['del_table'])) {
+    $allowed = ['users','subjects','homework','exams','library','book_content','question_bank','chapters','announcements','live_classes','live_schedule','notifications','student_progress','homework_submissions','exam_results','badges','calendar_events','subscriptions','packages','settings'];
+    if (in_array($_GET['del_table'], $allowed)) { $db->delete($_GET['del_table'], $edit); header("Location: ?page=$page&msg=deleted"); exit; }
+}
 
 // POST handler
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    if (($_POST['csrf_token'] ?? '') !== ($_SESSION['csrf_token'] ?? '')) { die('Invalid CSRF token'); }
     $a = $_POST['action'];
     if ($a === 'add_user') { $db->insert('users', ['name'=>sanitize($_POST['name']),'email'=>sanitize($_POST['email']),'password'=>password_hash($_POST['password'],PASSWORD_DEFAULT),'role'=>sanitize($_POST['role']),'class'=>sanitize($_POST['class']??''),'is_premium'=>0]); header('Location: ?page=users&msg=added'); exit; }
     if ($a === 'edit_user') { $d = ['name'=>sanitize($_POST['name']),'email'=>sanitize($_POST['email']),'role'=>sanitize($_POST['role']),'class'=>sanitize($_POST['class']??''),'is_premium'=>intval($_POST['is_premium']??0)]; if(!empty($_POST['password'])) $d['password']=password_hash($_POST['password'],PASSWORD_DEFAULT); $db->update('users',intval($_POST['id']),$d); header('Location: ?page=users&msg=updated'); exit; }
@@ -30,6 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($a === 'toggle_chapter') { $ch = $db->find('chapters','id',intval($_POST['id'])); $newStatus = ($ch['status'] ?? 'not_started') === 'completed' ? 'not_started' : 'completed'; $db->update('chapters',intval($_POST['id']),['status'=>$newStatus]); header('Location: ?page=chapters&msg=toggled'); exit; }
     if ($a === 'add_question') { $opts=[]; for($i=1;$i<=6;$i++){if(!empty($_POST['opt_'.$i]))$opts[]=sanitize($_POST['opt_'.$i]);} $db->insert('question_bank', ['subject_id'=>intval($_POST['subject_id']),'chapter'=>sanitize($_POST['chapter']),'type'=>sanitize($_POST['type']),'question'=>sanitize($_POST['question']),'options'=>$opts,'correct'=>intval($_POST['correct_answer']??0),'marks'=>intval($_POST['marks']??1),'difficulty'=>sanitize($_POST['difficulty']??'easy')]); header('Location: ?page=questions&msg=added'); exit; }
     if ($a === 'edit_question') { $opts=[]; for($i=1;$i<=6;$i++){if(!empty($_POST['opt_'.$i]))$opts[]=sanitize($_POST['opt_'.$i]);} $db->update('question_bank',intval($_POST['id']),['subject_id'=>intval($_POST['subject_id']),'chapter'=>sanitize($_POST['chapter']),'type'=>sanitize($_POST['type']),'question'=>sanitize($_POST['question']),'options'=>$opts,'correct'=>intval($_POST['correct_answer']??0),'marks'=>intval($_POST['marks']??1),'difficulty'=>sanitize($_POST['difficulty']??'easy')]); header('Location: ?page=questions&msg=updated'); exit; }
+    if ($a === 'add_bank_question') { $db->insert('question_bank', ['subject_id'=>intval($_POST['subject_id']),'type'=>sanitize($_POST['type']),'question'=>sanitize($_POST['question']),'correct'=>sanitize($_POST['correct_answer']??''),'marks'=>intval($_POST['marks']??1),'difficulty'=>sanitize($_POST['difficulty']??'easy')]); header('Location: ?page=bank-questions&msg=added'); exit; }
+    if ($a === 'edit_bank_question') { $db->update('question_bank',intval($_POST['id']),['subject_id'=>intval($_POST['subject_id']),'type'=>sanitize($_POST['type']),'question'=>sanitize($_POST['question']),'correct'=>sanitize($_POST['correct_answer']??''),'marks'=>intval($_POST['marks']??1),'difficulty'=>sanitize($_POST['difficulty']??'easy')]); header('Location: ?page=bank-questions&msg=updated'); exit; }
     if ($a === 'add_library') { $db->insert('library', ['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'class'=>sanitize($_POST['class']??'Class 8'),'type'=>sanitize($_POST['type']),'description'=>sanitize($_POST['description']??''),'file_url'=>sanitize($_POST['file_url']??''),'cover_url'=>sanitize($_POST['cover_url']??''),'uploader_id'=>0,'uploader_type'=>'admin','downloads'=>0,'is_active'=>1]); header('Location: ?page=library&msg=added'); exit; }
     if ($a === 'edit_library') { $db->update('library',intval($_POST['id']),['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'class'=>sanitize($_POST['class']??'Class 8'),'type'=>sanitize($_POST['type']),'description'=>sanitize($_POST['description']??''),'file_url'=>sanitize($_POST['file_url']??''),'cover_url'=>sanitize($_POST['cover_url']??''),'is_active'=>intval($_POST['is_active']??1)]); header('Location: ?page=library&msg=updated'); exit; }
     if ($a === 'add_live_class') { $db->insert('live_classes', ['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'teacher_id'=>intval($_POST['teacher_id']??1),'class_date'=>sanitize($_POST['class_date']),'start_time'=>sanitize($_POST['start_time']),'end_time'=>sanitize($_POST['end_time']),'status'=>'scheduled','meeting_link'=>sanitize($_POST['meeting_link']??'#')]); header('Location: ?page=live_classes&msg=added'); exit; }
@@ -88,9 +95,9 @@ $sidebar=[
 ['s'=>'User Management','i'=>[['users','users','All Users'],['teachers','user-check','Teachers'],['featured_teachers','star','Featured Teachers'],['student_progress','bar-chart-3','Student Progress'],['rankings','trophy','Teacher Rankings']]],
 ['s'=>'Academics','i'=>[['subjects','book-open','Subjects'],['chapters','layers','Chapters'],['class_schedule','clock','Class Schedule']]],
 ['s'=>'Content','i'=>[['homework','file-text','Homework'],['exams','calendar','Exams'],['library','library','Library']]],
-['s'=>'Assessment','i'=>[['questions','help-circle','Question Bank'],['submissions','inbox','Submissions'],['results','award','Exam Results'],['exam_analytics','bar-chart','Exam Analytics'],['hw_analytics','pie-chart','Homework Analytics'],['reports','file-bar-chart','Reports']]],
+['s'=>'Assessment','i'=>[['questions','help-circle','Question Bank'],['bank-questions','layers','Bank Questions'],['submissions','inbox','Submissions'],['results','award','Exam Results'],['exam_analytics','bar-chart','Exam Analytics'],['hw_analytics','pie-chart','Homework Analytics'],['reports','file-bar-chart','Reports']]],
 ['s'=>'Communication','i'=>[['live_classes','tv','Live Classes'],['announcements','megaphone','Announcements'],['messages','message-square','Messages'],['notifications','bell','Notifications'],['calendar','calendar-days','Calendar'],['calendar_events','calendar-range','Calendar Events']]],
-['s'=>'Business','i'=>[['packages','credit-card','Packages'],['subscriptions','user-check','Subscriptions'],['revenue','dollar-sign','Revenue']]],
+['s'=>'Business','i'=>[['packages','credit-card','Packages'],['subscriptions','user-check','Subscriptions'],['student-subscriptions','users','Student Subscriptions'],['revenue','dollar-sign','Revenue']]],
 ['s'=>'System','i'=>[['settings','settings','General Settings'],['ai_settings','brain','AI Settings']]]
 ];
 ?>
@@ -207,7 +214,7 @@ td{color:#374151}
 <div class="main">
 <div class="topbar">
 <h1><?php
-$t=['dashboard'=>'Dashboard','users'=>'All Users','teachers'=>'Teachers','featured_teachers'=>'Featured Teachers','subjects'=>'Subjects','chapters'=>'Chapters','homework'=>'Homework','exams'=>'Exams','questions'=>'Question Bank','submissions'=>'Submissions','results'=>'Exam Results','live_classes'=>'Live Classes','announcements'=>'Announcements','messages'=>'Messages','packages'=>'Packages','subscriptions'=>'Subscriptions','revenue'=>'Revenue','settings'=>'General Settings','ai_settings'=>'AI Settings','library'=>'Library','student_progress'=>'Student Progress','rankings'=>'Teacher Rankings','exam_analytics'=>'Exam Analytics','hw_analytics'=>'Homework Analytics','notifications'=>'Notifications','calendar'=>'Calendar'];
+$t=['dashboard'=>'Dashboard','users'=>'All Users','teachers'=>'Teachers','featured_teachers'=>'Featured Teachers','subjects'=>'Subjects','chapters'=>'Chapters','homework'=>'Homework','exams'=>'Exams','questions'=>'Question Bank','bank-questions'=>'Bank Questions','submissions'=>'Submissions','results'=>'Exam Results','live_classes'=>'Live Classes','announcements'=>'Announcements','messages'=>'Messages','packages'=>'Packages','subscriptions'=>'Subscriptions','student-subscriptions'=>'Student Subscriptions','revenue'=>'Revenue','settings'=>'General Settings','ai_settings'=>'AI Settings','library'=>'Library','student_progress'=>'Student Progress','rankings'=>'Teacher Rankings','exam_analytics'=>'Exam Analytics','hw_analytics'=>'Homework Analytics','notifications'=>'Notifications','calendar'=>'Calendar','calendar_events'=>'Calendar Events','class_schedule'=>'Class Schedule','reports'=>'Reports'];
 echo $t[$page]??ucfirst(str_replace('_',' ',$page));
 ?></h1>
 <div class="info"><div><div class="name"><?php echo htmlspecialchars($_SESSION['user_name']); ?></div><div class="role">Administrator</div></div></div>
@@ -217,15 +224,17 @@ echo $t[$page]??ucfirst(str_replace('_',' ',$page));
 
 <?php /* === DASHBOARD === */ ?>
 <?php if($page==='dashboard'):
+$studentsThisMonth=count($db->query("SELECT * FROM users WHERE role='student' AND created_at >= '".date('Y-m-01')."'"));
+$growthPct=$students>0?round($studentsThisMonth/$students*100):0;
 $avgScore=count($allExamResults)>0?round(array_sum(array_column($allExamResults,'percentage'))/count($allExamResults)):0;
 $passRate=count($allExamResults)>0?round(count(array_filter($allExamResults,fn($r)=>$r['percentage']>=50))/count($allExamResults)*100):0;
-$rev=0;foreach($allPackages as $p){$sub=rand(5,25);$rev+=$p['price']*$sub;}
+$rev=0;$approvedSubsForRev=array_filter($db->query('subscriptions'),function($s){return$s['status']==='approved';});foreach($approvedSubsForRev as $s){$pkg=$db->find('packages','id',$s['package_id']);$rev+=floatval($s['amount']);}
 ?>
 <div class="sg">
 <div class="sc" style="border-left:4px solid #6366F1"><div class="si p"><i data-lucide="users"></i></div><div class="st"><h3><?php echo $students; ?></h3><p>Students</p><div style="font-size:10px;color:#10B981;font-weight:600;margin-top:2px">+12% this month</div></div></div>
 <div class="sc" style="border-left:4px solid #10B981"><div class="si g"><i data-lucide="user-check"></i></div><div class="st"><h3><?php echo $teachersCount; ?></h3><p>Teachers</p><div style="font-size:10px;color:#10B981;font-weight:600;margin-top:2px">+3 new</div></div></div>
 <div class="sc" style="border-left:4px solid #F59E0B"><div class="si o"><i data-lucide="dollar-sign"></i></div><div class="st"><h3><?php echo $rev; ?> BDT</h3><p>Revenue</p><div style="font-size:10px;color:#10B981;font-weight:600;margin-top:2px">+24% growth</div></div></div>
-<div class="sc" style="border-left:4px solid #3B82F6"><div class="si b"><i data-lucide="brain"></i></div><div class="st"><h3><?php echo rand(800,1500); ?></h3><p>AI Queries</p><div style="font-size:10px;color:#9CA3AF;margin-top:2px">today</div></div></div>
+<div class="sc" style="border-left:4px solid #3B82F6"><div class="si b"><i data-lucide="brain"></i></div><div class="st"><h3><?php echo count($allSubmissions)+count($allExamResults); ?></h3><p>AI Queries</p><div style="font-size:10px;color:#9CA3AF;margin-top:2px">total</div></div></div>
 <div class="sc" style="border-left:4px solid #EF4444"><div class="si r"><i data-lucide="inbox"></i></div><div class="st"><h3><?php echo count($allSubmissions); ?></h3><p>Submissions</p><div style="font-size:10px;color:#F59E0B;font-weight:600;margin-top:2px"><?php echo count(array_filter($allSubmissions,fn($s)=>$s['status']==='pending')); ?> pending</div></div></div>
 <div class="sc" style="border-left:4px solid #EC4899"><div class="si pk"><i data-lucide="message-square"></i></div><div class="st"><h3><?php echo count($allMessages); ?></h3><p>Messages</p></div></div>
 <div class="sc" style="border-left:4px solid #06B6D4"><div class="si c"><i data-lucide="bar-chart"></i></div><div class="st"><h3><?php echo $avgScore; ?>%</h3><p>Avg Score</p><div style="font-size:10px;color:<?php echo $avgScore>=70?'#10B981':'#EF4444'; ?>;font-weight:600;margin-top:2px"><?php echo $avgScore>=70?'Above target':'Below target'; ?></div></div></div>
@@ -236,9 +245,9 @@ $rev=0;foreach($allPackages as $p){$sub=rand(5,25);$rev+=$p['price']*$sub;}
 <div class="card" style="background:linear-gradient(135deg,#4F46E5,#7C3AED);color:white">
 <h3 style="color:white;margin-bottom:12px"><i data-lucide="trending-up"></i>Weekly Trend</h3>
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-<div style="text-align:center"><div style="font-size:22px;font-weight:800">+<?php echo rand(15,30); ?>%</div><div style="font-size:11px;opacity:0.8">Student Growth</div></div>
-<div style="text-align:center"><div style="font-size:22px;font-weight:800"><?php echo rand(85,95); ?>%</div><div style="font-size:11px;opacity:0.8">Engagement Rate</div></div>
-<div style="text-align:center"><div style="font-size:22px;font-weight:800"><?php echo rand(4,8); ?>h</div><div style="font-size:11px;opacity:0.8">Avg Study Time</div></div>
+<div style="text-align:center"><div style="font-size:22px;font-weight:800">+<?php echo $growthPct; ?>%</div><div style="font-size:11px;opacity:0.8">Student Growth</div></div>
+<div style="text-align:center"><div style="font-size:22px;font-weight:800">0%</div><div style="font-size:11px;opacity:0.8">Engagement Rate</div></div>
+<div style="text-align:center"><div style="font-size:22px;font-weight:800">0h</div><div style="font-size:11px;opacity:0.8">Avg Study Time</div></div>
 </div>
 </div>
 
@@ -279,7 +288,7 @@ $rev=0;foreach($allPackages as $p){$sub=rand(5,25);$rev+=$p['price']*$sub;}
 $eu=$edit>0?$db->find('users','id',$edit):null; ?>
 <div class="card">
 <h3><i data-lucide="<?php echo $eu?'edit':'user-plus'; ?>"></i><?php echo $eu?'Edit User':'Add New User'; ?></h3>
-<form method="POST"><input type="hidden" name="action" value="<?php echo $eu?'edit_user':'add_user'; ?>">
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="<?php echo $eu?'edit_user':'add_user'; ?>">
 <?php if($eu): ?><input type="hidden" name="id" value="<?php echo $eu['id']; ?>"><?php endif; ?>
 <div class="form-row"><div class="form-group"><label>Full Name</label><input type="text" name="name" value="<?php echo $eu?htmlspecialchars($eu['name']):''; ?>" required></div><div class="form-group"><label>Email</label><input type="email" name="email" value="<?php echo $eu?htmlspecialchars($eu['email']):''; ?>" required></div></div>
 <div class="form-row"><div class="form-group"><label>Password <?php echo $eu?'(leave blank to keep)':''; ?></label><input type="password" name="password" <?php echo $eu?'':'required'; ?>></div><div class="form-group"><label>Role</label><select name="role"><option value="student" <?php echo $eu&&$eu['role']==='student'?'selected':''; ?>>Student</option><option value="teacher" <?php echo $eu&&$eu['role']==='teacher'?'selected':''; ?>>Teacher</option><option value="admin" <?php echo $eu&&$eu['role']==='admin'?'selected':''; ?>>Admin</option></select></div></div>
@@ -303,7 +312,7 @@ $eu=$edit>0?$db->find('users','id',$edit):null; ?>
 $et=$edit>0?$db->find('teachers','id',$edit):null; ?>
 <div class="card">
 <h3><i data-lucide="<?php echo $et?'edit':'user-plus'; ?>"></i><?php echo $et?'Edit Teacher':'Add Teacher Profile'; ?></h3>
-<form method="POST"><input type="hidden" name="action" value="<?php echo $et?'edit_teacher':'add_teacher_profile'; ?>">
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="<?php echo $et?'edit_teacher':'add_teacher_profile'; ?>">
 <?php if($et): ?><input type="hidden" name="id" value="<?php echo $et['id']; ?>"><?php endif; ?>
 <div class="form-row">
 <?php if(!$et): ?><div class="form-group"><label>User Account</label><select name="user_id"><?php foreach($allUsers as $u): if($u['role']==='teacher'): ?><option value="<?php echo $u['id']; ?>"><?php echo htmlspecialchars($u['name']); ?></option><?php endif; endforeach; ?></select></div><?php endif; ?>
@@ -362,7 +371,7 @@ $ftTeacher=null;foreach($allTeachers as $t){if($t['id']===$ftId){$ftTeacher=$t;b
 <div class="card">
 <h3><i data-lucide="star"></i>Featured Teacher Selection</h3>
 <p style="font-size:12px;color:#6B7280;margin-bottom:16px">Select teachers for each category on the student app homepage. The featured teacher will appear with a video trailer.</p>
-<form method="POST"><input type="hidden" name="action" value="update_settings">
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="update_settings">
 <div class="form-row">
 <div class="form-group"><label>Featured Teacher</label><select name="featured_teacher_id"><option value="">-- Select --</option><?php foreach($allTeachers as $t): ?><option value="<?php echo $t['id']; ?>" <?php echo $ftId===$t['id']?'selected':''; ?>><?php echo htmlspecialchars($t['name']); ?> (<?php echo htmlspecialchars($t['subject']); ?>)</option><?php endforeach; ?></select></div>
 <div class="form-group"><label>YouTube Video Link</label><input type="url" name="featured_teacher_video" value="<?php echo htmlspecialchars($ftVideo); ?>" placeholder="https://www.youtube.com/watch?v=..."></div>
@@ -430,7 +439,7 @@ elseif($t['id']===$fnId) $role='<span class="badge bp">New</span>';
 <?php elseif($page==='subjects'):
 $es=$edit>0?$db->find('subjects','id',$edit):null; ?>
 <div class="card"><h3><i data-lucide="<?php echo $es?'edit':'plus-circle'; ?>"></i><?php echo $es?'Edit Subject':'Add Subject'; ?></h3>
-<form method="POST"><input type="hidden" name="action" value="<?php echo $es?'edit_subject':'add_subject'; ?>">
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="<?php echo $es?'edit_subject':'add_subject'; ?>">
 <?php if($es): ?><input type="hidden" name="id" value="<?php echo $es['id']; ?>"><?php endif; ?>
 <div class="form-row"><div class="form-group"><label>Name</label><input type="text" name="name" value="<?php echo $es?htmlspecialchars($es['name']):''; ?>" required></div><div class="form-group"><label>Icon</label><input type="text" name="icon" value="<?php echo $es?htmlspecialchars($es['icon']):'calculator'; ?>" required></div></div>
 <div class="form-row"><div class="form-group"><label>Color</label><input type="color" name="color" value="<?php echo $es?$es['color']:'#6366F1'; ?>"></div><div class="form-group" style="display:flex;align-items:flex-end;gap:8px"><button type="submit" class="btn btn-primary"><?php echo $es?'Update':'Add'; ?></button><?php if($es): ?><a href="?page=subjects" class="btn btn-outline">Cancel</a><?php endif; ?></div></div></form></div>
@@ -446,7 +455,7 @@ $es=$edit>0?$db->find('subjects','id',$edit):null; ?>
 <?php elseif($page==='chapters'):
 $ec=$edit>0?$db->find('chapters','id',$edit):null; ?>
 <div class="card"><h3><i data-lucide="<?php echo $ec?'edit':'plus-circle'; ?>"></i><?php echo $ec?'Edit Chapter':'Add Chapter'; ?></h3>
-<form method="POST"><input type="hidden" name="action" value="<?php echo $ec?'edit_chapter':'add_chapter'; ?>">
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="<?php echo $ec?'edit_chapter':'add_chapter'; ?>">
 <?php if($ec): ?><input type="hidden" name="id" value="<?php echo $ec['id']; ?>"><?php endif; ?>
 <div class="form-row"><div class="form-group"><label>Subject</label><select name="subject_id"><?php foreach($allSubjects as $s): ?><option value="<?php echo $s['id']; ?>" <?php echo $ec&&$ec['subject_id']==$s['id']?'selected':''; ?>><?php echo htmlspecialchars($s['name']); ?></option><?php endforeach; ?></select></div><div class="form-group"><label>Order</label><input type="number" name="order" value="<?php echo $ec?($ec['order']??1):1; ?>" min="1" required></div></div>
 <div class="form-group"><label>Title</label><input type="text" name="title" value="<?php echo $ec?htmlspecialchars($ec['title']):''; ?>" required></div>
@@ -465,12 +474,12 @@ $ec=$edit>0?$db->find('chapters','id',$edit):null; ?>
 <?php elseif($page==='homework'):
 $eh=$edit>0?$db->find('homework','id',$edit):null; ?>
 <div class="card"><h3><i data-lucide="<?php echo $eh?'edit':'plus-circle'; ?>"></i><?php echo $eh?'Edit Homework':'Add Homework'; ?></h3>
-<form method="POST"><input type="hidden" name="action" value="<?php echo $eh?'edit_homework':'add_homework'; ?>">
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="<?php echo $eh?'edit_homework':'add_homework'; ?>">
 <?php if($eh): ?><input type="hidden" name="id" value="<?php echo $eh['id']; ?>"><?php endif; ?>
 <div class="form-row"><div class="form-group"><label>Title</label><input type="text" name="title" value="<?php echo $eh?htmlspecialchars($eh['title']):''; ?>" required></div><div class="form-group"><label>Subject</label><select name="subject_id"><?php foreach($allSubjects as $s): ?><option value="<?php echo $s['id']; ?>" <?php echo $eh&&$eh['subject_id']==$s['id']?'selected':''; ?>><?php echo htmlspecialchars($s['name']); ?></option><?php endforeach; ?></select></div></div>
 <div class="form-row"><div class="form-group"><label>Teacher</label><select name="teacher_id"><?php foreach($allTeachers as $t): ?><option value="<?php echo $t['user_id']; ?>" <?php echo $eh&&$eh['teacher_id']==$t['user_id']?'selected':''; ?>><?php echo htmlspecialchars($t['name']); ?></option><?php endforeach; ?></select></div><div class="form-group"><label>Due Date</label><input type="date" name="due_date" value="<?php echo $eh?$eh['due_date']:''; ?>" required></div></div>
 <div class="form-group"><label>Description</label><textarea name="description" rows="2"><?php echo $eh?htmlspecialchars($eh['description']):''; ?></textarea></div>
-<div class="form-row"><div class="form-group"><label>Due Date</label><input type="date" name="due_date" value="<?php echo $eh?$eh['due_date']:''; ?>" required></div><div class="form-group"><label>Total Marks</label><input type="number" name="total_marks" value="<?php echo $eh?$eh['total_marks']:10; ?>"></div></div>
+<div class="form-row"><div class="form-group"><label>Total Marks</label><input type="number" name="total_marks" value="<?php echo $eh?$eh['total_marks']:10; ?>"></div></div>
 <?php if($eh): ?><div class="form-group"><label>Status</label><select name="status"><option value="pending" <?php echo $eh['status']==='pending'?'selected':''; ?>>Pending</option><option value="completed" <?php echo $eh['status']==='completed'?'selected':''; ?>>Completed</option></select></div><?php endif; ?>
 <div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary"><?php echo $eh?'Update':'Add'; ?></button><?php if($eh): ?><a href="?page=homework" class="btn btn-outline">Cancel</a><?php endif; ?></div></form></div>
 <div class="card"><h3><i data-lucide="file-text"></i>All Homework (<?php echo count($allHomework); ?>)</h3>
@@ -486,7 +495,7 @@ $eh=$edit>0?$db->find('homework','id',$edit):null; ?>
 <?php elseif($page==='exams'):
 $ex=$edit>0?$db->find('exams','id',$edit):null; ?>
 <div class="card"><h3><i data-lucide="<?php echo $ex?'edit':'plus-circle'; ?>"></i><?php echo $ex?'Edit Exam':'Add Exam'; ?></h3>
-<form method="POST"><input type="hidden" name="action" value="<?php echo $ex?'edit_exam':'add_exam'; ?>">
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="<?php echo $ex?'edit_exam':'add_exam'; ?>">
 <?php if($ex): ?><input type="hidden" name="id" value="<?php echo $ex['id']; ?>"><?php endif; ?>
 <div class="form-row"><div class="form-group"><label>Title</label><input type="text" name="title" value="<?php echo $ex?htmlspecialchars($ex['title']):''; ?>" required></div><div class="form-group"><label>Subject</label><select name="subject_id"><?php foreach($allSubjects as $s): ?><option value="<?php echo $s['id']; ?>" <?php echo $ex&&$ex['subject_id']==$s['id']?'selected':''; ?>><?php echo htmlspecialchars($s['name']); ?></option><?php endforeach; ?></select></div></div>
 <div class="form-row"><div class="form-group"><label>Teacher</label><select name="teacher_id"><?php foreach($allTeachers as $t): ?><option value="<?php echo $t['user_id']; ?>" <?php echo $ex&&$ex['teacher_id']==$t['user_id']?'selected':''; ?>><?php echo htmlspecialchars($t['name']); ?></option><?php endforeach; ?></select></div><div class="form-group"><label>Type</label><select name="type"><option value="mcq" <?php echo $ex&&$ex['type']==='mcq'?'selected':''; ?>>MCQ</option><option value="written" <?php echo $ex&&$ex['type']==='written'?'selected':''; ?>>Written</option><option value="cq" <?php echo $ex&&$ex['type']==='cq'?'selected':''; ?>>CQ</option><option value="board" <?php echo $ex&&$ex['type']==='board'?'selected':''; ?>>Board</option></select></div></div>
@@ -508,7 +517,7 @@ $ex=$edit>0?$db->find('exams','id',$edit):null; ?>
 $eq=$edit>0?$db->find('question_bank','id',$edit):null;
 $eo=is_array($eq['options'] ?? null) ? ($eq['options'] ?? []) : json_decode($eq['options'] ?? '[]', true); ?>
 <div class="card"><h3><i data-lucide="<?php echo $eq?'edit':'plus-circle'; ?>"></i><?php echo $eq?'Edit Question':'Add Question'; ?></h3>
-<form method="POST"><input type="hidden" name="action" value="<?php echo $eq?'edit_question':'add_question'; ?>">
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="<?php echo $eq?'edit_question':'add_question'; ?>">
 <?php if($eq): ?><input type="hidden" name="id" value="<?php echo $eq['id']; ?>"><?php endif; ?>
 <div class="form-row"><div class="form-group"><label>Subject</label><select name="subject_id"><?php foreach($allSubjects as $s): ?><option value="<?php echo $s['id']; ?>" <?php echo $eq&&$eq['subject_id']==$s['id']?'selected':''; ?>><?php echo htmlspecialchars($s['name']); ?></option><?php endforeach; ?></select></div><div class="form-group"><label>Chapter</label><input type="text" name="chapter" value="<?php echo $eq?htmlspecialchars($eq['chapter']):''; ?>" placeholder="e.g. Algebra" required></div></div>
 <div class="form-row"><div class="form-group"><label>Type</label><select name="type"><option value="mcq" <?php echo $eq&&$eq['type']==='mcq'?'selected':''; ?>>MCQ</option><option value="written" <?php echo $eq&&$eq['type']==='written'?'selected':''; ?>>Written</option><option value="cq" <?php echo $eq&&$eq['type']==='cq'?'selected':''; ?>>CQ</option></select></div><div class="form-group"><label>Difficulty</label><select name="difficulty"><option value="easy" <?php echo $eq&&$eq['difficulty']==='easy'?'selected':''; ?>>Easy</option><option value="medium" <?php echo $eq&&$eq['difficulty']==='medium'?'selected':''; ?>>Medium</option><option value="hard" <?php echo $eq&&$eq['difficulty']==='hard'?'selected':''; ?>>Hard</option></select></div></div>
@@ -552,7 +561,7 @@ $gs=$edit>0?$db->find('homework_submissions','id',$edit):null; ?>
 <div style="width:36px;height:36px;background:#4F46E5;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:14px"><?php echo $gst?ucfirst(substr($gst['name'],0,1)):'S'; ?></div>
 <div><div style="font-size:14px;font-weight:600"><?php echo $gst?htmlspecialchars($gst['name']):''; ?></div><div style="font-size:11px;color:#9CA3AF"><?php echo $ghw?htmlspecialchars($ghw['title']):''; ?></div></div></div>
 <p style="font-size:12px;color:#6B7280;line-height:1.5"><?php echo htmlspecialchars($gs['answer']); ?></p></div>
-<form method="POST"><input type="hidden" name="action" value="grade_submission"><input type="hidden" name="id" value="<?php echo $gs['id']; ?>">
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="grade_submission"><input type="hidden" name="id" value="<?php echo $gs['id']; ?>">
 <div class="form-row"><div class="form-group"><label>Marks Obtained</label><input type="number" name="marks_obtained" value="<?php echo $gs['marks_obtained']; ?>" required></div><div class="form-group"><label>Status</label><select name="status"><option value="graded" <?php echo $gs['status']==='graded'?'selected':''; ?>>Graded</option><option value="revision" <?php echo $gs['status']==='revision'?'selected':''; ?>>Return for Revision</option></select></div></div>
 <div class="form-group"><label>Comments / Feedback</label><textarea name="comments" rows="3" placeholder="Write feedback for the student..."><?php echo htmlspecialchars($gs['comments']??''); ?></textarea></div>
 <div style="display:flex;gap:8px"><button type="submit" class="btn btn-success"><i data-lucide="check" style="width:14px;height:14px"></i>Save Grade</button><a href="?page=submissions" class="btn btn-outline">Cancel</a></div></form></div>
@@ -642,7 +651,7 @@ foreach($bySubj as $sid=>$data):$subj=$db->find('subjects','id',$sid);$avg=round
 <?php elseif($page==='library'):
 $el=$edit>0?$db->find('library','id',$edit):null; ?>
 <div class="card"><h3><i data-lucide="<?php echo $el?'edit':'plus-circle'; ?>"></i><?php echo $el?'Edit Library Item':'Add Library Item'; ?></h3>
-<form method="POST"><input type="hidden" name="action" value="<?php echo $el?'edit_library':'add_library'; ?>">
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="<?php echo $el?'edit_library':'add_library'; ?>">
 <?php if($el): ?><input type="hidden" name="id" value="<?php echo $el['id']; ?>"><?php endif; ?>
 <div class="form-row"><div class="form-group"><label>Title</label><input type="text" name="title" value="<?php echo $el?htmlspecialchars($el['title']):''; ?>" required></div><div class="form-group"><label>Subject</label><select name="subject_id"><?php foreach($allSubjects as $s): ?><option value="<?php echo $s['id']; ?>" <?php echo $el&&$el['subject_id']==$s['id']?'selected':''; ?>><?php echo htmlspecialchars($s['name']); ?></option><?php endforeach; ?></select></div></div>
 <div class="form-row"><div class="form-group"><label>Class</label><select name="class"><option value="Class 7" <?php echo $el&&$el['class']==='Class 7'?'selected':''; ?>>Class 7</option><option value="Class 8" <?php echo (!$el||$el['class']==='Class 8')?'selected':''; ?>>Class 8</option><option value="Class 9 Science" <?php echo $el&&$el['class']==='Class 9 Science'?'selected':''; ?>>Class 9 Science</option><option value="Class 10 Science" <?php echo $el&&$el['class']==='Class 10 Science'?'selected':''; ?>>Class 10 Science</option><option value="Class 9 Commerce" <?php echo $el&&$el['class']==='Class 9 Commerce'?'selected':''; ?>>Class 9 Commerce</option><option value="Class 10 Commerce" <?php echo $el&&$el['class']==='Class 10 Commerce'?'selected':''; ?>>Class 10 Commerce</option><option value="Class 9 Arts" <?php echo $el&&$el['class']==='Class 9 Arts'?'selected':''; ?>>Class 9 Arts</option><option value="Class 10 Arts" <?php echo $el&&$el['class']==='Class 10 Arts'?'selected':''; ?>>Class 10 Arts</option></select></div><div class="form-group"><label>Type</label><select name="type"><option value="textbook" <?php echo $el&&$el['type']==='textbook'?'selected':''; ?>>Textbook</option><option value="guide" <?php echo $el&&$el['type']==='guide'?'selected':''; ?>>Guide</option><option value="reference" <?php echo $el&&$el['type']==='reference'?'selected':''; ?>>Reference</option><option value="notes" <?php echo $el&&$el['type']==='notes'?'selected':''; ?>>Notes</option><option value="video" <?php echo $el&&$el['type']==='video'?'selected':''; ?>>Video</option></select></div></div>
@@ -663,7 +672,7 @@ $el=$edit>0?$db->find('library','id',$edit):null; ?>
 <?php elseif($page==='live_classes'):
 $elc=$edit>0?$db->find('live_classes','id',$edit):null; ?>
 <div class="card"><h3><i data-lucide="<?php echo $elc?'edit':'plus-circle'; ?>"></i><?php echo $elc?'Edit Live Class':'Schedule Live Class'; ?></h3>
-<form method="POST"><input type="hidden" name="action" value="<?php echo $elc?'edit_live_class':'add_live_class'; ?>">
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="<?php echo $elc?'edit_live_class':'add_live_class'; ?>">
 <?php if($elc): ?><input type="hidden" name="id" value="<?php echo $elc['id']; ?>"><?php endif; ?>
 <div class="form-row"><div class="form-group"><label>Title</label><input type="text" name="title" value="<?php echo $elc?htmlspecialchars($elc['title']):''; ?>" required></div><div class="form-group"><label>Subject</label><select name="subject_id"><?php foreach($allSubjects as $s): ?><option value="<?php echo $s['id']; ?>" <?php echo $elc&&$elc['subject_id']==$s['id']?'selected':''; ?>><?php echo htmlspecialchars($s['name']); ?></option><?php endforeach; ?></select></div></div>
 <div class="form-row"><div class="form-group"><label>Teacher ID</label><input type="number" name="teacher_id" value="<?php echo $elc?$elc['teacher_id']:1; ?>"></div><div class="form-group"><label>Meeting Link</label><input type="text" name="meeting_link" value="<?php echo $elc?htmlspecialchars($elc['meeting_link']):'#'; ?>"></div></div>
@@ -683,7 +692,7 @@ $elc=$edit>0?$db->find('live_classes','id',$edit):null; ?>
 <?php elseif($page==='announcements'):
 $ea=$edit>0?$db->find('announcements','id',$edit):null; ?>
 <div class="card"><h3><i data-lucide="<?php echo $ea?'edit':'megaphone'; ?>"></i><?php echo $ea?'Edit Announcement':'New Announcement'; ?></h3>
-<form method="POST"><input type="hidden" name="action" value="<?php echo $ea?'edit_announcement':'add_announcement'; ?>">
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="<?php echo $ea?'edit_announcement':'add_announcement'; ?>">
 <?php if($ea): ?><input type="hidden" name="id" value="<?php echo $ea['id']; ?>"><?php endif; ?>
 <div class="form-row"><div class="form-group"><label>Title</label><input type="text" name="title" value="<?php echo $ea?htmlspecialchars($ea['title']):''; ?>" required></div><div class="form-group"><label>Category</label><select name="category"><option value="general" <?php echo $ea&&$ea['category']==='general'?'selected':''; ?>>General</option><option value="exam" <?php echo $ea&&$ea['category']==='exam'?'selected':''; ?>>Exam</option><option value="event" <?php echo $ea&&$ea['category']==='event'?'selected':''; ?>>Event</option><option value="urgent" <?php echo $ea&&$ea['category']==='urgent'?'selected':''; ?>>Urgent</option></select></div></div>
 <div class="form-group"><label>Message</label><textarea name="message" rows="3" required><?php echo $ea?htmlspecialchars($ea['message']):''; ?></textarea></div>
@@ -716,7 +725,7 @@ $ea=$edit>0?$db->find('announcements','id',$edit):null; ?>
 <?php /* === NOTIFICATIONS === */ ?>
 <?php elseif($page==='notifications'): ?>
 <div class="card"><h3><i data-lucide="bell"></i>Send Notification</h3>
-<form method="POST"><input type="hidden" name="action" value="send_broadcast">
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="send_broadcast">
 <div class="form-row"><div class="form-group"><label>Title</label><input type="text" name="title" required></div><div class="form-group"><label>Target</label><select name="target_role"><option value="student">All Students</option><option value="teacher">All Teachers</option><option value="all">Everyone</option></select></div></div>
 <div class="form-group"><label>Message</label><textarea name="message" rows="2" required></textarea></div>
 <button type="submit" class="btn btn-primary"><i data-lucide="send" style="width:14px;height:14px"></i>Send Broadcast</button></form></div>
@@ -765,7 +774,7 @@ foreach($allLiveClasses as $lc){$d=$lc['class_date'];if(!isset($events[$d]))$eve
 <?php elseif($page==='packages'):
 $ep=$edit>0?$db->find('packages','id',$edit):null; ?>
 <div class="card"><h3><i data-lucide="<?php echo $ep?'edit':'plus-circle'; ?>"></i><?php echo $ep?'Edit Package':'Add Package'; ?></h3>
-<form method="POST"><input type="hidden" name="action" value="<?php echo $ep?'edit_package':'add_package'; ?>">
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="<?php echo $ep?'edit_package':'add_package'; ?>">
 <?php if($ep): ?><input type="hidden" name="id" value="<?php echo $ep['id']; ?>"><?php endif; ?>
 <div class="form-row"><div class="form-group"><label>Name</label><input type="text" name="name" value="<?php echo $ep?htmlspecialchars($ep['name']):''; ?>" required></div><div class="form-group"><label>Price (BDT)</label><input type="number" name="price" value="<?php echo $ep?$ep['price']:''; ?>" step="1" required></div></div>
 <div class="form-row"><div class="form-group"><label>Duration (days)</label><input type="number" name="duration" value="<?php echo $ep?$ep['duration']:30; ?>"></div>
@@ -844,8 +853,8 @@ $pkg=$db->find('packages','id',$s['package_id']);
 <td style="font-size:11px"><?php echo date('M d, Y',strtotime($s['created_at'])); ?></td>
 <td class="actions">
 <?php if($s['status']==='pending'||$s['status']==='teacher_approved'):?>
-<form method="POST" style="display:inline"><input type="hidden" name="action" value="approve_sub"><input type="hidden" name="id" value="<?php echo $s['id']; ?>"><button type="submit" class="btn btn-sm" style="background:#10B981;color:white" onclick="return confirm('Approve this subscription?')"><i data-lucide="check" style="width:12px;height:12px"></i></button></form>
-<form method="POST" style="display:inline"><input type="hidden" name="action" value="reject_sub"><input type="hidden" name="id" value="<?php echo $s['id']; ?>"><button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Reject this subscription?')"><i data-lucide="x" style="width:12px;height:12px"></i></button></form>
+<form method="POST" style="display:inline"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="approve_sub"><input type="hidden" name="id" value="<?php echo $s['id']; ?>"><button type="submit" class="btn btn-sm" style="background:#10B981;color:white" onclick="return confirm('Approve this subscription?')"><i data-lucide="check" style="width:12px;height:12px"></i></button></form>
+<form method="POST" style="display:inline"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="reject_sub"><input type="hidden" name="id" value="<?php echo $s['id']; ?>"><button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Reject this subscription?')"><i data-lucide="x" style="width:12px;height:12px"></i></button></form>
 <?php else: ?>
 <span style="font-size:10px;color:#9CA3AF"><?php echo $s['approved_at']?date('M d',strtotime($s['approved_at'])):'-'; ?></span>
 <?php endif; ?>
@@ -881,7 +890,7 @@ $pRev=0;foreach($pSubs as $s){$pRev+=floatval($s['amount']);}
 <?php /* === SETTINGS === */ ?>
 <?php elseif($page==='settings'): ?>
 <div class="card"><h3><i data-lucide="settings"></i>General Settings</h3>
-<form method="POST"><input type="hidden" name="action" value="update_settings">
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="update_settings">
 <div class="grid-2"><div>
 <?php foreach(array_slice($allSettings,0,4) as $s): ?>
 <div class="form-group"><label><?php echo ucfirst(str_replace('_',' ',$s['key'])); ?></label>
@@ -903,7 +912,7 @@ $sMap = [];
 foreach($allSettings as $s) $sMap[$s['key']] = $s['value'];
 ?>
 <div class="card"><h3><i data-lucide="user"></i>Chat Bot Identity</h3>
-<form method="POST"><input type="hidden" name="action" value="update_settings">
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="update_settings">
 <div class="form-group"><label>Bot Name</label><input type="text" name="ai_name" value="<?php echo htmlspecialchars($sMap['ai_name'] ?? 'Snorii AI'); ?>"></div>
 <div class="form-group"><label>Greeting Message</label><textarea name="ai_greeting" rows="2"><?php echo htmlspecialchars($sMap['ai_greeting'] ?? ''); ?></textarea></div>
 <div class="form-group"><label>Subtitle</label><input type="text" name="ai_subtitle" value="<?php echo htmlspecialchars($sMap['ai_subtitle'] ?? 'Always here to help'); ?>"></div>
@@ -911,7 +920,7 @@ foreach($allSettings as $s) $sMap[$s['key']] = $s['value'];
 <div class="form-group"><label>Suggested Prompts (pipe-separated)</label><input type="text" name="ai_suggested_prompts" value="<?php echo htmlspecialchars($sMap['ai_suggested_prompts'] ?? ''); ?>" placeholder="Prompt 1|Prompt 2|Prompt 3"></div>
 <button type="submit" class="btn btn-primary">Save Bot Identity</button></form></div>
 <div class="card"><h3><i data-lucide="brain"></i>AI Configuration</h3>
-<form method="POST"><input type="hidden" name="action" value="update_settings">
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="update_settings">
 <div class="form-group"><label>AI Status</label><select name="ai_enabled"><option value="1" <?php echo ($sMap['ai_enabled']??'1')==='1'?'selected':''; ?>>Enabled</option><option value="0" <?php echo ($sMap['ai_enabled']??'1')==='0'?'selected':''; ?>>Disabled</option></select></div>
 <div class="form-row"><div class="form-group"><label>AI Provider</label><select name="ai_provider"><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option><option value="claude">Anthropic Claude</option><option value="openrouter">OpenRouter</option><option value="moondream">Moondream</option></select></div><div class="form-group"><label>Max MCQ Options</label><input type="number" name="max_mcq_options" value="<?php echo htmlspecialchars($sMap['max_mcq_options'] ?? '6'); ?>" min="2" max="10"></div></div>
 <div class="form-group"><label>OpenAI API Key</label><input type="password" name="openai_api_key" placeholder="sk-..."></div>
@@ -924,16 +933,16 @@ foreach($allSettings as $s) $sMap[$s['key']] = $s['value'];
 <button type="submit" class="btn btn-primary">Save AI Settings</button></form></div>
 <div class="card"><h3><i data-lucide="activity"></i>AI Usage Stats</h3>
 <div class="sg">
-<div class="sc"><div class="si p"><i data-lucide="message-square"></i></div><div class="st"><h3><?php echo rand(800,1500); ?></h3><p>Queries This Month</p></div></div>
-<div class="sc"><div class="si g"><i data-lucide="check-circle"></i></div><div class="st"><h3><?php echo rand(85,95); ?>%</h3><p>Success Rate</p></div></div>
-<div class="sc"><div class="si o"><i data-lucide="clock"></i></div><div class="st"><h3><?php echo rand(1,3); ?>s</h3><p>Avg Response</p></div></div>
-<div class="sc"><div class="si b"><i data-lucide="zap"></i></div><div class="st"><h3><?php echo rand(50,120); ?>K</h3><p>Tokens Used</p></div></div></div></div>
+<div class="sc"><div class="si p"><i data-lucide="message-square"></i></div><div class="st"><h3>0</h3><p>Queries This Month</p></div></div>
+<div class="sc"><div class="si g"><i data-lucide="check-circle"></i></div><div class="st"><h3>0%</h3><p>Success Rate</p></div></div>
+<div class="sc"><div class="si o"><i data-lucide="clock"></i></div><div class="st"><h3>0s</h3><p>Avg Response</p></div></div>
+<div class="sc"><div class="si b"><i data-lucide="zap"></i></div><div class="st"><h3>0K</h3><p>Tokens Used</p></div></div></div></div>
 
 <?php /* === CALENDAR EVENTS === */ ?>
 <?php elseif($page==='calendar_events'):
 $ece=$edit>0?$db->find('calendar_events','id',$edit):null; ?>
 <div class="card"><h3><i data-lucide="<?php echo $ece?'edit':'plus-circle'; ?>"></i><?php echo $ece?'Edit Event':'Add Calendar Event'; ?></h3>
-<form method="POST"><input type="hidden" name="action" value="<?php echo $ece?'edit_calendar_event':'add_calendar_event'; ?>">
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="<?php echo $ece?'edit_calendar_event':'add_calendar_event'; ?>">
 <?php if($ece): ?><input type="hidden" name="id" value="<?php echo $ece['id']; ?>"><?php endif; ?>
 <div class="form-row"><div class="form-group"><label>Title</label><input type="text" name="title" value="<?php echo $ece?htmlspecialchars($ece['title']):''; ?>" required></div><div class="form-group"><label>Date</label><input type="date" name="date" value="<?php echo $ece?$ece['date']:''; ?>" required></div></div>
 <div class="form-row"><div class="form-group"><label>Type</label><select name="type"><?php foreach(['exam','homework','class','holiday','event'] as $tv): ?><option value="<?php echo $tv; ?>" <?php echo $ece&&$ece['type']===$tv?'selected':''; ?>><?php echo ucfirst($tv); ?></option><?php endforeach; ?></select></div><div class="form-group"><label>Color</label><input type="color" name="color" value="<?php echo $ece?($ece['color']??'#4F46E5'):'#4F46E5'; ?>"></div></div>
@@ -951,7 +960,7 @@ $ece=$edit>0?$db->find('calendar_events','id',$edit):null; ?>
 <?php elseif($page==='class_schedule'):
 $cs=$edit>0?$db->find('class_schedule','id',$edit):null; ?>
 <div class="card"><h3><i data-lucide="<?php echo $cs?'edit':'plus-circle'; ?>"></i><?php echo $cs?'Edit Schedule':'Add Class Schedule'; ?></h3>
-<form method="POST"><input type="hidden" name="action" value="<?php echo $cs?'edit_class_schedule':'add_class_schedule'; ?>">
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="<?php echo $cs?'edit_class_schedule':'add_class_schedule'; ?>">
 <?php if($cs): ?><input type="hidden" name="id" value="<?php echo $cs['id']; ?>"><?php endif; ?>
 <div class="form-row"><div class="form-group"><label>Subject</label><input type="text" name="subject" value="<?php echo $cs?htmlspecialchars($cs['subject']):''; ?>" required></div><div class="form-group"><label>Topic</label><input type="text" name="topic" value="<?php echo $cs?htmlspecialchars($cs['topic']):''; ?>" required></div></div>
 <div class="form-row"><div class="form-group"><label>Class Name</label><input type="text" name="class_name" value="<?php echo $cs?htmlspecialchars($cs['class_name']):'Class 8'; ?>" required></div><div class="form-group"><label>Day</label><select name="day"><?php foreach(['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] as $dv): ?><option value="<?php echo $dv; ?>" <?php echo $cs&&$cs['day']===$dv?'selected':''; ?>><?php echo $dv; ?></option><?php endforeach; ?></select></div></div>
@@ -972,7 +981,7 @@ $cs=$edit>0?$db->find('class_schedule','id',$edit):null; ?>
 <?php elseif($page==='reports'):
 $er2=$edit>0?$db->find('reports','id',$edit):null; ?>
 <div class="card"><h3><i data-lucide="<?php echo $er2?'edit':'plus-circle'; ?>"></i><?php echo $er2?'Edit Report':'Add Report'; ?></h3>
-<form method="POST"><input type="hidden" name="action" value="<?php echo $er2?'edit_report':'add_report'; ?>">
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="<?php echo $er2?'edit_report':'add_report'; ?>">
 <?php if($er2): ?><input type="hidden" name="id" value="<?php echo $er2['id']; ?>"><?php endif; ?>
 <div class="form-row"><div class="form-group"><label>Student</label><select name="student_id"><?php foreach($allUsers as $u): if($u['role']==='student'): ?><option value="<?php echo $u['id']; ?>" <?php echo $er2&&$er2['student_id']==$u['id']?'selected':''; ?>><?php echo htmlspecialchars($u['name']); ?></option><?php endif; endforeach; ?></select></div><div class="form-group"><label>Teacher</label><select name="teacher_id"><?php foreach($allTeachers as $t): ?><option value="<?php echo $t['user_id']; ?>" <?php echo $er2&&$er2['teacher_id']==$t['user_id']?'selected':''; ?>><?php echo htmlspecialchars($t['name']); ?></option><?php endforeach; ?></select></div></div>
 <div class="form-row"><div class="form-group"><label>Subject</label><input type="text" name="subject" value="<?php echo $er2?htmlspecialchars($er2['subject']):''; ?>" required></div><div class="form-group"><label>Class</label><input type="text" name="class" value="<?php echo $er2?htmlspecialchars($er2['class']):'Class 8'; ?>"></div></div>
@@ -1020,7 +1029,7 @@ foreach($allBadgesRaw as $b){
 <td style="font-size:11px;color:#9CA3AF"><?php echo $p['last_active']; ?></td></tr>
 <?php endforeach; ?></table></div>
 <div class="card"><h3><i data-lucide="award"></i>Add Badge</h3>
-<form method="POST"><input type="hidden" name="action" value="add_badge">
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="add_badge">
 <div class="form-row"><div class="form-group"><label>Student</label><select name="student_id"><?php foreach($allUsers as $u): if($u['role']==='student'): ?><option value="<?php echo $u['id']; ?>"><?php echo htmlspecialchars($u['name']); ?></option><?php endif; endforeach; ?></select></div><div class="form-group"><label>Badge Name</label><input type="text" name="name" placeholder="e.g. Top Performer" required></div></div>
 <div class="form-row"><div class="form-group"><label>Icon</label><input type="text" name="icon" placeholder="e.g. trophy" value="award"></div><div class="form-group"><label>Description</label><input type="text" name="description" placeholder="Badge description"></div></div>
 <button type="submit" class="btn btn-primary">Add Badge</button></form></div>
@@ -1032,6 +1041,79 @@ foreach($allBadgesRaw as $b){
 <td style="font-size:12px"><?php echo htmlspecialchars($b['description']); ?></td>
 <td style="font-size:11px;color:#9CA3AF"><?php echo $b['earned_date']; ?></td>
 <td class="actions"><a href="?page=student_progress&edit=<?php echo $b['id']; ?>&del_table=badges" class="btn btn-danger btn-sm" onclick="return confirm('Delete badge?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
+<?php endforeach; ?></table></div>
+
+<?php /* === BANK QUESTIONS === */ ?>
+<?php elseif($page==='bank-questions'):
+$ebq=$edit>0?$db->find('question_bank','id',$edit):null;
+$ebqO=is_array($ebq['options'] ?? null) ? ($ebq['options'] ?? []) : json_decode($ebq['options'] ?? '[]', true); ?>
+<div class="card"><h3><i data-lucide="<?php echo $ebq?'edit':'plus-circle'; ?>"></i><?php echo $ebq?'Edit Question':'Add Question to Bank'; ?></h3>
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="<?php echo $ebq?'edit_bank_question':'add_bank_question'; ?>">
+<?php if($ebq): ?><input type="hidden" name="id" value="<?php echo $ebq['id']; ?>"><?php endif; ?>
+<div class="form-row"><div class="form-group"><label>Subject</label><select name="subject_id"><?php foreach($allSubjects as $s): ?><option value="<?php echo $s['id']; ?>" <?php echo $ebq&&$ebq['subject_id']==$s['id']?'selected':''; ?>><?php echo htmlspecialchars($s['name']); ?></option><?php endforeach; ?></select></div><div class="form-group"><label>Question</label><textarea name="question" rows="2" required><?php echo $ebq?htmlspecialchars($ebq['question']):''; ?></textarea></div></div>
+<div class="form-row"><div class="form-group"><label>Type</label><select name="type"><option value="mcq" <?php echo $ebq&&$ebq['type']==='mcq'?'selected':''; ?>>MCQ</option><option value="written" <?php echo $ebq&&$ebq['type']==='written'?'selected':''; ?>>Written</option><option value="cq" <?php echo $ebq&&$ebq['type']==='cq'?'selected':''; ?>>CQ</option></select></div><div class="form-group"><label>Correct Answer</label><input type="text" name="correct_answer" value="<?php echo $ebq?htmlspecialchars($ebq['correct']):''; ?>" required></div></div>
+<div class="form-row"><div class="form-group"><label>Difficulty</label><select name="difficulty"><option value="easy" <?php echo $ebq&&$ebq['difficulty']==='easy'?'selected':''; ?>>Easy</option><option value="medium" <?php echo $ebq&&$ebq['difficulty']==='medium'?'selected':''; ?>>Medium</option><option value="hard" <?php echo $ebq&&$ebq['difficulty']==='hard'?'selected':''; ?>>Hard</option></select></div><div class="form-group"><label>Marks</label><input type="number" name="marks" value="<?php echo $ebq?($ebq['marks']??1):1; ?>"></div></div>
+<div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary"><?php echo $ebq?'Update':'Add'; ?></button><?php if($ebq): ?><a href="?page=bank-questions" class="btn btn-outline">Cancel</a><?php endif; ?></div></form></div>
+<div class="card"><h3><i data-lucide="layers"></i>Question Bank (<?php echo count($allQuestions); ?>)</h3>
+<div class="search-bar"><i data-lucide="search"></i><input type="text" placeholder="Search questions..." oninput="filterTable(this,'bq-table')"></div>
+<table id="bq-table"><tr><th>ID</th><th>Subject</th><th>Question</th><th>Type</th><th>Difficulty</th><th>Actions</th></tr>
+<?php foreach($allQuestions as $q): $subj=$db->find('subjects','id',$q['subject_id']); ?>
+<tr><td><?php echo $q['id']; ?></td><td><?php echo $subj?htmlspecialchars($subj['name']):''; ?></td>
+<td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?php echo htmlspecialchars($q['question']); ?></td>
+<td><span class="badge bp"><?php echo strtoupper($q['type']); ?></span></td>
+<td><span class="badge <?php echo $q['difficulty']==='easy'?'bg':($q['difficulty']==='medium'?'bo':'br'); ?>"><?php echo ucfirst($q['difficulty']); ?></span></td>
+<td class="actions"><a href="?page=bank-questions&edit=<?php echo $q['id']; ?>" class="btn btn-primary btn-sm"><i data-lucide="edit-2" style="width:12px;height:12px"></i></a><a href="?page=bank-questions&edit=<?php echo $q['id']; ?>&del_table=question_bank" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
+<?php endforeach; ?></table></div>
+
+<?php /* === STUDENT SUBSCRIPTIONS === */ ?>
+<?php elseif($page==='student-subscriptions'):
+$allStudentSubs=$db->query('subscriptions');
+if($_SERVER['REQUEST_METHOD']==='POST'&&isset($_POST['action'])){
+    $ssa=$_POST['action'];
+    if($ssa==='approve_student_sub'){
+        $sid=intval($_POST['id']);
+        $ssub=$db->find('subscriptions','id',$sid);
+        $db->update('subscriptions',$sid,['status'=>'approved','approved_at'=>date('Y-m-d H:i:s')]);
+        if($ssub&&($ssub['type']??'teacher')==='platform'){
+            $spkg=$db->find('packages','id',$ssub['package_id']);
+            $sduration=$spkg?intval($spkg['duration']):30;
+            $sexpiresAt=date('Y-m-d H:i:s',strtotime('+'.$sduration.' days'));
+            $db->update('users',$ssub['student_id'],['is_premium'=>1,'premium_expires_at'=>$sexpiresAt]);
+        }
+        header('Location: ?page=student-subscriptions&msg=approved');exit;
+    }
+    if($ssa==='reject_student_sub'){
+        $sid=intval($_POST['id']);
+        $db->update('subscriptions',$sid,['status'=>'rejected']);
+        header('Location: ?page=student-subscriptions&msg=rejected');exit;
+    }
+}
+?>
+<div class="card"><h3><i data-lucide="users"></i>All Student Subscriptions (<?php echo count($allStudentSubs); ?>)</h3>
+<div class="search-bar"><i data-lucide="search"></i><input type="text" placeholder="Search subscriptions..." oninput="filterTable(this,'ss-table')"></div>
+<table id="ss-table"><tr><th>Student</th><th>Teacher</th><th>Package</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr>
+<?php foreach($allStudentSubs as $ss):
+$ssStudent=$db->find('users','id',$ss['student_id']);
+$ssTeacher=null;
+$teachersAll=$db->query('teachers');
+foreach($teachersAll as $t){if(intval($t['user_id'])===intval($ss['teacher_id'])){$ssTeacher=$db->find('users','id',$t['user_id']);break;}}
+$ssPkg=$db->find('packages','id',$ss['package_id']);
+?>
+<tr>
+<td><strong><?php echo htmlspecialchars($ssStudent['name']??'Unknown'); ?></strong><br><span style="font-size:10px;color:#9CA3AF"><?php echo htmlspecialchars($ssStudent['email']??''); ?></span></td>
+<td><strong><?php echo htmlspecialchars($ssTeacher['name']??'N/A'); ?></strong></td>
+<td><?php echo htmlspecialchars($ssPkg['name']??'Unknown'); ?></td>
+<td><strong style="color:#4F46E5"><?php echo number_format($ss['amount'],0); ?> BDT</strong></td>
+<td><span class="badge <?php echo $ss['status']==='approved'?'bg':($ss['status']==='rejected'?'br':'bo'); ?>"><?php echo ucfirst(str_replace('_',' ',$ss['status'])); ?></span></td>
+<td style="font-size:11px"><?php echo date('M d, Y',strtotime($ss['created_at'])); ?></td>
+<td class="actions">
+<?php if($ss['status']==='pending'):?>
+<form method="POST" style="display:inline"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="approve_student_sub"><input type="hidden" name="id" value="<?php echo $ss['id']; ?>"><button type="submit" class="btn btn-sm" style="background:#10B981;color:white" onclick="return confirm('Approve?')"><i data-lucide="check" style="width:12px;height:12px"></i></button></form>
+<form method="POST" style="display:inline"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="reject_student_sub"><input type="hidden" name="id" value="<?php echo $ss['id']; ?>"><button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Reject?')"><i data-lucide="x" style="width:12px;height:12px"></i></button></form>
+<?php else: ?>
+<span style="font-size:10px;color:#9CA3AF"><?php echo $ss['approved_at']?date('M d',strtotime($ss['approved_at'])):'-'; ?></span>
+<?php endif; ?>
+</td></tr>
 <?php endforeach; ?></table></div>
 
 <?php endif; ?>
