@@ -1685,7 +1685,7 @@ body {
 .sp-header { position: relative; }
 
 .sp-cover {
-    height: 160px;
+    height: 180px;
     background: linear-gradient(160deg, #0B0D1A 0%, #111433 40%, #1B1F4B 70%, #252A5C 100%);
     position: relative;
     overflow: hidden;
@@ -1713,7 +1713,7 @@ body {
 }
 
 .sp-body {
-    background: var(--bg);
+    background: transparent;
     padding: 0 16px;
     margin-top: -44px;
     position: relative;
@@ -1721,12 +1721,13 @@ body {
 }
 
 /* Hero */
-.sp-hero { text-align: center; padding: 0 0 4px; }
+.sp-hero { text-align: center; padding: 48px 0 4px; }
 
 .sp-avatar-wrap {
     position: relative;
     display: inline-block;
     margin-bottom: 10px;
+    z-index: 5;
 }
 .sp-avatar-ring {
     position: absolute;
@@ -1743,6 +1744,8 @@ body {
     color: white; font-size: 34px; font-weight: 800;
     border: 3px solid rgba(255,255,255,0.85);
     box-shadow: 0 6px 24px rgba(99,102,241,0.25);
+    position: relative;
+    z-index: 5;
 }
 .sp-pro-badge {
     position: absolute;
