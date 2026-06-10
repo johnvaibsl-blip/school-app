@@ -2199,10 +2199,8 @@ function loadMyStudents() {
 }
 
 function approveTeacherSub(subId, action, btn) {
-    api('approve_teacher_subscription', {
-        method: 'POST',
-        body: JSON.stringify({ id: subId, action: action })
-    }).then(function(res) {
+    apiRaw('approve_teacher_subscription', { id: subId, action: action }).then(function(res) {
+        if (res.error) { showToast(res.error, 'error'); return; }
         showToast(action === 'approve' ? 'Subscription approved!' : 'Subscription rejected', action === 'approve' ? 'success' : 'info');
         loadMyStudents();
     }).catch(function(err) {
@@ -3365,16 +3363,14 @@ function submitPlatformSubscription() {
     var total = pkg.price + fee;
     var payBtn = document.getElementById('paymentSubmitBtn');
     if (payBtn) { payBtn.textContent = 'Submitting...'; payBtn.disabled = true; }
-    api('subscribe_platform', {
-        method: 'POST',
-        body: JSON.stringify({
-            package_id: pkg.id,
-            amount: total,
-            transaction_id: txVal,
-            payment_method: window._selectedPaymentMethod || 'bkash'
-        })
+    apiRaw('subscribe_platform', {
+        package_id: pkg.id,
+        amount: total,
+        transaction_id: txVal,
+        payment_method: window._selectedPaymentMethod || 'bkash'
     }).then(function(res) {
         if (payBtn) { payBtn.textContent = 'Pay ৳' + total.toLocaleString(); payBtn.disabled = false; }
+        if (res.error) { showToast(res.error, 'error'); return; }
         window._paymentResult = {
             package_name: pkg.name,
             amount: total,
