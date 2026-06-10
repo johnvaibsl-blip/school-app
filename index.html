@@ -3156,9 +3156,6 @@
                 <div class="quick-action-icon" style="background:#FEE2E2;color:#DC2626"><i data-lucide="trophy" style="width:20px;height:20px"></i></div>
                 <h5>Rankings</h5>
             </div>
-            <div class="quick-action" onclick="showScreen('screen-question-bank')">
-                <div class="quick-action-icon" style="background:#A5F3FC;color:#0891B2"><i data-lucide="help-circle" style="width:20px;height:20px"></i></div>
-                <h5>Questions</h5>
             </div>
         </div>
 
@@ -3339,47 +3336,6 @@
 </div>
 
 <!-- ========== 31. QUESTION BANK ========== -->
-<div id="screen-question-bank" class="screen">
-    <header class="header">
-        <button class="header-back" onclick="showScreen('screen-admin')"><i data-lucide="arrow-left"></i></button>
-        <h3 class="header-title">Question Bank</h3>
-        <button class="icon-btn" onclick="showAddQuestionModal()"><i data-lucide="plus"></i></button>
-    </header>
-    <div class="main-content">
-        <div style="display:flex;gap:6px;margin-bottom:16px">
-            <button class="filter-chip active">All</button>
-            <button class="filter-chip">MCQ</button>
-            <button class="filter-chip">Written</button>
-            <button class="filter-chip">CQ</button>
-            <button class="filter-chip">Board</button>
-        </div>
-
-        <div id="questionBankList">
-            <div class="hw-card">
-                <div class="hw-header"><span class="hw-subject math">Math</span><span class="badge purple">MCQ</span></div>
-                <h4>What is the value of 144?</h4>
-                <p style="font-size:10px;color:var(--text3)">Class 8  Chapter 5  2 marks</p>
-            </div>
-            <div class="hw-card">
-                <div class="hw-header"><span class="hw-subject science">Science</span><span class="badge blue">Written</span></div>
-                <h4>Explain the process of photosynthesis</h4>
-                <p style="font-size:10px;color:var(--text3)">Class 8  Chapter 3  5 marks</p>
-            </div>
-            <div class="hw-card">
-                <div class="hw-header"><span class="hw-subject english">English</span><span class="badge orange">CQ</span></div>
-                <h4>Write an essay on "My School"</h4>
-                <p style="font-size:10px;color:var(--text3)">Class 8  Unit 2  10 marks</p>
-            </div>
-        </div>
-
-        <div style="text-align:center;margin-top:20px">
-            <div style="font-size:32px;margin-bottom:8px"></div>
-            <h4 style="font-size:14px;margin-bottom:4px">AI Question Generator</h4>
-            <p style="font-size:11px;color:var(--text3);margin-bottom:12px">Generate questions using AI</p>
-            <button class="btn-primary" onclick="showToast('AI generating questions...','info')">Generate with AI</button>
-        </div>
-    </div>
-</div>
 
 
 <!-- ========== BOTTOM NAVIGATION ========== -->

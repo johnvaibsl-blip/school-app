@@ -31,7 +31,7 @@ var ROLE_SCREENS = {
     admin: [
         'screen-admin','screen-library-mgmt','screen-chapter-mgmt',
         'screen-ai-settings','screen-packages','screen-teacher-ranking',
-        'screen-question-bank','screen-notif'
+        'screen-notif'
     ]
 };
 
@@ -993,7 +993,7 @@ function analyzeChatImage(file) {
     var fd = new FormData();
     fd.append('action', 'ai_analyze_image');
     fd.append('image', file);
-    fetch('/api/index.php', { method: 'POST', body: fd }).then(function(r) { return r.json(); }).then(function(data) {
+    fetch('/api/index.php', { method: 'POST', body: fd, credentials: 'same-origin' }).then(function(r) { return r.json(); }).then(function(data) {
         botDiv.querySelector('.chat-bubble').textContent = data.result || data.error || 'Could not analyze image.';
         msgArea.scrollTop = msgArea.scrollHeight;
     }).catch(function() {
@@ -1896,7 +1896,7 @@ function loadTeacherProfile() {
         _viewingTeacherSubject = subject;
         var setEl = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
         setEl('tpName', name);
-        setEl('tpSubject', subject);
+        setEl('tpSubject', subject + (teacher.class_name && teacher.class_name !== 'All' ? ' · ' + teacher.class_name : ''));
         setEl('tpExp', (teacher.experience || 0) + ' years experience');
         setEl('tpRating', teacher.rating || 0);
         setEl('tpStudents', teacher.total_students || 0);
@@ -2088,7 +2088,7 @@ function loadTeacherOwnProfile() {
         var t = data.teacher || {};
         var setEl = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
         setEl('tpvName', u.name || USER_NAME);
-        setEl('tpvSubject', (t.subject || 'Teacher') + (t.experience ? ' · ' + t.experience + ' yrs exp' : ''));
+        setEl('tpvSubject', (t.subject || 'Teacher') + (t.class_name && t.class_name !== 'All' ? ' · ' + t.class_name : '') + (t.experience ? ' · ' + t.experience + ' yrs exp' : ''));
         var avatarEl = document.getElementById('tpvAvatar');
         if (avatarEl) avatarEl.textContent = (u.name || 'T')[0].toUpperCase();
         var descEl = document.getElementById('tpvBio');
@@ -2252,7 +2252,7 @@ function loadLiveSchedule() {
         if (container) {
             var html = '';
             (classes || []).forEach(function(c) {
-                var timeStr = c.time || '10:00 AM';
+                var timeStr = (c.start_time && c.end_time) ? c.start_time + ' - ' + c.end_time : (c.time || '10:00 AM');
                 html += '<div class="list-item">' +
                     '<div class="list-item-content"><h5>' + (c.subject || '') + '</h5><p>' + (c.topic || '') + ' · ' + (c.class_name || '') + '</p></div>' +
                     '<div style="text-align:right;font-size:11px;color:var(--text3)">' + timeStr + '<br><span style="color:#10B981;font-weight:600">' + (c.status || 'upcoming') + '</span></div></div>';
@@ -3022,7 +3022,7 @@ function loadTutorsScreen() {
                 var nextTitle = document.querySelector('.tt-next-class h3');
                 if (nextTitle) nextTitle.textContent = (nextClass.subject || 'Class') + ' - ' + (nextClass.title || 'Upcoming');
                 var nextTime = document.querySelector('.tt-next-time');
-                if (nextTime) nextTime.innerHTML = '<i data-lucide="clock"></i> ' + (nextClass.time || nextClass.start_time || 'Soon');
+                if (nextTime) nextTime.innerHTML = '<i data-lucide="clock"></i> ' + (nextClass.start_time || nextClass.time || 'Soon');
             }
         }
 
@@ -3182,7 +3182,7 @@ function loadClassSchedule() {
             var statusColor = cls.status === 'completed' ? '#10B981' : cls.status === 'ongoing' ? '#F59E0B' : '#4F46E5';
             html += '<div class="list-item"><div class="icon-box sm" style="background:' + statusColor + '20;color:' + statusColor + '"><i data-lucide="book-open" class="icon-sm"></i></div>' +
                 '<div class="list-item-content"><h5>' + (cls.subject || '') + ' - ' + (cls.topic || '') + '</h5><p>' + (cls.class_name || '') + ' - ' + (cls.students_count || 0) + ' students</p></div>' +
-                '<div style="text-align:right;font-size:11px;color:var(--text3)">' + (cls.time || '') + '<br><span style="color:' + statusColor + ';font-weight:600">' + (cls.status || '') + '</span></div></div>';
+                '<div style="text-align:right;font-size:11px;color:var(--text3)">' + ((cls.start_time && cls.end_time) ? cls.start_time + ' - ' + cls.end_time : (cls.time || '')) + '<br><span style="color:' + statusColor + ';font-weight:600">' + (cls.status || '') + '</span></div></div>';
         });
         if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No classes scheduled</p>';
         c.innerHTML = html;
