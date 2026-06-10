@@ -71,6 +71,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $db->update('subscriptions',$sid,['status'=>'rejected']);
         header('Location: ?page=student-subscriptions&msg=rejected');exit;
     }
+    if ($a === 'approve_sub') {
+        $sid=intval($_POST['id']);
+        $sub=$db->find('subscriptions','id',$sid);
+        $db->update('subscriptions',$sid,['status'=>'approved','approved_at'=>date('Y-m-d H:i:s')]);
+        if($sub&&($sub['type']??'teacher')==='platform'){
+            $pkg=$db->find('packages','id',$sub['package_id']);
+            $duration=$pkg?intval($pkg['duration']):30;
+            $expiresAt=date('Y-m-d H:i:s',strtotime('+'.$duration.' days'));
+            $db->update('users',$sub['student_id'],['is_premium'=>1,'premium_expires_at'=>$expiresAt]);
+        }
+        $tab=$_GET['tab']??'platform';
+        header('Location: ?page=subscriptions&tab='.$tab.'&msg=approved');exit;
+    }
+    if ($a === 'reject_sub') {
+        $sid=intval($_POST['id']);
+        $db->update('subscriptions',$sid,['status'=>'rejected']);
+        $tab=$_GET['tab']??'platform';
+        header('Location: ?page=subscriptions&tab='.$tab.'&msg=rejected');exit;
+    }
 }
 
 // Fetch data
@@ -813,27 +832,6 @@ $tab=$_GET['tab']??'platform';
 $allSubs=$db->query('subscriptions');
 $pendingCount=0;$approvedCount=0;$rejectedCount=0;
 foreach($allSubs as $s){if($s['status']==='pending')$pendingCount++;if($s['status']==='approved')$approvedCount++;if($s['status']==='rejected')$rejectedCount++;}
-
-if($_SERVER['REQUEST_METHOD']==='POST'&&isset($_POST['action'])){
-    $sa=$_POST['action'];
-    if($sa==='approve_sub'){
-        $sid=intval($_POST['id']);
-        $sub=$db->find('subscriptions','id',$sid);
-        $db->update('subscriptions',$sid,['status'=>'approved','approved_at'=>date('Y-m-d H:i:s')]);
-        if($sub&&($sub['type']??'teacher')==='platform'){
-            $pkg=$db->find('packages','id',$sub['package_id']);
-            $duration=$pkg?intval($pkg['duration']):30;
-            $expiresAt=date('Y-m-d H:i:s',strtotime('+'.$duration.' days'));
-            $db->update('users',$sub['student_id'],['is_premium'=>1,'premium_expires_at'=>$expiresAt]);
-        }
-        header('Location: ?page=subscriptions&tab='.$tab.'&msg=approved');exit;
-    }
-    if($sa==='reject_sub'){
-        $sid=intval($_POST['id']);
-        $db->update('subscriptions',$sid,['status'=>'rejected']);
-        header('Location: ?page=subscriptions&tab='.$tab.'&msg=rejected');exit;
-    }
-}
 $filteredSubs=array_filter($allSubs,function($s)use($tab){return($s['type']??'teacher')===$tab;});
 ?>
 <div class="sg">
