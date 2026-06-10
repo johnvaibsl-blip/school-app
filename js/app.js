@@ -176,6 +176,8 @@ function showScreen(id) {
     if (id === 'screen-evaluate') loadStudentEvaluation();
     if (id === 'screen-give-report') loadGiveReportStudents();
     if (id === 'screen-pricing') loadPricingDynamic();
+    if (id === 'screen-hw-detail' && _currentHwId) loadHomeworkDetail(_currentHwId);
+    if (id === 'screen-exam-result') loadExamResult();
 }
 
 function navTo(btn, screenId) {
@@ -219,18 +221,6 @@ var CLASS_SUBJECTS = {
     'Class 9 Arts': ['bangla','english','math','history','geography','ict'],
     'Class 10 Arts': ['bangla','english','math','history','geography','ict']
 };
-
-function openSubjectFolder(subject) {
-    var s = SUBJECTS[subject];
-    if (!s) return;
-    document.getElementById('libSubjectTitle').textContent = s.name;
-    document.getElementById('libSubjectName').textContent = s.name;
-    document.getElementById('libSubjectIcon').setAttribute('data-lucide', s.icon);
-    var header = document.getElementById('libSubjectHeader');
-    header.style.background = 'linear-gradient(135deg,' + s.color + ',' + s.color2 + ')';
-    showFolderView();
-    showScreen('screen-library-subject');
-}
 
 function openSubjectFolderDynamic(subjectId, subjectKey) {
     currentLibrarySubjectId = subjectId;
@@ -350,20 +340,6 @@ function showFolderView() {
     folderView.style.display = '';
     fileListView.style.display = 'none';
     items.forEach(function(item) { item.style.display = ''; });
-}
-
-// === FILTER MATERIALS BY CLASS ===
-function filterMaterialsByClass() {
-    var allowed = CLASS_SUBJECTS[USER_CLASS] || CLASS_SUBJECTS['Class 8'];
-    var cards = document.querySelectorAll('#myMaterialsGrid .material-card');
-    cards.forEach(function(card) {
-        var subj = card.getAttribute('data-subject');
-        if (allowed.indexOf(subj) > -1) {
-            card.style.display = '';
-        } else {
-            card.style.display = 'none';
-        }
-    });
 }
 
 // === DYNAMIC LIBRARY GRID ===
@@ -1413,7 +1389,7 @@ function loadHomeworkList() {
             var color = getSubjectColor(h.subject_id);
             var icon = getSubjectIcon(h.subject_id);
             var statusColor = h.status === 'submitted' ? '#10B981' : '#F59E0B';
-            html += '<div class="glass-card" style="padding:14px;cursor:pointer" onclick="showScreen(\'screen-hw-detail\')">' +
+            html += '<div class="glass-card" style="padding:14px;cursor:pointer" onclick="loadHomeworkDetail(' + h.id + ');showScreen(\'screen-hw-detail\')">' +
                 '<div style="display:flex;align-items:center;gap:10px">' +
                 '<div class="icon-box sm" style="background:' + color + '20;color:' + color + '"><i data-lucide="' + icon + '" class="icon-sm"></i></div>' +
                 '<div style="flex:1"><h5 style="font-size:13px;font-weight:600">' + (h.title || '') + '</h5>' +
@@ -1439,7 +1415,7 @@ function loadExamList() {
             var subjName = getSubjectName(e.subject_id);
             var color = getSubjectColor(e.subject_id);
             var statusColor = e.status === 'upcoming' ? '#F59E0B' : e.status === 'completed' ? '#10B981' : '#EF4444';
-            html += '<div class="glass-card" style="padding:14px;cursor:pointer" onclick="showScreen(\'screen-exam-interface\')">' +
+            html += '<div class="glass-card" style="padding:14px;cursor:pointer" onclick="loadExamQuestions(' + e.id + ');showScreen(\'screen-exam-interface\')">' +
                 '<div style="display:flex;align-items:center;gap:10px">' +
                 '<div class="icon-box sm" style="background:' + color + '20;color:' + color + '"><i data-lucide="clipboard" class="icon-sm"></i></div>' +
                 '<div style="flex:1"><h5 style="font-size:13px;font-weight:600">' + (e.title || '') + '</h5>' +
