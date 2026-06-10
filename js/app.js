@@ -1924,12 +1924,7 @@ function loadTeacherOwnProfile() {
         var t = data.teacher || {};
         var setEl = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
         setEl('tpvName', u.name || USER_NAME);
-        setEl('tpvSubject', t.subject || 'Teacher');
-        setEl('tpvExp', (t.experience || 0) + ' yrs exp');
-        setEl('tpvRating', '\u2605 ' + (t.rating || data.avg_rating || 0));
-        setEl('tpvStudents', t.total_students || data.student_count || 0);
-        setEl('tpvClasses', data.hw_count || 0);
-        setEl('tpvHomework', data.hw_count || 0);
+        setEl('tpvSubject', (t.subject || 'Teacher') + (t.experience ? ' · ' + t.experience + ' yrs exp' : ''));
         var avatarEl = document.getElementById('tpvAvatar');
         if (avatarEl) avatarEl.textContent = (u.name || 'T')[0].toUpperCase();
         var descEl = document.getElementById('tpvBio');

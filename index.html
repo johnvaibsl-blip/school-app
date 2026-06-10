@@ -1521,50 +1521,46 @@
 
 <!-- ========== TEACHER PROFILE VIEW ========== -->
 <div id="screen-teacher-profile-view" class="screen">
-    <div class="profile-hero-new">
-        <div class="profile-cover"></div>
-        <div class="profile-avatar-wrap">
-            <div class="profile-avatar-large" id="tpvAvatar">T</div>
-            <div class="profile-avatar-ring"></div>
-            <div class="profile-badge-pro">PRO</div>
+    <div class="sp-header">
+        <div class="sp-cover">
+            <div class="sp-cover-orb sp-cover-orb-1"></div>
+            <div class="sp-cover-orb sp-cover-orb-2"></div>
         </div>
-        <div class="profile-name-section">
-            <h2 id="tpvName">Loading...</h2>
-            <div class="profile-role" id="tpvSubject">Loading...</div>
-            <div class="profile-tags">
-                <span class="ptag ptag-green" id="tpvExp">0 yrs exp</span>
-                <span class="ptag ptag-blue" id="tpvRating">★ 0</span>
-                <span class="ptag ptag-orange">Teacher</span>
+        <div class="sp-body">
+            <div class="sp-hero">
+                <div class="sp-avatar-wrap">
+                    <div class="sp-avatar-ring"></div>
+                    <div class="sp-avatar" id="tpvAvatar">T</div>
+                    <div class="sp-pro-badge" style="display:none">PRO</div>
+                </div>
+                <h2 class="sp-name" id="tpvName">Loading...</h2>
+                <div class="sp-subtitle" id="tpvSubject">Loading...</div>
+                <p class="sp-bio" id="tpvBio">Loading...</p>
             </div>
         </div>
-        <div class="profile-quick-stats">
-            <div class="pstat"><div class="pstat-num" id="tpvStudents">0</div><div class="pstat-lbl">Students</div></div>
-            <div class="pstat-divider"></div>
-            <div class="pstat"><div class="pstat-num" id="tpvClasses">0</div><div class="pstat-lbl">Classes</div></div>
-            <div class="pstat-divider"></div>
-            <div class="pstat"><div class="pstat-num" id="tpvHomework">0</div><div class="pstat-lbl">Homework</div></div>
-        </div>
     </div>
-    <div class="main-content">
-        <div style="display:flex;gap:10px;padding:0 16px;margin-bottom:16px">
-            <button class="sp-action-btn" style="flex:1" onclick="showScreen('screen-teacher-edit-profile');loadTeacherEditProfile()">
-                <div class="sp-action-icon purple"><i data-lucide="pencil"></i></div>
-                <span>Edit Profile</span>
-            </button>
-            <button class="sp-action-btn" style="flex:1" onclick="showScreen('screen-earnings')">
-                <div class="sp-action-icon green"><i data-lucide="wallet"></i></div>
-                <span>Earnings</span>
-            </button>
-            <button class="sp-action-btn" style="flex:1" onclick="showScreen('screen-class-schedule')">
-                <div class="sp-action-icon orange"><i data-lucide="calendar"></i></div>
-                <span>Schedule</span>
-            </button>
-        </div>
-        <div class="section-header"><h2 class="section-title">About</h2></div>
-        <p id="tpvBio" style="font-size:13px;color:var(--text2);line-height:1.7;margin:0 16px 16px;padding:12px 16px;background:var(--card);border-radius:12px;box-shadow:var(--shadow-sm)">Loading...</p>
-        <div class="section-header"><h2 class="section-title">Reviews</h2></div>
-        <div id="tpvReviews" style="margin:0 16px 16px;padding:12px 16px;background:var(--card);border-radius:12px;box-shadow:var(--shadow-sm)"></div>
-        <div class="profile-menu" style="padding:0 16px">
+    <div class="profile-menu">
+        <div class="profile-section">
+            <h4>Quick Actions</h4>
+            <div class="sp-action-grid">
+                <div class="sp-action-item" onclick="showScreen('screen-teacher-edit-profile');loadTeacherEditProfile()">
+                    <div class="sp-action-icon sp-action-purple"><i data-lucide="pencil"></i></div>
+                    <span>Edit Profile</span>
+                </div>
+                <div class="sp-action-item" onclick="showScreen('screen-earnings')">
+                    <div class="sp-action-icon sp-action-green"><i data-lucide="wallet"></i></div>
+                    <span>Earnings</span>
+                </div>
+                <div class="sp-action-item" onclick="showScreen('screen-class-schedule')">
+                    <div class="sp-action-icon sp-action-amber"><i data-lucide="calendar"></i></div>
+                    <span>Schedule</span>
+                </div>
+                <div class="sp-action-item" onclick="showScreen('screen-exam-analytics')">
+                    <div class="sp-action-icon sp-action-indigo"><i data-lucide="bar-chart-3"></i></div>
+                    <span>Analytics</span>
+                </div>
+            </div>
+            <div id="tpvReviews" style="margin-bottom:16px"></div>
             <div class="profile-section">
                 <h4>Account</h4>
                 <div class="menu-item" onclick="showScreen('screen-teacher-edit-profile');loadTeacherEditProfile()">
