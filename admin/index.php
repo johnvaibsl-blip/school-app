@@ -868,8 +868,8 @@ $pkg=$db->find('packages','id',$s['package_id']);
 <td style="font-size:11px"><?php echo date('M d, Y',strtotime($s['created_at'])); ?></td>
 <td class="actions">
 <?php if($s['status']==='pending'||$s['status']==='teacher_approved'):?>
-<form method="POST" style="display:inline"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="approve_sub"><input type="hidden" name="id" value="<?php echo $s['id']; ?>"><button type="submit" class="btn btn-sm" style="background:#10B981;color:white;padding:6px 12px" onclick="return confirm('Approve this subscription?')">Approve</button></form>
-<form method="POST" style="display:inline"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="reject_sub"><input type="hidden" name="id" value="<?php echo $s['id']; ?>"><button type="submit" class="btn btn-danger btn-sm" style="padding:6px 12px" onclick="return confirm('Reject this subscription?')">Reject</button></form>
+<button type="button" class="btn btn-sm" style="background:#10B981;color:white;padding:6px 12px" onclick="adminSubAction(<?php echo $s['id']; ?>,'admin_approve_sub','<?php echo $tab; ?>')">Approve</button>
+<button type="button" class="btn btn-danger btn-sm" style="padding:6px 12px" onclick="adminSubAction(<?php echo $s['id']; ?>,'admin_reject_sub','<?php echo $tab; ?>')">Reject</button>
 <?php else: ?>
 <span style="font-size:10px;color:#9CA3AF"><?php echo $s['approved_at']?date('M d',strtotime($s['approved_at'])):'-'; ?></span>
 <?php endif; ?>
@@ -1103,8 +1103,8 @@ $ssPkg=$db->find('packages','id',$ss['package_id']);
 <td style="font-size:11px"><?php echo date('M d, Y',strtotime($ss['created_at'])); ?></td>
 <td class="actions">
 <?php if($ss['status']==='pending'):?>
-<form method="POST" style="display:inline"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="approve_student_sub"><input type="hidden" name="id" value="<?php echo $ss['id']; ?>"><button type="submit" class="btn btn-sm" style="background:#10B981;color:white;padding:6px 12px" onclick="return confirm('Approve?')">Approve</button></form>
-<form method="POST" style="display:inline"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="reject_student_sub"><input type="hidden" name="id" value="<?php echo $ss['id']; ?>"><button type="submit" class="btn btn-danger btn-sm" style="padding:6px 12px" onclick="return confirm('Reject?')">Reject</button></form>
+<button type="button" class="btn btn-sm" style="background:#10B981;color:white;padding:6px 12px" onclick="adminSubAction(<?php echo $ss['id']; ?>,'admin_approve_student_sub','student')">Approve</button>
+<button type="button" class="btn btn-danger btn-sm" style="padding:6px 12px" onclick="adminSubAction(<?php echo $ss['id']; ?>,'admin_reject_student_sub','student')">Reject</button>
 <?php else: ?>
 <span style="font-size:10px;color:#9CA3AF"><?php echo $ss['approved_at']?date('M d',strtotime($ss['approved_at'])):'-'; ?></span>
 <?php endif; ?>
@@ -1128,6 +1128,14 @@ for(var j=0;j<cols.length;j++)row.push('"'+cols[j].textContent.replace(/"/g,'""'
 csv.push(row.join(','));}
 var blob=new Blob([csv.join('\n')],{type:'text/csv'});var a=document.createElement('a');
 a.href=URL.createObjectURL(blob);a.download=filename;a.click();
+}
+function adminSubAction(id,action,tab){
+var label=action.indexOf('approve')>=0?'Approve':'Reject';
+if(!confirm(label+' this subscription?'))return;
+var url='/api/index.php?action='+action;
+fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id})}).then(function(r){return r.json()}).then(function(d){
+if(d.success){location.reload()}else{alert(d.error||'Failed')}
+}).catch(function(e){alert('Error: '+e.message)});
 }
 </script>
 </body>

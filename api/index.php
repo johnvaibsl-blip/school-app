@@ -1010,5 +1010,49 @@ switch ($path) {
         jsonResponse(['success' => true, 'status' => $newStatus]);
         break;
 
+    case 'admin_approve_sub':
+    case 'admin_reject_sub':
+        if (!isLoggedIn() || $_SESSION['role'] !== 'admin') jsonResponseError('Admin only', 403);
+        $input = json_decode(file_get_contents('php://input'), true);
+        $subId = intval($input['id'] ?? 0);
+        if (!$subId) jsonResponseError('ID required');
+        $sub = $db->find('subscriptions', 'id', $subId);
+        if (!$sub) jsonResponseError('Subscription not found');
+        if ($path === 'admin_approve_sub') {
+            $db->update('subscriptions', $subId, ['status' => 'approved', 'approved_at' => date('Y-m-d H:i:s')]);
+            if (($sub['type'] ?? '') === 'platform') {
+                $pkg = $db->find('packages', 'id', $sub['package_id']);
+                $duration = $pkg ? intval($pkg['duration']) : 30;
+                $expiresAt = date('Y-m-d H:i:s', strtotime('+' . $duration . ' days'));
+                $db->update('users', $sub['student_id'], ['is_premium' => 1, 'premium_expires_at' => $expiresAt]);
+            }
+        } else {
+            $db->update('subscriptions', $subId, ['status' => 'rejected']);
+        }
+        jsonResponse(['success' => true]);
+        break;
+
+    case 'admin_approve_student_sub':
+    case 'admin_reject_student_sub':
+        if (!isLoggedIn() || $_SESSION['role'] !== 'admin') jsonResponseError('Admin only', 403);
+        $input = json_decode(file_get_contents('php://input'), true);
+        $subId = intval($input['id'] ?? 0);
+        if (!$subId) jsonResponseError('ID required');
+        $sub = $db->find('subscriptions', 'id', $subId);
+        if (!$sub) jsonResponseError('Subscription not found');
+        if ($path === 'admin_approve_student_sub') {
+            $db->update('subscriptions', $subId, ['status' => 'approved', 'approved_at' => date('Y-m-d H:i:s')]);
+            if (($sub['type'] ?? '') === 'platform') {
+                $pkg = $db->find('packages', 'id', $sub['package_id']);
+                $duration = $pkg ? intval($pkg['duration']) : 30;
+                $expiresAt = date('Y-m-d H:i:s', strtotime('+' . $duration . ' days'));
+                $db->update('users', $sub['student_id'], ['is_premium' => 1, 'premium_expires_at' => $expiresAt]);
+            }
+        } else {
+            $db->update('subscriptions', $subId, ['status' => 'rejected']);
+        }
+        jsonResponse(['success' => true]);
+        break;
+
     default: jsonResponseError('Unknown action');
 }
