@@ -244,17 +244,24 @@ echo $t[$page]??ucfirst(str_replace('_',' ',$page));
 <?php /* === DASHBOARD === */ ?>
 <?php if($page==='dashboard'):
 $studentsThisMonth=count($db->query("SELECT * FROM users WHERE role='student' AND created_at >= '".date('Y-m-01')."'"));
+$teachersThisMonth=count($db->query("SELECT * FROM users WHERE role='teacher' AND created_at >= '".date('Y-m-01')."'"));
 $growthPct=$students>0?round($studentsThisMonth/$students*100):0;
 $avgScore=count($allExamResults)>0?round(array_sum(array_column($allExamResults,'percentage'))/count($allExamResults)):0;
 $passRate=count($allExamResults)>0?round(count(array_filter($allExamResults,fn($r)=>$r['percentage']>=50))/count($allExamResults)*100):0;
 $rev=0;$approvedSubsForRev=array_filter($db->query('subscriptions'),function($s){return$s['status']==='approved';});foreach($approvedSubsForRev as $s){$pkg=$db->find('packages','id',$s['package_id']);$rev+=floatval($s['amount']);}
+$lastMonthRev=0;$lastMonthSubs=array_filter($db->query('subscriptions'),function($s){return$s['status']==='approved'&&date('Y-m',strtotime($s['approved_at']))===date('Y-m',strtotime('-1 month'));});foreach($lastMonthSubs as $s){$pkg=$db->find('packages','id',$s['package_id']);$lastMonthRev+=floatval($s['amount']);}
+$revGrowth=$lastMonthRev>0?round(($rev-$lastMonthRev)/$lastMonthRev*100):($rev>0?100:0);
+$totalActivity=count($allSubmissions)+count($allExamResults);
+$pendingSubs=count(array_filter($allSubmissions,fn($s)=>$s['status']==='pending'));
+$activeStudents=count(array_filter($allUsers,fn($u)=>$u['role']==='student'));
+$engagementRate=$students>0?round($activeStudents/$students*100):0;
 ?>
 <div class="sg">
-<div class="sc" style="border-left:4px solid #6366F1"><div class="si p"><i data-lucide="users"></i></div><div class="st"><h3><?php echo $students; ?></h3><p>Students</p><div style="font-size:10px;color:#10B981;font-weight:600;margin-top:2px">+12% this month</div></div></div>
-<div class="sc" style="border-left:4px solid #10B981"><div class="si g"><i data-lucide="user-check"></i></div><div class="st"><h3><?php echo $teachersCount; ?></h3><p>Teachers</p><div style="font-size:10px;color:#10B981;font-weight:600;margin-top:2px">+3 new</div></div></div>
-<div class="sc" style="border-left:4px solid #F59E0B"><div class="si o"><i data-lucide="dollar-sign"></i></div><div class="st"><h3><?php echo $rev; ?> BDT</h3><p>Revenue</p><div style="font-size:10px;color:#10B981;font-weight:600;margin-top:2px">+24% growth</div></div></div>
-<div class="sc" style="border-left:4px solid #3B82F6"><div class="si b"><i data-lucide="brain"></i></div><div class="st"><h3><?php echo count($allSubmissions)+count($allExamResults); ?></h3><p>AI Queries</p><div style="font-size:10px;color:#9CA3AF;margin-top:2px">total</div></div></div>
-<div class="sc" style="border-left:4px solid #EF4444"><div class="si r"><i data-lucide="inbox"></i></div><div class="st"><h3><?php echo count($allSubmissions); ?></h3><p>Submissions</p><div style="font-size:10px;color:#F59E0B;font-weight:600;margin-top:2px"><?php echo count(array_filter($allSubmissions,fn($s)=>$s['status']==='pending')); ?> pending</div></div></div>
+<div class="sc" style="border-left:4px solid #6366F1"><div class="si p"><i data-lucide="users"></i></div><div class="st"><h3><?php echo $students; ?></h3><p>Students</p><div style="font-size:10px;color:#10B981;font-weight:600;margin-top:2px">+<?php echo $studentsThisMonth; ?> this month</div></div></div>
+<div class="sc" style="border-left:4px solid #10B981"><div class="si g"><i data-lucide="user-check"></i></div><div class="st"><h3><?php echo $teachersCount; ?></h3><p>Teachers</p><div style="font-size:10px;color:#10B981;font-weight:600;margin-top:2px">+<?php echo $teachersThisMonth; ?> this month</div></div></div>
+<div class="sc" style="border-left:4px solid #F59E0B"><div class="si o"><i data-lucide="dollar-sign"></i></div><div class="st"><h3><?php echo number_format($rev); ?> BDT</h3><p>Revenue</p><div style="font-size:10px;color:<?php echo $revGrowth>=0?'#10B981':'#EF4444'; ?>;font-weight:600;margin-top:2px"><?php echo $revGrowth>=0?'+':''; ?><?php echo $revGrowth; ?>% vs last month</div></div></div>
+<div class="sc" style="border-left:4px solid #3B82F6"><div class="si b"><i data-lucide="activity"></i></div><div class="st"><h3><?php echo $totalActivity; ?></h3><p>Total Activity</p><div style="font-size:10px;color:#9CA3AF;margin-top:2px">submissions + results</div></div></div>
+<div class="sc" style="border-left:4px solid #EF4444"><div class="si r"><i data-lucide="inbox"></i></div><div class="st"><h3><?php echo count($allSubmissions); ?></h3><p>Submissions</p><div style="font-size:10px;color:<?php echo $pendingSubs>0?'#F59E0B':'#10B981'; ?>;font-weight:600;margin-top:2px"><?php echo $pendingSubs; ?> pending</div></div></div>
 <div class="sc" style="border-left:4px solid #EC4899"><div class="si pk"><i data-lucide="message-square"></i></div><div class="st"><h3><?php echo count($allMessages); ?></h3><p>Messages</p></div></div>
 <div class="sc" style="border-left:4px solid #06B6D4"><div class="si c"><i data-lucide="bar-chart"></i></div><div class="st"><h3><?php echo $avgScore; ?>%</h3><p>Avg Score</p><div style="font-size:10px;color:<?php echo $avgScore>=70?'#10B981':'#EF4444'; ?>;font-weight:600;margin-top:2px"><?php echo $avgScore>=70?'Above target':'Below target'; ?></div></div></div>
 <div class="sc" style="border-left:4px solid #8B5CF6"><div class="si ind"><i data-lucide="check-circle"></i></div><div class="st"><h3><?php echo $passRate; ?>%</h3><p>Pass Rate</p><div style="font-size:10px;color:#10B981;font-weight:600;margin-top:2px"><?php echo $passRate>=80?'Excellent':'Needs improvement'; ?></div></div></div>
@@ -265,8 +272,8 @@ $rev=0;$approvedSubsForRev=array_filter($db->query('subscriptions'),function($s)
 <h3 style="color:white;margin-bottom:12px"><i data-lucide="trending-up"></i>Weekly Trend</h3>
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
 <div style="text-align:center"><div style="font-size:22px;font-weight:800">+<?php echo $growthPct; ?>%</div><div style="font-size:11px;opacity:0.8">Student Growth</div></div>
-<div style="text-align:center"><div style="font-size:22px;font-weight:800">0%</div><div style="font-size:11px;opacity:0.8">Engagement Rate</div></div>
-<div style="text-align:center"><div style="font-size:22px;font-weight:800">0h</div><div style="font-size:11px;opacity:0.8">Avg Study Time</div></div>
+<div style="text-align:center"><div style="font-size:22px;font-weight:800"><?php echo $engagementRate; ?>%</div><div style="font-size:11px;opacity:0.8">Active Students</div></div>
+<div style="text-align:center"><div style="font-size:22px;font-weight:800"><?php echo $totalActivity; ?></div><div style="font-size:11px;opacity:0.8">Total Activity</div></div>
 </div>
 </div>
 
@@ -938,10 +945,10 @@ foreach($allSettings as $s) $sMap[$s['key']] = $s['value'];
 <button type="submit" class="btn btn-primary">Save AI Settings</button></form></div>
 <div class="card"><h3><i data-lucide="activity"></i>AI Usage Stats</h3>
 <div class="sg">
-<div class="sc"><div class="si p"><i data-lucide="message-square"></i></div><div class="st"><h3>0</h3><p>Queries This Month</p></div></div>
-<div class="sc"><div class="si g"><i data-lucide="check-circle"></i></div><div class="st"><h3>0%</h3><p>Success Rate</p></div></div>
-<div class="sc"><div class="si o"><i data-lucide="clock"></i></div><div class="st"><h3>0s</h3><p>Avg Response</p></div></div>
-<div class="sc"><div class="si b"><i data-lucide="zap"></i></div><div class="st"><h3>0K</h3><p>Tokens Used</p></div></div></div></div>
+<div class="sc"><div class="si p"><i data-lucide="message-square"></i></div><div class="st"><h3><?php echo count($allMessages); ?></h3><p>Chat Messages</p></div></div>
+<div class="sc"><div class="si g"><i data-lucide="check-circle"></i></div><div class="st"><h3><?php echo ($sMap['ai_enabled']??'1')==='1'?'Active':'Disabled'; ?></h3><p>AI Status</p></div></div>
+<div class="sc"><div class="si o"><i data-lucide="cpu"></i></div><div class="st"><h3><?php echo ucfirst($sMap['ai_provider']??'openai'); ?></h3><p>Provider</p></div></div>
+<div class="sc"><div class="si b"><i data-lucide="thermometer"></i></div><div class="st"><h3><?php echo $sMap['ai_temperature']??'0.7'; ?></h3><p>Temperature</p></div></div></div></div>
 
 <?php /* === CALENDAR EVENTS === */ ?>
 <?php elseif($page==='calendar_events'):
