@@ -52,7 +52,7 @@ var ROLE_NAV = {
 
 // === INIT ===
 document.addEventListener('DOMContentLoaded', function() {
-    _loadSubjectsCache();
+    try { _loadSubjectsCache(); } catch(e) {}
     // Auth check: if logged in but no role, redirect to login
     if (!USER_ROLE && window.location.hash && window.location.hash !== '#screen-landing') {
         window.location.href = '/intro.php';
@@ -60,11 +60,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     applyRoleVisibility();
     buildBottomNav();
-    if (USER_ROLE === 'student') checkPremiumAccess().then(function() { handleHashRoute(); });
-    else handleHashRoute();
-    bindEvents();
-    if (USER_ROLE === 'student') loadLibraryGrid();
     if (typeof lucide !== 'undefined') lucide.createIcons();
+    if (USER_ROLE === 'student') {
+        checkPremiumAccess().then(function() { handleHashRoute(); }).catch(function() { handleHashRoute(); });
+    } else {
+        handleHashRoute();
+    }
+    try { bindEvents(); } catch(e) {}
+    if (USER_ROLE === 'student') try { loadLibraryGrid(); } catch(e) {}
 });
 
 function applyRoleVisibility() {
@@ -79,7 +82,11 @@ function applyRoleVisibility() {
 
 function buildBottomNav() {
     var nav = document.getElementById('bottomNav');
-    if (!nav || !USER_ROLE || !ROLE_NAV[USER_ROLE]) return;
+    if (!nav) return;
+    if (!USER_ROLE || !ROLE_NAV[USER_ROLE] || ROLE_NAV[USER_ROLE].length === 0) {
+        nav.style.display = 'none';
+        return;
+    }
     var items = ROLE_NAV[USER_ROLE];
     var html = '';
     items.forEach(function(item, i) {
@@ -88,6 +95,7 @@ function buildBottomNav() {
             '<span class="nav-label">' + item.label + '</span></button>';
     });
     nav.innerHTML = html;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function handleHashRoute() {
@@ -204,6 +212,7 @@ function showScreen(id) {
     if (id === 'screen-question-bank') loadQuestionBankScreen();
     if (id === 'screen-chapter-mgmt') loadChapterManager();
     if (id === 'screen-library-mgmt') loadLibraryMgmt();
+    if (id === 'screen-packages') loadAdminPackages();
     if (id === 'screen-evaluate') loadStudentEvaluation();
     if (id === 'screen-give-report') loadGiveReportStudents();
     if (id === 'screen-hw-detail' && _currentHwId) loadHomeworkDetail(_currentHwId);
@@ -217,6 +226,7 @@ function navTo(btn, screenId) {
 }
 
 function goBackFromChat() {
+    chatThemes.forEach(function(t) { if (t) { document.body.classList.remove(t); } });
     showScreen(_previousScreen);
 }
 
@@ -632,12 +642,6 @@ function bindEvents() {
             return;
         }
 
-        // Pricing toggle
-        if (t.closest('.toggle-btn')) {
-            togglePricing(t.closest('.toggle-btn'));
-            return;
-        }
-
         // Touch ripple
         var rippleTarget = t.closest('.btn-primary, .quick-card-btn, .landing-cta');
         if (rippleTarget) {
@@ -910,8 +914,8 @@ function applyChatTheme(el) {
     var theme = el.getAttribute('data-theme');
     var chatScreen = document.getElementById('screen-chat');
     if (!chatScreen) return;
-    chatThemes.forEach(function(t) { if (t) chatScreen.classList.remove(t); });
-    if (theme) chatScreen.classList.add(theme);
+    chatThemes.forEach(function(t) { if (t) { chatScreen.classList.remove(t); document.body.classList.remove(t); } });
+    if (theme) { chatScreen.classList.add(theme); document.body.classList.add(theme); }
     document.querySelectorAll('.theme-thumb').forEach(function(t) { t.classList.remove('active'); });
     el.classList.add('active');
     setTimeout(function() { closeThemePicker(); }, 200);
@@ -1049,11 +1053,6 @@ function selectPayment(el) {
     el.classList.add('selected');
     el.querySelector('.payment-check').innerHTML = '<i data-lucide="check"></i>';
     if (typeof lucide !== 'undefined') lucide.createIcons();
-}
-
-function togglePricing(btn) {
-    btn.parentElement.querySelectorAll('.toggle-btn').forEach(function(b) { b.classList.remove('active'); });
-    btn.classList.add('active');
 }
 
 // === CARD ANIMATION ===
@@ -1521,6 +1520,72 @@ function loadPackages() {
     });
 }
 
+function loadAdminPackages() {
+    var container = document.getElementById('adminPackagesList');
+    if (!container) return;
+    api('packages').then(function(items) {
+        var html = '<button class="btn-primary" style="width:100%;margin-bottom:16px" onclick="showAdminPackageForm()"><i data-lucide="plus" style="width:14px;height:14px"></i> Add New Package</button>';
+        (items || []).forEach(function(p) {
+            html += '<div class="glass-card" style="padding:16px;margin-bottom:10px">' +
+                '<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">' +
+                '<div><div style="font-size:14px;font-weight:700">' + (p.name || '') + '</div>' +
+                '<div style="font-size:20px;font-weight:800;color:var(--primary);margin-top:4px">৳' + (p.price || 0).toLocaleString() + '<span style="font-size:11px;font-weight:500;color:var(--text3)"> / ' + (p.duration || 0) + ' days</span></div></div>' +
+                '<span class="badge ' + (p.is_active ? 'bg' : 'br') + '">' + (p.is_active ? 'Active' : 'Inactive') + '</span></div>' +
+                '<div style="font-size:11px;color:var(--text3);margin-bottom:10px">' + (p.features || 'No features listed') + '</div>' +
+                '<div style="display:flex;gap:6px">' +
+                '<button class="btn-outline" style="font-size:11px;padding:6px 12px" onclick="editAdminPackage(' + p.id + ')"><i data-lucide="edit-2" style="width:12px;height:12px"></i> Edit</button>' +
+                '<button style="font-size:11px;padding:6px 12px;border:1px solid #FCA5A5;background:rgba(254,226,226,0.5);color:#DC2626;border-radius:8px;cursor:pointer" onclick="deleteAdminPackage(' + p.id + ')"><i data-lucide="trash-2" style="width:12px;height:12px"></i> Delete</button>' +
+                '</div></div>';
+        });
+        if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No packages yet. Create one above.</p>';
+        container.innerHTML = html;
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    }).catch(function() {
+        container.innerHTML = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">Failed to load packages.</p>';
+    });
+}
+
+function showAdminPackageForm(pkg) {
+    var name = prompt('Package name:', pkg ? pkg.name : '');
+    if (name === null) return;
+    var price = prompt('Price (BDT):', pkg ? pkg.price : '');
+    if (price === null) return;
+    var duration = prompt('Duration (days):', pkg ? pkg.duration : '30');
+    if (duration === null) return;
+    var features = prompt('Features (comma separated):', pkg ? pkg.features : '');
+    if (features === null) return;
+    var action = pkg ? 'edit_package' : 'add_package';
+    var body = { name: name, price: parseFloat(price) || 0, duration: parseInt(duration) || 30, features: features };
+    if (pkg) body.id = pkg.id;
+    fetch('/admin/index.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'action=' + action + '&' + Object.keys(body).map(function(k) { return k + '=' + encodeURIComponent(body[k]); }).join('&')
+    }).then(function(r) { return r.text(); }).then(function() {
+        showToast(pkg ? 'Package updated!' : 'Package added!', 'success');
+        loadAdminPackages();
+    }).catch(function() { showToast('Failed', 'error'); });
+}
+
+function editAdminPackage(id) {
+    api('packages').then(function(items) {
+        var pkg = (items || []).find(function(p) { return p.id === id; });
+        if (pkg) showAdminPackageForm(pkg);
+    });
+}
+
+function deleteAdminPackage(id) {
+    if (!confirm('Delete this package?')) return;
+    fetch('/admin/index.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'action=del_item&id=' + id + '&table=packages'
+    }).then(function() {
+        showToast('Package deleted', 'success');
+        loadAdminPackages();
+    }).catch(function() { showToast('Failed', 'error'); });
+}
+
 // === TEACHER RANKINGS ===
 function loadTeacherRankings() {
     var container = document.getElementById('teacherRankingsList');
@@ -1603,6 +1668,7 @@ function loadEditProfile() {
         setVal('epEmail', u.email);
         setVal('epPhone', u.phone);
         setVal('epSchool', u.school);
+        setVal('epClass', u.class || USER_CLASS);
         var avatarEl = document.getElementById('epAvatar');
         if (avatarEl) avatarEl.textContent = (u.name || 'U')[0].toUpperCase();
     });
@@ -1612,9 +1678,10 @@ function saveProfile() {
     var name = (document.getElementById('epName') || {}).value || '';
     var phone = (document.getElementById('epPhone') || {}).value || '';
     var school = (document.getElementById('epSchool') || {}).value || '';
+    var cls = (document.getElementById('epClass') || {}).value || '';
     var password = (document.getElementById('epPassword') || {}).value || '';
     if (!name.trim()) { showToast('Name is required', 'error'); return; }
-    var body = { name: name.trim(), phone: phone.trim(), school: school.trim() };
+    var body = { name: name.trim(), phone: phone.trim(), school: school.trim(), class: cls };
     if (password.trim()) body.password = password.trim();
     fetch('/api/index.php?action=edit_profile', {
         method: 'POST',
@@ -1625,6 +1692,7 @@ function saveProfile() {
         if (data.success) {
             showToast('Profile updated successfully!', 'success');
             USER_NAME = name.trim();
+            if (cls) USER_CLASS = cls;
             var nameEl = document.getElementById('profileUserName');
             if (nameEl) nameEl.textContent = name.trim();
             var avatarEl = document.getElementById('profileUserAvatar');

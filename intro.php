@@ -17,25 +17,63 @@ if ($errorType === 'desktop_required') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['form_action'] ?? 'login';
     $email = sanitize($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
-    
-    if (empty($email) || empty($password)) {
-        $error = 'Please fill in all fields.';
-    } else {
-        $db = getDB();
-        $user = $db->find('users', 'email', $email);
-        
-        if ($user && password_verify($password, $user['password'])) {
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['user_name'] = $user['name'];
-            $_SESSION['user_email'] = $user['email'] ?? '';
-            $_SESSION['user_class'] = $user['class'] ?? 'Class 8';
-            $_SESSION['role'] = $user['role'];
-            
-            redirectByRole($user['role']);
+
+    if ($action === 'signup') {
+        $name = sanitize($_POST['name'] ?? '');
+        $class = sanitize($_POST['class'] ?? '');
+
+        if (empty($name) || empty($email) || empty($password) || empty($class)) {
+            $error = 'Please fill in all fields including class.';
+        } elseif (strlen($password) < 6) {
+            $error = 'Password must be at least 6 characters.';
         } else {
-            $error = 'Invalid email or password.';
+            $db = getDB();
+            $existing = $db->find('users', 'email', $email);
+            if ($existing) {
+                $error = 'An account with this email already exists.';
+            } else {
+                $id = $db->insert('users', [
+                    'name' => $name,
+                    'email' => $email,
+                    'password' => password_hash($password, PASSWORD_DEFAULT),
+                    'role' => 'student',
+                    'avatar' => '',
+                    'class' => $class,
+                    'phone' => '',
+                    'school' => '',
+                    'is_premium' => 0,
+                    'premium_expires_at' => null
+                ]);
+                $_SESSION['user_id'] = $id;
+                $_SESSION['user_name'] = $name;
+                $_SESSION['user_email'] = $email;
+                $_SESSION['user_class'] = $class;
+                $_SESSION['role'] = 'student';
+                header('Location: index.php#screen-home');
+                exit;
+            }
+        }
+    } else {
+        if (empty($email) || empty($password)) {
+            $error = 'Please fill in all fields.';
+        } else {
+            $db = getDB();
+            $user = $db->find('users', 'email', $email);
+
+            if ($user && password_verify($password, $user['password'])) {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['user_name'] = $user['name'];
+                $_SESSION['user_email'] = $user['email'] ?? '';
+                $_SESSION['user_class'] = $user['class'] ?? 'Class 8';
+                $_SESSION['role'] = $user['role'];
+
+                redirectByRole($user['role']);
+            } else {
+                $error = 'Invalid email or password.';
+            }
         }
     }
 }
@@ -490,18 +528,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 
-    <!-- ========== SLIDE 3: Sign In ========== -->
+    <!-- ========== SLIDE 3: Sign In / Sign Up ========== -->
     <div class="intro-slide" data-slide="2">
         <div class="slide-content" style="width:100%;max-width:340px">
-            <div class="slide-label"><i data-lucide="log-in"></i> Welcome Back</div>
-            <h1 class="slide-title" style="font-size:26px">Sign In to EduAI</h1>
-            <p class="slide-desc" style="font-size:13px;margin-bottom:6px">Enter your credentials to continue</p>
+            <div class="slide-label"><i data-lucide="log-in"></i> Welcome</div>
+            <h1 class="slide-title" style="font-size:26px" id="authTitle">Sign In to EduAI</h1>
+            <p class="slide-desc" style="font-size:13px;margin-bottom:6px" id="authSubtitle">Enter your credentials to continue</p>
 
             <?php if ($error): ?>
                 <div class="error-msg-intro"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
 
-            <form method="POST" class="login-form-card">
+            <!-- Toggle Tabs -->
+            <div style="display:flex;gap:4px;background:rgba(255,255,255,0.08);border-radius:12px;padding:4px;margin-bottom:12px">
+                <button type="button" id="tabLogin" onclick="showAuthForm('login')" style="flex:1;padding:10px;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;background:rgba(139,92,246,0.3);color:white;transition:all 0.2s">Sign In</button>
+                <button type="button" id="tabSignup" onclick="showAuthForm('signup')" style="flex:1;padding:10px;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;background:transparent;color:rgba(255,255,255,0.5);transition:all 0.2s">Sign Up</button>
+            </div>
+
+            <!-- Login Form -->
+            <form method="POST" class="login-form-card" id="loginForm">
+                <input type="hidden" name="form_action" value="login">
                 <div class="form-group">
                     <label>Email</label>
                     <input type="email" name="email" placeholder="Enter your email" required value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
@@ -526,6 +572,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <strong>Admin</strong>admin@school.com
                     </button>
                 </div>
+            </form>
+
+            <!-- Signup Form -->
+            <form method="POST" class="login-form-card" id="signupForm" style="display:none">
+                <input type="hidden" name="form_action" value="signup">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="name" placeholder="Your full name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" name="password" placeholder="Min 6 characters" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label>Class / Grade</label>
+                    <select name="class" required style="width:100%;padding:12px 14px;border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;font-size:14px;background:rgba(255,255,255,0.08);color:white;outline:none;appearance:auto">
+                        <option value="" style="background:#1E1B4B;color:white">Select your class</option>
+                        <option value="Class 7" style="background:#1E1B4B;color:white">Class 7</option>
+                        <option value="Class 8" style="background:#1E1B4B;color:white">Class 8</option>
+                        <option value="Class 9 Science" style="background:#1E1B4B;color:white">Class 9 - Science</option>
+                        <option value="Class 9 Commerce" style="background:#1E1B4B;color:white">Class 9 - Commerce</option>
+                        <option value="Class 9 Arts" style="background:#1E1B4B;color:white">Class 9 - Arts</option>
+                        <option value="Class 10 Science" style="background:#1E1B4B;color:white">Class 10 - Science</option>
+                        <option value="Class 10 Commerce" style="background:#1E1B4B;color:white">Class 10 - Commerce</option>
+                        <option value="Class 10 Arts" style="background:#1E1B4B;color:white">Class 10 - Arts</option>
+                    </select>
+                </div>
+                <button type="submit" class="login-form-btn">Create Account</button>
             </form>
         </div>
     </div>
@@ -557,8 +635,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         function fillDemo(email) {
-            document.querySelector('input[name="email"]').value = email;
-            document.querySelector('input[name="password"]').value = 'password';
+            document.querySelector('#loginForm input[name="email"]').value = email;
+            document.querySelector('#loginForm input[name="password"]').value = 'password';
+        }
+
+        function showAuthForm(type) {
+            var loginForm = document.getElementById('loginForm');
+            var signupForm = document.getElementById('signupForm');
+            var tabLogin = document.getElementById('tabLogin');
+            var tabSignup = document.getElementById('tabSignup');
+            var title = document.getElementById('authTitle');
+            var subtitle = document.getElementById('authSubtitle');
+            if (type === 'signup') {
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'block';
+                tabSignup.style.background = 'rgba(139,92,246,0.3)';
+                tabSignup.style.color = 'white';
+                tabLogin.style.background = 'transparent';
+                tabLogin.style.color = 'rgba(255,255,255,0.5)';
+                title.textContent = 'Create Account';
+                subtitle.textContent = 'Sign up to start learning';
+            } else {
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+                tabLogin.style.background = 'rgba(139,92,246,0.3)';
+                tabLogin.style.color = 'white';
+                tabSignup.style.background = 'transparent';
+                tabSignup.style.color = 'rgba(255,255,255,0.5)';
+                title.textContent = 'Sign In to EduAI';
+                subtitle.textContent = 'Enter your credentials to continue';
+            }
         }
 
         document.addEventListener('touchstart', (e) => {

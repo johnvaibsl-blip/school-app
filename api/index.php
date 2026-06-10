@@ -234,9 +234,11 @@ switch ($path) {
         if (!empty($input['name'])) $updates['name'] = sanitize($input['name']);
         if (!empty($input['phone'])) $updates['phone'] = sanitize($input['phone']);
         if (!empty($input['school'])) $updates['school'] = sanitize($input['school']);
+        if (!empty($input['class'])) $updates['class'] = sanitize($input['class']);
         if (isset($input['avatar'])) $updates['avatar'] = sanitize($input['avatar']);
         if (!empty($input['password'])) $updates['password'] = password_hash($input['password'], PASSWORD_DEFAULT);
         if (!empty($updates)) $db->update('users', $uid, $updates);
+        if (!empty($input['class'])) $_SESSION['user_class'] = sanitize($input['class']);
         // Teacher-specific fields
         $user = $db->find('users', 'id', $uid);
         if ($user && ($user['role'] ?? '') === 'teacher') {

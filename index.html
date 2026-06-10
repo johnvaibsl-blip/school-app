@@ -1418,17 +1418,8 @@
         <h3 class="header-title">Upgrade Plan</h3>
     </header>
     <div class="main-content">
-        <div style="background:linear-gradient(135deg,#10B981,#059669);border-radius:14px;padding:16px;margin-bottom:16px;text-align:center">
-            <p style="font-size:12px;font-weight:700;color:white;margin-bottom:4px"><i data-lucide="gift" style="width:14px;height:14px"></i> 7-Day Free Trial</p>
-            <p style="font-size:10px;color:rgba(255,255,255,0.85)">Try Premium free. Cancel anytime before trial ends.</p>
-        </div>
-
-        <div class="pricing-toggle">
-            <button class="toggle-btn active" onclick="togglePricing(this)">Monthly</button>
-            <button class="toggle-btn" onclick="togglePricing(this)">Yearly</button>
-        </div>
         <div id="pricingList">
-            <!-- Dynamic: loaded by loadPackages() -->
+            <!-- Dynamic: loaded by loadPackages() from admin-created plans -->
         </div>
 
         <div style="background:var(--card);border-radius:12px;padding:16px;margin-top:16px;box-shadow:var(--shadow)">
@@ -1521,6 +1512,19 @@
             <div class="form-group">
                 <label style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;display:block">School</label>
                 <input type="text" id="epSchool" placeholder="Your school name" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;background:var(--card);color:var(--text)">
+            </div>
+            <div class="form-group">
+                <label style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;display:block">Class / Grade</label>
+                <select id="epClass" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;background:var(--card);color:var(--text)">
+                    <option value="Class 7">Class 7</option>
+                    <option value="Class 8">Class 8</option>
+                    <option value="Class 9 Science">Class 9 - Science</option>
+                    <option value="Class 9 Commerce">Class 9 - Commerce</option>
+                    <option value="Class 9 Arts">Class 9 - Arts</option>
+                    <option value="Class 10 Science">Class 10 - Science</option>
+                    <option value="Class 10 Commerce">Class 10 - Commerce</option>
+                    <option value="Class 10 Arts">Class 10 - Arts</option>
+                </select>
             </div>
         </div>
 
@@ -1995,7 +1999,7 @@
         </div>
         <div class="input-group">
             <label>Class</label>
-            <select class="select-field"><option>Select Class</option><option>Class 7</option><option>Class 8</option><option>Class 9</option><option>Class 10</option></select>
+            <select class="select-field"><option>Select Class</option><option>Class 7</option><option>Class 8</option><option>Class 9 Science</option><option>Class 9 Commerce</option><option>Class 9 Arts</option><option>Class 10 Science</option><option>Class 10 Commerce</option><option>Class 10 Arts</option></select>
         </div>
         <div class="input-group">
             <label>Subject</label>
@@ -3241,45 +3245,10 @@
     <header class="header">
         <button class="header-back" onclick="showScreen('screen-admin')"><i data-lucide="arrow-left"></i></button>
         <h3 class="header-title">Packages</h3>
-        <button class="icon-btn" onclick="showToast('Add package coming soon!','info')"><i data-lucide="plus"></i></button>
     </header>
     <div class="main-content">
-        <div style="display:flex;gap:6px;margin-bottom:16px">
-            <button class="filter-chip active">Student</button>
-            <button class="filter-chip">Teacher</button>
-        </div>
-        <div class="pricing-card">
-            <div style="display:flex;justify-content:space-between;align-items:start">
-                <div><div class="pricing-name">Basic</div><div class="pricing-price">৳0<span></span></div></div>
-                <div class="badge green">Active</div>
-            </div>
-            <ul class="pricing-features">
-                <li><i data-lucide="check"></i> 5 AI questions/day</li>
-                <li><i data-lucide="check"></i> Basic access</li>
-            </ul>
-            <button class="btn-outline">Edit</button>
-        </div>
-        <div class="pricing-card">
-            <div style="display:flex;justify-content:space-between;align-items:start">
-                <div><div class="pricing-name">Premium</div><div class="pricing-price">৳499<span>/mo</span></div></div>
-                <div class="badge green">Active</div>
-            </div>
-            <ul class="pricing-features">
-                <li><i data-lucide="check"></i> Unlimited AI</li>
-                <li><i data-lucide="check"></i> All features</li>
-            </ul>
-            <button class="btn-outline">Edit</button>
-        </div>
-        <div class="pricing-card">
-            <div style="display:flex;justify-content:space-between;align-items:start">
-                <div><div class="pricing-name">Family</div><div class="pricing-price">৳999<span>/mo</span></div></div>
-                <div class="badge green">Active</div>
-            </div>
-            <ul class="pricing-features">
-                <li><i data-lucide="check"></i> 3 students</li>
-                <li><i data-lucide="check"></i> Parent dashboard</li>
-            </ul>
-            <button class="btn-outline">Edit</button>
+        <div id="adminPackagesList">
+            <!-- Dynamic: loaded by loadAdminPackages() -->
         </div>
     </div>
 </div>
@@ -3364,7 +3333,24 @@
 
 
 <!-- ========== BOTTOM NAVIGATION ========== -->
-<nav class="bottom-nav" id="bottomNav"></nav>
+<nav class="bottom-nav" id="bottomNav">
+    <button class="nav-item active" data-screen="screen-home" onclick="navTo(this,'screen-home')">
+        <span class="nav-icon"><i data-lucide="home"></i></span>
+        <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item" data-screen="screen-tutors" onclick="navTo(this,'screen-tutors')">
+        <span class="nav-icon"><i data-lucide="users"></i></span>
+        <span class="nav-label">Tutors</span>
+    </button>
+    <button class="nav-item" data-screen="screen-my-study" onclick="navTo(this,'screen-my-study')">
+        <span class="nav-icon"><i data-lucide="book-open"></i></span>
+        <span class="nav-label">My Study</span>
+    </button>
+    <button class="nav-item" data-screen="screen-profile" onclick="navTo(this,'screen-profile')">
+        <span class="nav-icon"><i data-lucide="user"></i></span>
+        <span class="nav-label">Profile</span>
+    </button>
+</nav>
 
 <script src="js/app.js"></script>
 </body>
