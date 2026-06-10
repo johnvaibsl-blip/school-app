@@ -847,6 +847,9 @@ $filteredSubs=array_filter($allSubs,function($s)use($tab){return($s['type']??'te
 
 <div class="card">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="margin-bottom:0"><i data-lucide="user-check"></i><?php echo $tab==='platform'?'Platform':'Teacher'; ?> Subscription Requests</h3></div>
+<?php if(empty($filteredSubs)):?>
+<div style="text-align:center;padding:40px 20px;color:#9CA3AF"><i data-lucide="inbox" style="width:48px;height:48px;margin-bottom:12px;opacity:0.3"></i><p style="font-size:14px;font-weight:600">No subscription requests</p><p style="font-size:12px">When students subscribe to <?php echo $tab==='platform'?'platform packages':'teachers'; ?>, requests will appear here.</p></div>
+<?php else:?>
 <div class="search-bar"><i data-lucide="search"></i><input type="text" placeholder="Search subscriptions..." oninput="filterTable(this,'subs-table')"></div>
 <table id="subs-table"><tr><th>Student</th><?php if($tab==='teacher'):?><th>Teacher</th><?php endif;?><th>Package</th><th>Amount</th><th>Transaction ID</th><th>Status</th><th>Date</th><th>Actions</th></tr>
 <?php foreach($filteredSubs as $s):
@@ -874,7 +877,8 @@ $pkg=$db->find('packages','id',$s['package_id']);
 <span style="font-size:10px;color:#9CA3AF"><?php echo $s['approved_at']?date('M d',strtotime($s['approved_at'])):'-'; ?></span>
 <?php endif; ?>
 </td></tr>
-<?php endforeach; ?></table></div>
+<?php endforeach; ?></table>
+<?php endif;?></div>
 
 <?php /* === REVENUE === */ ?>
 <?php elseif($page==='revenue'):

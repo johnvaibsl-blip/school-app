@@ -30,7 +30,7 @@ class JsonDB {
     }
     
     public function save() {
-        file_put_contents($this->file, json_encode($this->data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        file_put_contents($this->file, json_encode($this->data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), LOCK_EX);
     }
     
     public function query($table) {
@@ -113,9 +113,10 @@ class JsonDB {
     }
     
     public function update($table, $id, $data) {
-        foreach (($this->data[$table] ?? []) as &$row) {
+        if (!isset($this->data[$table])) return false;
+        foreach ($this->data[$table] as $key => $row) {
             if (isset($row['id']) && $row['id'] == $id) {
-                $row = array_merge($row, $data);
+                $this->data[$table][$key] = array_merge($row, $data);
                 $this->save();
                 return true;
             }
@@ -497,14 +498,7 @@ class JsonDB {
             ['id'=>10,'subject'=>'ICT','topic'=>'Database Fundamentals','class_name'=>'Class 8','time'=>'09:00 - 10:00','day'=>'Thursday','teacher_name'=>'Ms. Sarah','teacher_id'=>4,'students_count'=>22,'status'=>'upcoming'],
         ];
 
-        $this->data['subscriptions'] = [
-            ['id'=>1,'student_id'=>1,'teacher_id'=>2,'package_id'=>2,'amount'=>499,'transaction_id'=>'BK1234567890','status'=>'approved','type'=>'teacher','created_at'=>'2026-06-01 10:00:00','approved_at'=>'2026-06-02 09:00:00'],
-            ['id'=>2,'student_id'=>5,'teacher_id'=>2,'package_id'=>1,'amount'=>299,'transaction_id'=>'NAG9876543210','status'=>'pending','type'=>'teacher','created_at'=>'2026-06-09 14:30:00','approved_at'=>null],
-            ['id'=>3,'student_id'=>6,'teacher_id'=>4,'package_id'=>2,'amount'=>499,'transaction_id'=>'BK1122334455','status'=>'approved','type'=>'teacher','created_at'=>'2026-06-05 11:00:00','approved_at'=>'2026-06-05 16:00:00'],
-            ['id'=>4,'student_id'=>1,'teacher_id'=>null,'package_id'=>3,'amount'=>4999,'transaction_id'=>'BK9988776655','status'=>'approved','type'=>'platform','created_at'=>'2026-06-01 10:00:00','approved_at'=>'2026-06-01 10:30:00'],
-            ['id'=>5,'student_id'=>5,'teacher_id'=>null,'package_id'=>1,'amount'=>299,'transaction_id'=>'NAG5544332211','status'=>'pending','type'=>'platform','created_at'=>'2026-06-10 09:00:00','approved_at'=>null],
-            ['id'=>6,'student_id'=>7,'teacher_id'=>null,'package_id'=>2,'amount'=>499,'transaction_id'=>'BK1122339988','status'=>'approved','type'=>'platform','created_at'=>'2026-05-15 10:00:00','approved_at'=>'2026-05-15 11:00:00'],
-        ];
+        $this->data['subscriptions'] = [];
     }
 }
 
