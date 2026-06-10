@@ -54,6 +54,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($a === 'add_report') { $db->insert('reports', ['student_id'=>intval($_POST['student_id']),'teacher_id'=>intval($_POST['teacher_id']??0),'subject'=>sanitize($_POST['subject']),'class'=>sanitize($_POST['class']),'grade'=>sanitize($_POST['grade']),'score'=>intval($_POST['score']),'behavior'=>sanitize($_POST['behavior']??'Good'),'comment'=>sanitize($_POST['comment']??''),'date'=>sanitize($_POST['date']??date('Y-m-d'))]); header('Location: ?page=reports&msg=added'); exit; }
     if ($a === 'edit_report') { $db->update('reports',intval($_POST['id']),['student_id'=>intval($_POST['student_id']),'teacher_id'=>intval($_POST['teacher_id']??0),'subject'=>sanitize($_POST['subject']),'class'=>sanitize($_POST['class']),'grade'=>sanitize($_POST['grade']),'score'=>intval($_POST['score']),'behavior'=>sanitize($_POST['behavior']??'Good'),'comment'=>sanitize($_POST['comment']??''),'date'=>sanitize($_POST['date']??date('Y-m-d'))]); header('Location: ?page=reports&msg=updated'); exit; }
     if ($a === 'add_badge') { $db->insert('badges', ['student_id'=>intval($_POST['student_id']),'name'=>sanitize($_POST['name']),'icon'=>sanitize($_POST['icon']??'award'),'description'=>sanitize($_POST['description']??''),'earned_date'=>date('Y-m-d')]); header('Location: ?page=student_progress&msg=badge_added'); exit; }
+    if ($a === 'approve_student_sub') {
+        $sid=intval($_POST['id']);
+        $ssub=$db->find('subscriptions','id',$sid);
+        $db->update('subscriptions',$sid,['status'=>'approved','approved_at'=>date('Y-m-d H:i:s')]);
+        if($ssub&&($ssub['type']??'teacher')==='platform'){
+            $spkg=$db->find('packages','id',$ssub['package_id']);
+            $sduration=$spkg?intval($spkg['duration']):30;
+            $sexpiresAt=date('Y-m-d H:i:s',strtotime('+'.$sduration.' days'));
+            $db->update('users',$ssub['student_id'],['is_premium'=>1,'premium_expires_at'=>$sexpiresAt]);
+        }
+        header('Location: ?page=student-subscriptions&msg=approved');exit;
+    }
+    if ($a === 'reject_student_sub') {
+        $sid=intval($_POST['id']);
+        $db->update('subscriptions',$sid,['status'=>'rejected']);
+        header('Location: ?page=student-subscriptions&msg=rejected');exit;
+    }
 }
 
 // Fetch data
@@ -1068,26 +1085,6 @@ $ebqO=is_array($ebq['options'] ?? null) ? ($ebq['options'] ?? []) : json_decode(
 <?php /* === STUDENT SUBSCRIPTIONS === */ ?>
 <?php elseif($page==='student-subscriptions'):
 $allStudentSubs=$db->query('subscriptions');
-if($_SERVER['REQUEST_METHOD']==='POST'&&isset($_POST['action'])){
-    $ssa=$_POST['action'];
-    if($ssa==='approve_student_sub'){
-        $sid=intval($_POST['id']);
-        $ssub=$db->find('subscriptions','id',$sid);
-        $db->update('subscriptions',$sid,['status'=>'approved','approved_at'=>date('Y-m-d H:i:s')]);
-        if($ssub&&($ssub['type']??'teacher')==='platform'){
-            $spkg=$db->find('packages','id',$ssub['package_id']);
-            $sduration=$spkg?intval($spkg['duration']):30;
-            $sexpiresAt=date('Y-m-d H:i:s',strtotime('+'.$sduration.' days'));
-            $db->update('users',$ssub['student_id'],['is_premium'=>1,'premium_expires_at'=>$sexpiresAt]);
-        }
-        header('Location: ?page=student-subscriptions&msg=approved');exit;
-    }
-    if($ssa==='reject_student_sub'){
-        $sid=intval($_POST['id']);
-        $db->update('subscriptions',$sid,['status'=>'rejected']);
-        header('Location: ?page=student-subscriptions&msg=rejected');exit;
-    }
-}
 ?>
 <div class="card"><h3><i data-lucide="users"></i>All Student Subscriptions (<?php echo count($allStudentSubs); ?>)</h3>
 <div class="search-bar"><i data-lucide="search"></i><input type="text" placeholder="Search subscriptions..." oninput="filterTable(this,'ss-table')"></div>
