@@ -1685,7 +1685,7 @@ body {
 .sp-header { position: relative; }
 
 .sp-cover {
-    height: 180px;
+    height: 130px;
     background: linear-gradient(160deg, #0B0D1A 0%, #111433 40%, #1B1F4B 70%, #252A5C 100%);
     position: relative;
     overflow: hidden;
@@ -1721,7 +1721,7 @@ body {
 }
 
 /* Hero */
-.sp-hero { text-align: center; padding: 48px 0 4px; }
+.sp-hero { text-align: center; padding: 0 0 4px; }
 
 .sp-avatar-wrap {
     position: relative;
