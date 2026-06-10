@@ -1078,6 +1078,143 @@ csv.push(row.join(','));}
 var blob=new Blob([csv.join('\n')],{type:'text/csv'});var a=document.createElement('a');
 a.href=URL.createObjectURL(blob);a.download=filename;a.click();
 }
+
+// --- PAGINATION ---
+var _paginatedTables={};
+function paginateTable(tableId,perPage){
+var table=document.getElementById(tableId);if(!table)return;
+var rows=[];for(var i=1;i<table.rows.length;i++)rows.push(table.rows[i]);
+var total=rows.length;var pages=Math.ceil(total/perPage);var currentPage=1;
+_paginatedTables[tableId]={rows:rows,perPage:perPage,total:total,pages:pages,currentPage:currentPage};
+renderPagination(tableId);
+}
+function renderPagination(tableId){
+var s=_paginatedTables[tableId];if(!s)return;
+var table=document.getElementById(tableId);
+s.rows.forEach(function(r){r.style.display='none';});
+var start=(s.currentPage-1)*s.perPage;
+for(var i=start;i<Math.min(start+s.perPage,s.total);i++)s.rows[i].style.display='';
+var existing=document.getElementById('pag-'+tableId);
+if(existing)existing.remove();
+if(s.pages<=1)return;
+var div=document.createElement('div');div.id='pag-'+tableId;
+div.style.cssText='display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;padding:10px 0';
+var prevBtn=document.createElement('button');prevBtn.textContent='← Prev';prevBtn.className='btn btn-outline btn-sm';
+prevBtn.disabled=s.currentPage===1;prevBtn.onclick=function(){s.currentPage--;renderPagination(tableId);};
+div.appendChild(prevBtn);
+for(var p=1;p<=s.pages;p++){
+if(s.pages>7&&p>2&&p<s.pages-1&&Math.abs(p-s.currentPage)>1){if(p===3||p===s.pages-2){var dots=document.createElement('span');dots.textContent='...';dots.style.cssText='color:#9CA3AF;font-size:12px';div.appendChild(dots);}continue;}
+var btn=document.createElement('button');btn.textContent=p;btn.className='btn btn-sm '+(p===s.currentPage?'btn-primary':'btn-outline');
+btn.onclick=(function(pg){return function(){s.currentPage=pg;renderPagination(tableId);};})(p);
+div.appendChild(btn);
+}
+var nextBtn=document.createElement('button');nextBtn.textContent='Next →';nextBtn.className='btn btn-outline btn-sm';
+nextBtn.disabled=s.currentPage===s.pages;nextBtn.onclick=function(){s.currentPage++;renderPagination(tableId);};
+div.appendChild(nextBtn);
+var info=document.createElement('span');info.style.cssText='font-size:11px;color:#9CA3AF;margin-left:8px';
+info.textContent=s.total+' items';div.appendChild(info);
+table.parentNode.insertBefore(div,table.nextSibling);
+}
+
+// --- TOAST NOTIFICATIONS ---
+function showToast(msg,type){
+type=type||'success';
+var existing=document.querySelector('.admin-toast');if(existing)existing.remove();
+var t=document.createElement('div');t.className='admin-toast';
+t.style.cssText='position:fixed;top:20px;right:20px;z-index:9999;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;color:white;box-shadow:0 8px 24px rgba(0,0,0,0.15);display:flex;align-items:center;gap:8px;animation:toastIn .3s ease;max-width:350px';
+var colors={success:'#10B981',error:'#EF4444',info:'#3B82F6',warning:'#F59E0B'};
+var icons={success:'check-circle',error:'alert-circle',info:'info',warning:'alert-triangle'};
+t.style.background=colors[type]||colors.success;
+t.innerHTML='<i data-lucide="'+(icons[type]||'check-circle')+'" style="width:18px;height:18px;flex-shrink:0"></i><span>'+msg+'</span>';
+document.body.appendChild(t);
+if(typeof lucide!=='undefined')lucide.createIcons();
+setTimeout(function(){t.style.animation='toastOut .3s ease forwards';setTimeout(function(){t.remove();},300);},3000);
+}
+var toastStyle=document.createElement('style');
+toastStyle.textContent='@keyframes toastIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}@keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(40px)}}';
+document.head.appendChild(toastStyle);
+
+// Replace flash banner with toast
+(function(){var msg=document.querySelector('.msg');if(msg){var txt=msg.textContent.trim();showToast(txt,'success');msg.style.display='none';}})();
+
+// --- CONFIRMATION MODALS ---
+function confirmModal(title,text,onConfirm){
+var overlay=document.createElement('div');
+overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:10000;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s';
+var modal=document.createElement('div');
+modal.style.cssText='background:white;border-radius:16px;padding:28px;max-width:360px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.2);animation:modalIn .2s';
+modal.innerHTML='<h3 style="font-size:16px;font-weight:700;margin-bottom:8px;color:#1F2937">'+title+'</h3><p style="font-size:13px;color:#6B7280;margin-bottom:20px;line-height:1.5">'+text+'</p><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-outline" id="modalCancel">Cancel</button><button class="btn btn-danger" id="modalConfirm">Confirm</button></div>';
+overlay.appendChild(modal);
+document.body.appendChild(overlay);
+modal.querySelector('#modalCancel').onclick=function(){overlay.remove();};
+modal.querySelector('#modalConfirm').onclick=function(){overlay.remove();onConfirm();};
+overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
+}
+var modalStyle=document.createElement('style');
+modalStyle.textContent='@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes modalIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}';
+document.head.appendChild(modalStyle);
+
+// Override confirm() calls on delete links
+document.addEventListener('click',function(e){
+var link=e.target.closest('a[href*="del_table="]');
+if(link&&link.getAttribute('onclick')&&link.getAttribute('onclick').indexOf('confirm(')>-1){
+e.preventDefault();
+var href=link.getAttribute('href');
+confirmModal('Delete Item','Are you sure you want to delete this item? This action cannot be undone.',function(){window.location.href=href;}
+);
+}
+});
+
+// --- TABLE SORT ---
+document.querySelectorAll('table th').forEach(function(th){
+th.style.cursor='pointer';th.title='Click to sort';
+th.addEventListener('click',function(){
+var table=th.closest('table');var idx=Array.from(th.parentNode.children).indexOf(th);
+var rows=Array.from(table.querySelectorAll('tr:not(:first-child)'));
+var dir=th.dataset.sortDir==='asc'?'desc':'asc';
+th.dataset.sortDir=dir;
+table.querySelectorAll('th').forEach(function(h){if(h!==th)h.dataset.sortDir='';});
+rows.sort(function(a,b){
+var av=(a.children[idx]||{}).textContent||'';var bv=(b.children[idx]||{}).textContent|| '';
+var an=parseFloat(av),bn=parseFloat(bv);
+if(!isNaN(an)&&!isNaN(bn))return dir==='asc'?an-bn:bn-an;
+return dir==='asc'?av.localeCompare(bv):bv.localeCompare(av);
+});
+rows.forEach(function(r){table.appendChild(r);});
+});
+});
+
+// --- LOADING SPINNER ON FORM SUBMIT ---
+document.querySelectorAll('form[method="POST"]').forEach(function(f){
+f.addEventListener('submit',function(){
+var btn=f.querySelector('button[type="submit"]');
+if(btn){
+btn.dataset.origText=btn.textContent;
+btn.innerHTML='<svg style="width:16px;height:16px;animation:spin 1s linear infinite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="30 60"/></svg> Saving...';
+btn.disabled=true;
+}
+});
+});
+var spinStyle=document.createElement('style');
+spinStyle.textContent='@keyframes spin{to{transform:rotate(360deg)}}';
+document.head.appendChild(spinStyle);
+
+// --- TABLE OVERFLOW ---
+document.querySelectorAll('.card').forEach(function(c){
+var t=c.querySelector('table');if(t){
+var w=document.createElement('div');w.style.cssText='overflow-x:auto;-webkit-overflow-scrolling:touch';
+t.parentNode.insertBefore(w,t);w.appendChild(t);
+}
+});
+
+// Init pagination on key tables (25 per page)
+['users-table','bq-table','ss-table'].forEach(function(id){
+var t=document.getElementById(id);if(t&&t.rows.length>10)paginateTable(id,25);
+});
+// Auto-paginate tables with 15+ rows that have IDs
+document.querySelectorAll('table[id]').forEach(function(t){
+if(t.id&&t.rows.length>15&&!_paginatedTables[t.id])paginateTable(t.id,25);
+});
 </script>
 </body>
 </html>
