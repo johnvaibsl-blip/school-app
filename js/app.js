@@ -1622,10 +1622,9 @@ function loadStudentProfile() {
         var p = data.progress || {};
         var setEl = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
         setEl('profileUserName', u.name || USER_NAME);
+        setEl('profileUserClass', (u.class || USER_CLASS) + (u.school ? ' · ' + u.school : ''));
         var emailEl = document.getElementById('profileUserEmail');
-        if (emailEl) emailEl.textContent = u.email || USER_EMAIL;
-        var classEl = document.getElementById('profileUserClass');
-        if (classEl) classEl.innerHTML = '<i data-lucide="graduation-cap" style="width:10px;height:10px"></i> ' + (u.class || USER_CLASS);
+        if (emailEl) emailEl.textContent = 'Passionate learner exploring new horizons every day!';
         var avatarEl = document.getElementById('profileUserAvatar');
         if (avatarEl) avatarEl.textContent = (u.name || USER_NAME || 'S')[0].toUpperCase();
         var proBadge = document.querySelector('.sp-pro-badge');

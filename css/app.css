@@ -1685,58 +1685,52 @@ body {
 .sp-header { position: relative; overflow: hidden; }
 
 .sp-cover {
-    height: 140px;
-    background: linear-gradient(135deg, #0F0A2E 0%, #1a1145 25%, #2d1b69 50%, #4338CA 80%, #6366F1 100%);
+    height: 180px;
+    background: linear-gradient(160deg, #0B0D1A 0%, #111433 30%, #1B1F4B 60%, #252A5C 100%);
     position: relative;
     overflow: hidden;
 }
 .sp-cover-orb {
     position: absolute;
     border-radius: 50%;
-    filter: blur(40px);
+    filter: blur(50px);
 }
 .sp-cover-orb-1 {
-    width: 160px; height: 160px;
-    background: rgba(139,92,246,0.5);
-    top: -40px; right: -20px;
-    animation: orbFloat 6s ease-in-out infinite;
+    width: 200px; height: 200px;
+    background: rgba(99,102,241,0.25);
+    top: -60px; right: -40px;
+    animation: orbFloat 8s ease-in-out infinite;
 }
 .sp-cover-orb-2 {
-    width: 100px; height: 100px;
-    background: rgba(236,72,153,0.4);
-    bottom: -30px; left: 20px;
-    animation: orbFloat 8s ease-in-out infinite reverse;
+    width: 120px; height: 120px;
+    background: rgba(139,92,246,0.2);
+    bottom: -40px; left: -20px;
+    animation: orbFloat 10s ease-in-out infinite reverse;
 }
 .sp-cover-orb-3 {
-    width: 70px; height: 70px;
-    background: rgba(59,130,246,0.35);
-    top: 20px; left: 40%;
-    animation: orbFloat 5s ease-in-out infinite 1s;
-}
-.sp-cover-grid {
-    position: absolute;
-    inset: 0;
-    background-image:
-        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-    background-size: 20px 20px;
+    width: 80px; height: 80px;
+    background: rgba(236,72,153,0.15);
+    top: 30px; left: 35%;
+    animation: orbFloat 6s ease-in-out infinite 2s;
 }
 @keyframes orbFloat {
     0%, 100% { transform: translate(0, 0) scale(1); }
-    50% { transform: translate(10px, -10px) scale(1.1); }
+    50% { transform: translate(8px, -8px) scale(1.08); }
 }
 
 .sp-body {
     background: var(--bg);
     padding: 0 16px;
-    margin-top: -40px;
+    margin-top: -50px;
     position: relative;
     z-index: 2;
 }
 
-/* Hero Avatar */
-.sp-hero { text-align: center; padding-top: 12px; margin-bottom: 16px; }
-
+/* Hero */
+.sp-hero {
+    text-align: center;
+    padding: 0 0 14px;
+}
 .sp-avatar-wrap {
     position: relative;
     display: inline-block;
@@ -1746,61 +1740,70 @@ body {
     position: absolute;
     inset: -5px;
     border-radius: 50%;
-    border: 3px solid rgba(99,102,241,0.3);
-    box-shadow: 0 0 20px rgba(99,102,241,0.2), inset 0 0 20px rgba(99,102,241,0.1);
+    border: 2.5px solid rgba(99,102,241,0.35);
+    box-shadow: 0 0 24px rgba(99,102,241,0.15);
     animation: ringPulse 3s ease-in-out infinite;
 }
 @keyframes ringPulse {
-    0%, 100% { box-shadow: 0 0 20px rgba(99,102,241,0.2), inset 0 0 20px rgba(99,102,241,0.1); }
-    50% { box-shadow: 0 0 30px rgba(99,102,241,0.35), inset 0 0 25px rgba(99,102,241,0.15); }
+    0%, 100% { box-shadow: 0 0 24px rgba(99,102,241,0.15); }
+    50% { box-shadow: 0 0 32px rgba(99,102,241,0.25); }
 }
 .sp-avatar {
-    width: 84px; height: 84px;
+    width: 90px;
+    height: 90px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #EC4899, #F472B6, #A855F7);
-    display: flex; align-items: center; justify-content: center;
-    color: white; font-size: 32px; font-weight: 800;
-    border: 3px solid white;
-    box-shadow: 0 8px 30px rgba(236,72,153,0.35);
-    position: relative;
+    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #A78BFA 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 34px;
+    font-weight: 800;
+    border: 3px solid rgba(255,255,255,0.9);
+    box-shadow: 0 8px 32px rgba(99,102,241,0.3);
 }
 .sp-pro-badge {
     position: absolute;
-    bottom: 0; right: -2px;
+    bottom: 2px; right: 0;
     background: linear-gradient(135deg, #F59E0B, #F97316);
     color: white;
-    padding: 3px 8px;
+    padding: 2px 8px;
     border-radius: 8px;
     font-size: 9px;
     font-weight: 800;
     letter-spacing: 0.5px;
-    border: 2px solid white;
+    border: 2px solid var(--bg);
     box-shadow: 0 2px 8px rgba(245,158,11,0.4);
 }
 
 .sp-name {
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 800;
     color: var(--text);
-    margin-bottom: 6px;
+    margin-bottom: 2px;
     letter-spacing: -0.3px;
 }
-.sp-class-row { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
-.sp-tag {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
+.sp-age {
+    font-size: 13px;
+    color: var(--text3);
+    font-weight: 500;
+    margin-bottom: 6px;
 }
-.sp-tag-blue { background: rgba(59,130,246,0.1); color: #3B82F6; }
-.sp-tag-purple { background: rgba(139,92,246,0.1); color: #8B5CF6; }
-.sp-tag-green { background: rgba(16,185,129,0.1); color: #10B981; }
+.sp-bio {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+    max-width: 280px;
+    margin: 0 auto;
+    padding: 0 8px;
+}
 
 /* Stats Row */
 .sp-stats {
     display: flex;
     align-items: center;
+    justify-content: center;
+    gap: 0;
     background: var(--card);
     border-radius: 16px;
     padding: 14px 8px;
@@ -1816,33 +1819,27 @@ body {
     align-items: center;
     gap: 2px;
 }
-.sp-stat-icon {
-    width: 30px; height: 30px;
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    margin-bottom: 4px;
-}
-.sp-stat-icon i { width: 14px; height: 14px; color: white; }
-.sp-stat-icon-blue { background: linear-gradient(135deg, #3B82F6, #2563EB); }
-.sp-stat-icon-green { background: linear-gradient(135deg, #10B981, #059669); }
-.sp-stat-icon-orange { background: linear-gradient(135deg, #F59E0B, #F97316); }
-.sp-stat-icon-gold { background: linear-gradient(135deg, #EAB308, #CA8A04); }
 .sp-stat-num {
-    font-size: 16px; font-weight: 800; color: var(--text);
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text);
     line-height: 1;
 }
 .sp-stat-label {
-    font-size: 10px; color: var(--text3);
-    text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
 }
 .sp-stat-divider {
     width: 1px;
-    height: 32px;
+    height: 28px;
     background: var(--border);
     flex-shrink: 0;
 }
 
-/* Quick Action Buttons */
+/* Quick Actions */
 .sp-actions {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -1850,8 +1847,10 @@ body {
     margin-bottom: 14px;
 }
 .sp-action-btn {
-    display: flex; flex-direction: column;
-    align-items: center; gap: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
     background: var(--card);
     border-radius: 14px;
     padding: 12px 4px 10px;
@@ -1863,9 +1862,12 @@ body {
 }
 .sp-action-btn:active { transform: scale(0.95); box-shadow: none; }
 .sp-action-icon {
-    width: 34px; height: 34px;
+    width: 34px;
+    height: 34px;
     border-radius: 11px;
-    display: flex; align-items: center; justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .sp-action-icon i { width: 16px; height: 16px; color: white; }
 .sp-action-purple { background: linear-gradient(135deg, #6366F1, #8B5CF6); }
@@ -1874,7 +1876,7 @@ body {
 .sp-action-indigo { background: linear-gradient(135deg, #4F46E5, #6366F1); }
 .sp-action-btn span { font-size: 10px; font-weight: 600; color: var(--text2); }
 
-/* Achievement Chips - horizontal scroll */
+/* Achievement Chips */
 .sp-badges-scroll {
     display: flex;
     gap: 10px;
@@ -1886,7 +1888,9 @@ body {
 .sp-badges-scroll::-webkit-scrollbar { display: none; }
 
 .sp-badge-chip {
-    display: flex; align-items: center; gap: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     background: var(--card);
     border: 1.5px solid var(--border);
     border-radius: 16px;
