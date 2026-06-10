@@ -81,13 +81,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $expiresAt=date('Y-m-d H:i:s',strtotime('+'.$duration.' days'));
             $db->update('users',$sub['student_id'],['is_premium'=>1,'premium_expires_at'=>$expiresAt]);
         }
-        $tab=$_GET['tab']??'platform';
+        $tab=$_POST['tab']??'platform';
         header('Location: ?page=subscriptions&tab='.$tab.'&msg=approved');exit;
     }
     if ($a === 'reject_sub') {
         $sid=intval($_POST['id']);
         $db->update('subscriptions',$sid,['status'=>'rejected']);
-        $tab=$_GET['tab']??'platform';
+        $tab=$_POST['tab']??'platform';
         header('Location: ?page=subscriptions&tab='.$tab.'&msg=rejected');exit;
     }
 }
@@ -868,8 +868,8 @@ $pkg=$db->find('packages','id',$s['package_id']);
 <td style="font-size:11px"><?php echo date('M d, Y',strtotime($s['created_at'])); ?></td>
 <td class="actions">
 <?php if($s['status']==='pending'||$s['status']==='teacher_approved'):?>
-<button type="button" class="btn btn-sm" style="background:#10B981;color:white;padding:6px 12px" onclick="adminSubAction(<?php echo $s['id']; ?>,'admin_approve_sub','<?php echo $tab; ?>')">Approve</button>
-<button type="button" class="btn btn-danger btn-sm" style="padding:6px 12px" onclick="adminSubAction(<?php echo $s['id']; ?>,'admin_reject_sub','<?php echo $tab; ?>')">Reject</button>
+<form method="POST" style="display:inline;margin:0"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="approve_sub"><input type="hidden" name="id" value="<?php echo $s['id']; ?>"><input type="hidden" name="tab" value="<?php echo $tab; ?>"><button type="submit" class="btn btn-sm" style="background:#10B981;color:white;padding:6px 14px;cursor:pointer">Approve</button></form>
+<form method="POST" style="display:inline;margin:0"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="reject_sub"><input type="hidden" name="id" value="<?php echo $s['id']; ?>"><input type="hidden" name="tab" value="<?php echo $tab; ?>"><button type="submit" class="btn btn-danger btn-sm" style="padding:6px 14px;cursor:pointer" onclick="return confirm('Reject this subscription?')">Reject</button></form>
 <?php else: ?>
 <span style="font-size:10px;color:#9CA3AF"><?php echo $s['approved_at']?date('M d',strtotime($s['approved_at'])):'-'; ?></span>
 <?php endif; ?>
@@ -1103,8 +1103,8 @@ $ssPkg=$db->find('packages','id',$ss['package_id']);
 <td style="font-size:11px"><?php echo date('M d, Y',strtotime($ss['created_at'])); ?></td>
 <td class="actions">
 <?php if($ss['status']==='pending'):?>
-<button type="button" class="btn btn-sm" style="background:#10B981;color:white;padding:6px 12px" onclick="adminSubAction(<?php echo $ss['id']; ?>,'admin_approve_student_sub','student')">Approve</button>
-<button type="button" class="btn btn-danger btn-sm" style="padding:6px 12px" onclick="adminSubAction(<?php echo $ss['id']; ?>,'admin_reject_student_sub','student')">Reject</button>
+<form method="POST" style="display:inline;margin:0"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="approve_student_sub"><input type="hidden" name="id" value="<?php echo $ss['id']; ?>"><button type="submit" class="btn btn-sm" style="background:#10B981;color:white;padding:6px 14px;cursor:pointer">Approve</button></form>
+<form method="POST" style="display:inline;margin:0"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="reject_student_sub"><input type="hidden" name="id" value="<?php echo $ss['id']; ?>"><button type="submit" class="btn btn-danger btn-sm" style="padding:6px 14px;cursor:pointer" onclick="return confirm('Reject?')">Reject</button></form>
 <?php else: ?>
 <span style="font-size:10px;color:#9CA3AF"><?php echo $ss['approved_at']?date('M d',strtotime($ss['approved_at'])):'-'; ?></span>
 <?php endif; ?>
@@ -1128,14 +1128,6 @@ for(var j=0;j<cols.length;j++)row.push('"'+cols[j].textContent.replace(/"/g,'""'
 csv.push(row.join(','));}
 var blob=new Blob([csv.join('\n')],{type:'text/csv'});var a=document.createElement('a');
 a.href=URL.createObjectURL(blob);a.download=filename;a.click();
-}
-function adminSubAction(id,action,tab){
-var label=action.indexOf('approve')>=0?'Approve':'Reject';
-if(!confirm(label+' this subscription?'))return;
-var url='/api/index.php?action='+action;
-fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id})}).then(function(r){return r.json()}).then(function(d){
-if(d.success){location.reload()}else{alert(d.error||'Failed')}
-}).catch(function(e){alert('Error: '+e.message)});
 }
 </script>
 </body>
