@@ -189,7 +189,7 @@ function showScreen(id) {
     if (id === 'screen-chat') loadChatSettings();
     if (id === 'screen-pricing') { loadPackages(); checkPremiumAccess(); }
     if (id === 'screen-tutors') loadTeacherRankings();
-    if (id === 'screen-profile' && USER_ROLE === 'student') { loadStudentProfile(); checkPremiumAccess(); }
+    if (id === 'screen-profile' && USER_ROLE === 'student') { loadStudentProfile(); }
     if (id === 'screen-edit-profile') loadEditProfile();
     if (id === 'screen-teacher-profile') loadTeacherProfile();
     if (id === 'screen-teacher-profile-view') loadTeacherOwnProfile();
@@ -1616,6 +1616,7 @@ function loadTeacherRankings() {
 
 // --- STUDENT PROFILE ---
 function loadStudentProfile() {
+    checkPremiumAccess().then(function() {
     api('student_profile').then(function(data) {
         var u = data.user || {};
         var p = data.progress || {};
@@ -1656,6 +1657,7 @@ function loadStudentProfile() {
         } else if (badgeContainer) {
             badgeContainer.innerHTML = '<p style="font-size:12px;color:var(--text3);padding:8px 0">No badges earned yet</p>';
         }
+    });
     });
 }
 
