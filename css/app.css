@@ -4591,3 +4591,42 @@ textarea.input-field { min-height: 100px; resize: vertical; }
 .badge-sub-approved { background: #10B981; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; }
 .badge-sub-pending { background: #F59E0B; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; }
 .badge-sub-rejected { background: #EF4444; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; }
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(255,255,255,0.15);
+    border-radius: 24px;
+    transition: 0.3s;
+}
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+.toggle-switch input:checked + .toggle-slider {
+    background: var(--primary);
+}
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(20px);
+}

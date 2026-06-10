@@ -175,6 +175,46 @@ switch ($path) {
         jsonResponse(['success' => true, 'id' => $id]);
         break;
 
+    case 'recipients':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $uid = intval($_SESSION['user_id']);
+        $role = $_SESSION['role'] ?? '';
+        $result = [];
+        if ($role === 'student') {
+            $allSubs = $db->query('subscriptions');
+            $teacherIds = [];
+            foreach ($allSubs as $s) {
+                if (($s['type'] ?? 'teacher') !== 'teacher') continue;
+                if (intval($s['student_id']) === $uid && $s['status'] === 'approved') {
+                    $teacherIds[] = intval($s['teacher_id']);
+                }
+            }
+            $teachers = $db->query('teachers');
+            $users = $db->query('users');
+            $userMap = [];
+            foreach ($users as $u) $userMap[$u['id']] = $u;
+            foreach ($teachers as $t) {
+                if (in_array(intval($t['user_id']), $teacherIds)) {
+                    $u = $userMap[$t['user_id']] ?? null;
+                    $result[] = ['id' => $t['user_id'], 'name' => $u['name'] ?? 'Teacher', 'role' => 'teacher'];
+                }
+            }
+        } elseif ($role === 'teacher') {
+            $students = $db->findAll('users', 'role', 'student');
+            $allSubs = $db->query('subscriptions');
+            foreach ($students as $s) {
+                foreach ($allSubs as $sub) {
+                    if (($sub['type'] ?? 'teacher') !== 'teacher') continue;
+                    if (intval($sub['student_id']) === intval($s['id']) && intval($sub['teacher_id']) === $uid && $sub['status'] === 'approved') {
+                        $result[] = ['id' => $s['id'], 'name' => $s['name'], 'role' => 'student'];
+                        break;
+                    }
+                }
+            }
+        }
+        jsonResponse($result);
+        break;
+
     case 'chat_messages':
         if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
         $uid = intval($_SESSION['user_id']);
@@ -224,6 +264,22 @@ switch ($path) {
     case 'profile':
         if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
         jsonResponse(currentUser());
+        break;
+
+    case 'change_password':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $input = json_decode(file_get_contents('php://input'), true);
+        $currentPassword = $input['current_password'] ?? '';
+        $newPassword = $input['new_password'] ?? '';
+        if (!$currentPassword || !$newPassword) jsonResponseError('Current password and new password required');
+        if (strlen($newPassword) < 6) jsonResponseError('New password must be at least 6 characters');
+        $uid = intval($_SESSION['user_id']);
+        $user = $db->find('users', 'id', $uid);
+        if (!$user || !password_verify($currentPassword, $user['password'])) {
+            jsonResponseError('Current password is incorrect');
+        }
+        $db->update('users', $uid, ['password' => password_hash($newPassword, PASSWORD_DEFAULT)]);
+        jsonResponse(['success' => true]);
         break;
 
     case 'edit_profile':
@@ -488,6 +544,27 @@ switch ($path) {
         jsonResponse($db->query('calendar_events'));
         break;
 
+    case 'add_calendar_event':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $input = json_decode(file_get_contents('php://input'), true);
+        $title = sanitize($input['title'] ?? '');
+        $subject = sanitize($input['subject'] ?? '');
+        $date = sanitize($input['date'] ?? '');
+        $start_time = sanitize($input['start_time'] ?? '');
+        $end_time = sanitize($input['end_time'] ?? '');
+        if (!$title || !$date) jsonResponseError('title and date required');
+        $id = $db->insert('calendar_events', [
+            'title' => $title,
+            'subject' => $subject,
+            'date' => $date,
+            'start_time' => $start_time,
+            'end_time' => $end_time,
+            'color' => '#4F46E5',
+            'created_by' => intval($_SESSION['user_id'] ?? 0)
+        ]);
+        jsonResponse(['success' => true, 'id' => $id]);
+        break;
+
     case 'reports':
         if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
         $uid = intval($_SESSION['user_id'] ?? 0);
@@ -536,6 +613,25 @@ switch ($path) {
 
     case 'question_bank':
         jsonResponse($db->query('question_bank'));
+        break;
+
+    case 'add_question':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        $role = $_SESSION['role'] ?? '';
+        if ($role !== 'admin') jsonResponseError('Admin only', 403);
+        $input = json_decode(file_get_contents('php://input'), true);
+        $id = $db->insert('question_bank', [
+            'subject_id' => intval($input['subject_id'] ?? 0),
+            'chapter' => sanitize($input['chapter'] ?? ''),
+            'question' => sanitize($input['question'] ?? ''),
+            'type' => sanitize($input['type'] ?? 'mcq'),
+            'options' => $input['options'] ?? [],
+            'correct' => intval($input['correct'] ?? 0),
+            'model_answer' => sanitize($input['model_answer'] ?? ''),
+            'marks' => intval($input['marks'] ?? 1),
+            'difficulty' => sanitize($input['difficulty'] ?? 'medium')
+        ]);
+        jsonResponse(['success' => true, 'id' => $id]);
         break;
 
     case 'student_evaluations':

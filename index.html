@@ -432,6 +432,45 @@
     </div>
 </div>
 
+<!-- ========== CHANGE PASSWORD MODAL ========== -->
+<div id="changePasswordModalOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center" onclick="closeChangePasswordModal()">
+    <div style="background:var(--card);border-radius:20px;width:90%;max-width:400px;padding:24px;animation:slideUp 0.3s ease" onclick="event.stopPropagation()">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+            <h3 style="font-size:16px;font-weight:700;margin:0">Change Password</h3>
+            <button onclick="closeChangePasswordModal()" style="background:none;border:none;cursor:pointer;padding:4px"><i data-lucide="x" style="width:20px;height:20px;color:var(--text3)"></i></button>
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Current Password</label>
+            <input type="password" id="changePwCurrent" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px" placeholder="Enter current password">
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">New Password</label>
+            <input type="password" id="changePwNew" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px" placeholder="Min 6 characters">
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Confirm New Password</label>
+            <input type="password" id="changePwConfirm" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px" placeholder="Re-enter new password">
+        </div>
+        <div id="changePwError" style="display:none;padding:8px 12px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;font-size:11px;color:#DC2626;margin-bottom:12px"></div>
+        <button onclick="submitChangePassword()" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--primary),#7C3AED);color:white;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer">
+            Update Password
+        </button>
+    </div>
+</div>
+
+<!-- ========== ACADEMIC INFO MODAL ========== -->
+<div id="academicInfoModalOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center" onclick="closeAcademicInfoModal()">
+    <div style="background:var(--card);border-radius:20px;width:90%;max-width:400px;padding:24px;animation:slideUp 0.3s ease" onclick="event.stopPropagation()">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+            <h3 style="font-size:16px;font-weight:700;margin:0">Academic Information</h3>
+            <button onclick="closeAcademicInfoModal()" style="background:none;border:none;cursor:pointer;padding:4px"><i data-lucide="x" style="width:20px;height:20px;color:var(--text3)"></i></button>
+        </div>
+        <div id="academicInfoContent">
+            <div style="text-align:center;padding:20px"><p style="font-size:12px;color:var(--text3)">Loading...</p></div>
+        </div>
+    </div>
+</div>
+
 <!-- ========== SUBSCRIBE MODAL ========== -->
 <div id="subscribeModalOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:200;align-items:flex-end;justify-content:center" onclick="closeSubscribeModal()">
     <div id="subscribeModal" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;padding:0;animation:slideUp 0.3s ease" onclick="event.stopPropagation()">
@@ -869,7 +908,7 @@
             <i data-lucide="video" style="width:32px;height:32px;color:white;margin-bottom:8px"></i>
             <h4 style="font-size:14px;font-weight:700;color:white;margin-bottom:4px">Book a Live Session</h4>
             <p style="font-size:12px;color:rgba(255,255,255,0.8);margin-bottom:12px">1-on-1 tutoring</p>
-            <button class="btn-primary" style="background:white;color:var(--primary);width:100%" onclick="showToast('Session booking coming soon!','info')">Book Session - ৳300/hr</button>
+            <button class="btn-primary" style="background:white;color:var(--primary);width:100%" onclick="openBookSessionModal()">Book Session - ৳300/hr</button>
         </div>
 
         <!-- Teacher's Materials -->
@@ -1027,7 +1066,7 @@
                 <div class="menu-text"><h5 id="profileSubText">Premium Subscription</h5><p id="profileSubDesc">Manage your plan</p></div>
                 <span class="menu-arrow"><i data-lucide="chevron-right"></i></span>
             </div>
-            <div class="menu-item" onclick="showToast('Academic info coming soon!','info')">
+            <div class="menu-item" onclick="showAcademicInfo()">
                 <div class="menu-icon blue"><i data-lucide="graduation-cap"></i></div>
                 <div class="menu-text"><h5>Academic Info</h5><p>Class, subjects, school</p></div>
                 <span class="menu-arrow"><i data-lucide="chevron-right"></i></span>
@@ -1062,13 +1101,16 @@
     <header class="header">
         <button class="header-back" onclick="showScreen('screen-home')"><i data-lucide="arrow-left"></i></button>
         <h3 class="header-title">Homework</h3>
-        <button class="icon-btn" onclick="showToast('Filters coming soon!','info')"><i data-lucide="filter"></i></button>
+        <button class="icon-btn" onclick="toggleFilter('hwFilterBar')"><i data-lucide="filter"></i></button>
     </header>
     <div class="main-content">
-        <div style="display:flex;gap:6px;margin-bottom:16px">
-            <button class="filter-chip active">All</button>
-            <button class="filter-chip">Pending</button>
-            <button class="filter-chip">Submitted</button>
+        <div id="hwFilterBar" style="margin-bottom:12px">
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="filter-chip active" onclick="filterHomeworkList('all');this.parentElement.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active')});this.classList.add('active')">All</button>
+                <button class="filter-chip" onclick="filterHomeworkList('pending');this.parentElement.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active')});this.classList.add('active')">Pending</button>
+                <button class="filter-chip" onclick="filterHomeworkList('submitted');this.parentElement.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active')});this.classList.add('active')">Submitted</button>
+                <button class="filter-chip" onclick="filterHomeworkList('graded');this.parentElement.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active')});this.classList.add('active')">Graded</button>
+            </div>
         </div>
         <div id="homeworkList">
             <!-- Dynamic: loaded by loadHomeworkList() -->
@@ -1081,7 +1123,13 @@
     <header class="header">
         <button class="header-back" onclick="showScreen('screen-homework')"><i data-lucide="arrow-left"></i></button>
         <h3 class="header-title">Homework Detail</h3>
-        <button class="icon-btn" onclick="showToast('Options coming soon!','info')"><i data-lucide="more-vertical"></i></button>
+        <button class="icon-btn" onclick="toggleOptionsMenu('hwDetailOptions')" style="position:relative"><i data-lucide="more-vertical"></i>
+            <div id="hwDetailOptions" class="options-dropdown" style="display:none;position:absolute;right:0;top:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:6px;min-width:140px;box-shadow:var(--shadow);z-index:50">
+                <div style="padding:8px 12px;font-size:12px;cursor:pointer;border-radius:8px;display:flex;align-items:center;gap:8px" onclick="optionShare()"><i data-lucide="share-2" style="width:14px;height:14px"></i> Share</div>
+                <div style="padding:8px 12px;font-size:12px;cursor:pointer;border-radius:8px;display:flex;align-items:center;gap:8px" onclick="optionReport()"><i data-lucide="flag" style="width:14px;height:14px"></i> Report</div>
+                <div style="padding:8px 12px;font-size:12px;cursor:pointer;border-radius:8px;display:flex;align-items:center;gap:8px" onclick="optionSettings()"><i data-lucide="settings" style="width:14px;height:14px"></i> Settings</div>
+            </div>
+        </button>
     </header>
     <div class="main-content">
         <div class="hw-card">
@@ -1102,9 +1150,15 @@
 
         <div class="section-header"><h2 class="section-title">Your Submission</h2></div>
         <textarea id="hwAnswerInput" rows="4" placeholder="Type your answer here..." style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:13px;background:var(--card);color:var(--text);resize:vertical;margin-bottom:12px;line-height:1.6"></textarea>
-        <div style="border:2px dashed var(--border);border-radius:14px;padding:20px;text-align:center;margin-bottom:12px;cursor:pointer" onclick="showToast('File upload coming soon!','info')">
+        <div id="hwFileUploadArea" style="border:2px dashed var(--border);border-radius:14px;padding:20px;text-align:center;margin-bottom:12px;cursor:pointer" onclick="document.getElementById('hwFileInput').click()">
             <i data-lucide="upload-cloud" style="font-size:28px;color:var(--primary);margin-bottom:6px"></i>
-            <p style="font-size:11px;color:var(--text2)">Or attach images/PDF (optional)</p>
+            <p style="font-size:11px;color:var(--text2)" id="hwFileUploadLabel">Or attach images/PDF (optional)</p>
+        </div>
+        <input type="file" id="hwFileInput" accept="image/*,.pdf" style="display:none" onchange="handleHomeworkFileSelect(this)">
+        <div id="hwFileSelected" style="display:none;padding:10px 12px;border-radius:10px;background:var(--bg);border:1px solid var(--border);margin-bottom:12px;font-size:12px;align-items:center;gap:8px">
+            <i data-lucide="file-check" style="width:16px;height:16px;color:var(--success)"></i>
+            <span id="hwFileSelectedName" style="flex:1"></span>
+            <button onclick="clearHomeworkFile()" style="background:none;border:none;cursor:pointer;color:var(--error);font-size:14px">&times;</button>
         </div>
         <button class="btn-primary" id="hwSubmitBtn" style="margin-top:8px;padding:14px" onclick="submitHomework()">Submit Homework</button>
         <div id="hwSubmissionStatus" style="display:none;margin-top:12px;padding:12px;border-radius:12px;text-align:center;font-size:12px;font-weight:600"></div>
@@ -1116,9 +1170,16 @@
     <header class="header">
         <button class="header-back" onclick="showScreen('screen-home')"><i data-lucide="arrow-left"></i></button>
         <h3 class="header-title">Exams</h3>
-        <button class="icon-btn" onclick="showToast('Filters coming soon!','info')"><i data-lucide="filter"></i></button>
+        <button class="icon-btn" onclick="toggleFilter('examFilterBar')"><i data-lucide="filter"></i></button>
     </header>
     <div class="main-content">
+        <div id="examFilterBar" style="display:none;margin-bottom:12px">
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="filter-chip active" onclick="this.parentElement.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active')});this.classList.add('active');showToast('Showing all exams','info')">All</button>
+                <button class="filter-chip" onclick="this.parentElement.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active')});this.classList.add('active');showToast('Showing upcoming exams','info')">Upcoming</button>
+                <button class="filter-chip" onclick="this.parentElement.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active')});this.classList.add('active');showToast('Showing completed exams','info')">Completed</button>
+            </div>
+        </div>
         <div id="examList">
             <!-- Dynamic: loaded by loadExamList() -->
         </div>
@@ -1675,7 +1736,7 @@
     </header>
     <div class="main-content">
         <div class="section-header"><h2 class="section-title">Account</h2></div>
-        <div class="settings-item" onclick="showToast('Change Password screen coming soon','info')">
+        <div class="settings-item" onclick="changePassword()">
             <div class="settings-icon" style="background:#EDE9FE;color:#7C3AED"><i data-lucide="lock"></i></div>
             <div class="settings-text"><h5>Change Password</h5><p>Update your password</p></div>
             <i data-lucide="chevron-right" style="color:var(--text3)"></i>
@@ -1728,9 +1789,12 @@
     <header class="header glass-header">
         <button class="header-back" onclick="showScreen('screen-my-study')"><i data-lucide="arrow-left"></i></button>
         <h3 class="header-title" id="libSubjectTitle">Mathematics</h3>
-        <button class="icon-btn glass-card-sm" onclick="showToast('Search coming soon!','info')"><i data-lucide="search"></i></button>
+        <button class="icon-btn glass-card-sm" onclick="toggleSearchBar('libSearchBar','libSearchInput')"><i data-lucide="search"></i></button>
     </header>
     <div class="main-content">
+        <div id="libSearchBar" style="display:none;margin-bottom:12px">
+            <input type="text" id="libSearchInput" class="input-field glass-input" placeholder="Search files..." style="width:100%" data-search-target="libFileList .list-item" oninput="searchItems('libSearchInput','libFileList .list-item')">
+        </div>
         <!-- Subject Header -->
         <div class="card-enter" id="libSubjectHeader" style="background:linear-gradient(135deg,#3B82F6,#2563EB);border-radius:16px;padding:16px;color:white;margin-bottom:16px;display:flex;align-items:center;gap:12px">
             <div style="width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center">
@@ -1933,7 +1997,7 @@
     <header class="header glass-header">
         <button class="header-back" onclick="showScreen('screen-teacher-dash')"><i data-lucide="arrow-left"></i></button>
         <h3 class="header-title">Upload Content</h3>
-        <button class="icon-btn glass-card-sm" onclick="showToast('Help coming soon!','info')"><i data-lucide="help-circle"></i></button>
+        <button class="icon-btn glass-card-sm" onclick="showHelp()"><i data-lucide="help-circle"></i></button>
     </header>
     <div class="main-content">
         <div class="glass-card" style="padding:20px;margin-bottom:16px">
@@ -2041,9 +2105,12 @@
     <header class="header glass-header">
         <button class="header-back" onclick="showScreen('screen-teacher-dash')"><i data-lucide="arrow-left"></i></button>
         <h3 class="header-title">My Students</h3>
-        <button class="icon-btn glass-card-sm" onclick="showToast('Search coming soon!','info')"><i data-lucide="search"></i></button>
+        <button class="icon-btn glass-card-sm" onclick="toggleSearchBar('studentsSearchBar','studentsSearchInput')"><i data-lucide="search"></i></button>
     </header>
     <div class="main-content">
+        <div id="studentsSearchBar" style="display:none;margin-bottom:12px">
+            <input type="text" id="studentsSearchInput" class="input-field glass-input" placeholder="Search students..." style="width:100%" data-search-target="myStudentsList .list-item" oninput="searchItems('studentsSearchInput','myStudentsList .list-item')">
+        </div>
         <div style="position:relative;margin-bottom:16px">
             <input type="text" class="input-field glass-input" placeholder="Search students..." style="padding-left:36px">
             <i data-lucide="search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--text3)"></i>
@@ -2062,7 +2129,13 @@
     <header class="header glass-header">
         <button class="header-back" onclick="showScreen('screen-my-students')"><i data-lucide="arrow-left"></i></button>
         <h3 class="header-title">Student Progress</h3>
-        <button class="icon-btn glass-card-sm" onclick="showToast('Options coming soon!','info')"><i data-lucide="more-vertical"></i></button>
+        <button class="icon-btn glass-card-sm" onclick="toggleOptionsMenu('studentProgressOptions')" style="position:relative"><i data-lucide="more-vertical"></i>
+            <div id="studentProgressOptions" class="options-dropdown" style="display:none;position:absolute;right:0;top:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:6px;min-width:140px;box-shadow:var(--shadow);z-index:50">
+                <div style="padding:8px 12px;font-size:12px;cursor:pointer;border-radius:8px;display:flex;align-items:center;gap:8px" onclick="optionShare()"><i data-lucide="share-2" style="width:14px;height:14px"></i> Share</div>
+                <div style="padding:8px 12px;font-size:12px;cursor:pointer;border-radius:8px;display:flex;align-items:center;gap:8px" onclick="optionReport()"><i data-lucide="flag" style="width:14px;height:14px"></i> Report</div>
+                <div style="padding:8px 12px;font-size:12px;cursor:pointer;border-radius:8px;display:flex;align-items:center;gap:8px" onclick="optionSettings()"><i data-lucide="settings" style="width:14px;height:14px"></i> Settings</div>
+            </div>
+        </button>
     </header>
     <div class="main-content">
         <div class="glass-card" style="padding:20px;text-align:center;margin-bottom:16px">
@@ -2102,7 +2175,7 @@
         <header class="header glass-header">
             <button class="header-back" onclick="goBackFromMessages()"><i data-lucide="arrow-left"></i></button>
             <h3 class="header-title">Messages</h3>
-            <button class="icon-btn glass-card-sm" onclick="showToast('New message coming soon!','info')"><i data-lucide="edit"></i></button>
+            <button class="icon-btn glass-card-sm" onclick="showComposeMessage()"><i data-lucide="edit"></i></button>
         </header>
         <div class="main-content">
             <div class="search-bar card-enter">
@@ -2208,7 +2281,7 @@
     <header class="header glass-header">
         <button class="header-back" onclick="showScreen('screen-teacher-dash')"><i data-lucide="arrow-left"></i></button>
         <h3 class="header-title">Class Schedule</h3>
-        <button class="icon-btn glass-card-sm" onclick="showToast('Add class coming soon!','info')"><i data-lucide="plus"></i></button>
+        <button class="icon-btn glass-card-sm" onclick="openAddCalendarEventModal()"><i data-lucide="plus"></i></button>
     </header>
     <div class="main-content">
         <div style="display:flex;gap:6px;margin-bottom:16px;overflow-x:auto">
@@ -2259,7 +2332,7 @@
     <header class="header glass-header">
         <button class="header-back" onclick="showScreen('screen-teacher-dash')"><i data-lucide="arrow-left"></i></button>
         <h3 class="header-title">Calendar</h3>
-        <button class="icon-btn glass-card-sm" onclick="showToast('Calendar settings coming soon!','info')"><i data-lucide="settings"></i></button>
+        <button class="icon-btn glass-card-sm" onclick="openCalendarSettingsModal()"><i data-lucide="settings"></i></button>
     </header>
     <div class="main-content">
         <div class="glass-card" style="padding:16px;margin-bottom:16px">
@@ -2759,9 +2832,22 @@
     <header class="header">
         <button class="header-back" onclick="showScreen('screen-teacher-dash')"><i data-lucide="arrow-left"></i></button>
         <h3 class="header-title">Reports</h3>
-        <button class="icon-btn" onclick="showToast('Filter coming soon!','info')"><i data-lucide="filter"></i></button>
+        <button class="icon-btn" onclick="toggleFilter('reportsFilterBar')"><i data-lucide="filter"></i></button>
     </header>
     <div class="main-content">
+        <div id="reportsFilterBar" style="display:none;margin-bottom:12px">
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+                <button class="filter-chip active" onclick="filterReportsByType('all');this.parentElement.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active')});this.classList.add('active')">All</button>
+                <button class="filter-chip" onclick="filterReportsByType('mid-term');this.parentElement.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active')});this.classList.add('active')">Mid-term</button>
+                <button class="filter-chip" onclick="filterReportsByType('monthly');this.parentElement.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active')});this.classList.add('active')">Monthly</button>
+                <button class="filter-chip" onclick="filterReportsByType('final');this.parentElement.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active')});this.classList.add('active')">Final</button>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+                <input type="date" id="reportDateStart" class="input-field" style="flex:1;padding:6px 8px;font-size:11px" onchange="filterReportsByDate()">
+                <span style="font-size:11px;color:var(--text3)">to</span>
+                <input type="date" id="reportDateEnd" class="input-field" style="flex:1;padding:6px 8px;font-size:11px" onchange="filterReportsByDate()">
+            </div>
+        </div>
         <div class="search-bar">
             <i data-lucide="search" style="width:18px;height:18px;color:var(--text3);flex-shrink:0"></i>
             <input type="text" placeholder="Search students..." id="reportsSearchInput" oninput="filterReports()">
@@ -2773,7 +2859,7 @@
         </div>
 
         <div id="reportsList">
-        <div class="hw-card" onclick="showToast('Report details coming soon!','info')">
+        <div class="hw-card" onclick="showReportType('mid-term')','info')">
             <div style="display:flex;justify-content:space-between;align-items:start">
                 <div style="display:flex;gap:10px;align-items:center">
                     <div class="user-avatar" style="background:linear-gradient(135deg,#4F46E5,#7C3AED)">T</div>
@@ -2792,7 +2878,7 @@
             <p style="font-size:9px;color:var(--text3);margin-top:8px">Given 2 days ago</p>
         </div>
 
-        <div class="hw-card" onclick="showToast('Report details coming soon!','info')">
+        <div class="hw-card" onclick="showReportType('mid-term')','info')">
             <div style="display:flex;justify-content:space-between;align-items:start">
                 <div style="display:flex;gap:10px;align-items:center">
                     <div class="user-avatar" style="background:linear-gradient(135deg,#F59E0B,#D97706)">S</div>
@@ -2811,7 +2897,7 @@
             <p style="font-size:9px;color:var(--text3);margin-top:8px">Given 1 week ago</p>
         </div>
 
-        <div class="hw-card" onclick="showToast('Report details coming soon!','info')">
+        <div class="hw-card" onclick="showReportType('mid-term')','info')">
             <div style="display:flex;justify-content:space-between;align-items:start">
                 <div style="display:flex;gap:10px;align-items:center">
                     <div class="user-avatar" style="background:linear-gradient(135deg,#EC4899,#DB2777)">N</div>
@@ -2835,19 +2921,19 @@
             <h2 class="section-title">Report Types</h2>
         </div>
         <div class="admin-stats" style="grid-template-columns:repeat(2,1fr)">
-            <div class="admin-stat" onclick="showToast('Mid-term reports coming soon!','info')" style="cursor:pointer">
+            <div class="admin-stat" onclick="showReportType('mid-term')" style="cursor:pointer">
                 <h5>Mid-term</h5>
                 <div class="num" id="reportsAplus" style="font-size:16px">8 reports</div>
             </div>
-            <div class="admin-stat" onclick="showToast('Monthly reports coming soon!','info')" style="cursor:pointer">
+            <div class="admin-stat" onclick="showReportType('monthly')" style="cursor:pointer">
                 <h5>Monthly</h5>
                 <div class="num" id="reportsA" style="font-size:16px">6 reports</div>
             </div>
-            <div class="admin-stat" onclick="showToast('Final reports coming soon!','info')" style="cursor:pointer">
+            <div class="admin-stat" onclick="showReportType('final')" style="cursor:pointer">
                 <h5>Final</h5>
                 <div class="num" id="reportsBplus" style="font-size:16px">3 reports</div>
             </div>
-            <div class="admin-stat" onclick="showToast('Custom reports coming soon!','info')" style="cursor:pointer">
+            <div class="admin-stat" onclick="showReportType('custom')" style="cursor:pointer">
                 <h5>Custom</h5>
                 <div class="num" id="reportsOther" style="font-size:16px">1 report</div>
             </div>
@@ -2961,7 +3047,7 @@
 <div id="screen-earnings" class="screen">
     <header class="header glass-header">
         <h3 class="header-title">Profile</h3>
-        <button class="icon-btn glass-card-sm" onclick="showToast('Settings coming soon!','info')"><i data-lucide="settings"></i></button>
+        <button class="icon-btn glass-card-sm" onclick="showScreen('screen-settings')"><i data-lucide="settings"></i></button>
     </header>
 
     <!-- Profile Hero -->
@@ -3005,22 +3091,22 @@
         <!-- Menu -->
         <div class="section-header card-enter" style="animation-delay:0.2s"><h2 class="section-title">Menu</h2></div>
         <div class="card-enter" style="animation-delay:0.25s;display:flex;flex-direction:column;gap:8px">
-            <div class="hw-card" onclick="showToast('Academic info coming soon!','info')" style="cursor:pointer;display:flex;align-items:center;gap:12px">
+            <div class="hw-card" onclick="showAcademicInfo()" style="cursor:pointer;display:flex;align-items:center;gap:12px">
                 <div class="icon-box blue sm"><i data-lucide="graduation-cap" class="icon-sm"></i></div>
                 <div style="flex:1"><h5 style="font-size:13px">Academic Info</h5><p style="font-size:10px;color:var(--text3)">Subjects & classes</p></div>
                 <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--text3)"></i>
             </div>
-            <div class="hw-card" onclick="showToast('Earnings details coming soon!','info')" style="cursor:pointer;display:flex;align-items:center;gap:12px">
+            <div class="hw-card" onclick="showScreen('screen-earnings')" style="cursor:pointer;display:flex;align-items:center;gap:12px">
                 <div class="icon-box green sm"><i data-lucide="wallet" class="icon-sm"></i></div>
                 <div style="flex:1"><h5 style="font-size:13px">Earnings</h5><p style="font-size:10px;color:var(--text3)">Withdrawals & history</p></div>
                 <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--text3)"></i>
             </div>
-            <div class="hw-card" onclick="showToast('Settings coming soon!','info')" style="cursor:pointer;display:flex;align-items:center;gap:12px">
+            <div class="hw-card" onclick="showScreen('screen-settings')" style="cursor:pointer;display:flex;align-items:center;gap:12px">
                 <div class="icon-box orange sm"><i data-lucide="settings" class="icon-sm"></i></div>
                 <div style="flex:1"><h5 style="font-size:13px">Settings</h5><p style="font-size:10px;color:var(--text3)">Account & privacy</p></div>
                 <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--text3)"></i>
             </div>
-            <div class="hw-card" onclick="showToast('Help coming soon!','info')" style="cursor:pointer;display:flex;align-items:center;gap:12px">
+            <div class="hw-card" onclick="showHelp()" style="cursor:pointer;display:flex;align-items:center;gap:12px">
                 <div class="icon-box purple sm"><i data-lucide="help-circle" class="icon-sm"></i></div>
                 <div style="flex:1"><h5 style="font-size:13px">Help Center</h5><p style="font-size:10px;color:var(--text3)">FAQ & support</p></div>
                 <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--text3)"></i>
@@ -3040,7 +3126,7 @@
             <div class="user-avatar" style="background:linear-gradient(135deg,#1E1B4B,#4338CA)">A</div>
             <div class="user-info"><h3>Admin Panel</h3><p>Super Admin</p></div>
         </div>
-        <button class="icon-btn" onclick="showToast('Notifications coming soon!','info')"><i data-lucide="bell"></i></button>
+        <button class="icon-btn" onclick="showScreen('screen-notif')"><i data-lucide="bell"></i></button>
     </header>
     <div class="main-content">
         <div class="admin-stats">
@@ -3088,7 +3174,7 @@
     <header class="header">
         <button class="header-back" onclick="showScreen('screen-admin')"><i data-lucide="arrow-left"></i></button>
         <h3 class="header-title">Library Management</h3>
-        <button class="icon-btn" onclick="showToast('Add book coming soon!','info')"><i data-lucide="plus"></i></button>
+        <button class="icon-btn" onclick="showAddBookModal()"><i data-lucide="plus"></i></button>
     </header>
     <div class="main-content">
         <div style="display:flex;gap:6px;margin-bottom:16px">
@@ -3259,7 +3345,7 @@
     <header class="header">
         <button class="header-back" onclick="showScreen('screen-admin')"><i data-lucide="arrow-left"></i></button>
         <h3 class="header-title">Question Bank</h3>
-        <button class="icon-btn" onclick="showToast('Add question coming soon!','info')"><i data-lucide="plus"></i></button>
+        <button class="icon-btn" onclick="showAddQuestionModal()"><i data-lucide="plus"></i></button>
     </header>
     <div class="main-content">
         <div style="display:flex;gap:6px;margin-bottom:16px">
@@ -3317,6 +3403,246 @@
         <span class="nav-label">Profile</span>
     </button>
 </nav>
+
+<!-- ========== COMPOSE MESSAGE MODAL ========== -->
+<div id="composeMsgOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center" onclick="closeComposeMessage()">
+    <div style="background:var(--card);border-radius:20px;width:90%;max-width:400px;padding:24px;animation:slideUp 0.3s ease" onclick="event.stopPropagation()">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+            <h3 style="font-size:16px;font-weight:700;margin:0">New Message</h3>
+            <button onclick="closeComposeMessage()" style="background:none;border:none;cursor:pointer;padding:4px"><i data-lucide="x" style="width:20px;height:20px;color:var(--text3)"></i></button>
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">To *</label>
+            <select id="composeRecipient" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px">
+                <option value="">Loading recipients...</option>
+            </select>
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Message *</label>
+            <textarea id="composeMsgText" rows="4" placeholder="Type your message..." style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px;resize:vertical"></textarea>
+        </div>
+        <div id="composeMsgError" style="display:none;padding:8px 12px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;font-size:11px;color:#DC2626;margin-bottom:12px"></div>
+        <button onclick="sendComposedMessage()" id="composeSendBtn" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--primary),#7C3AED);color:white;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer">Send Message</button>
+    </div>
+</div>
+
+<!-- ========== ADD BOOK MODAL ========== -->
+<div id="addBookModalOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center" onclick="closeAddBookModal()">
+    <div style="background:var(--card);border-radius:20px;width:90%;max-width:400px;padding:24px;animation:slideUp 0.3s ease" onclick="event.stopPropagation()">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+            <h3 style="font-size:16px;font-weight:700;margin:0">Add Library Item</h3>
+            <button onclick="closeAddBookModal()" style="background:none;border:none;cursor:pointer;padding:4px"><i data-lucide="x" style="width:20px;height:20px;color:var(--text3)"></i></button>
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Title *</label>
+            <input type="text" id="addBookTitle" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px" placeholder="Enter book title">
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Subject *</label>
+            <select id="addBookSubject" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px">
+                <option value="1">Mathematics</option><option value="2">English</option><option value="3">Science</option><option value="4">Bangla</option><option value="5">Physics</option><option value="6">Chemistry</option><option value="7">Biology</option><option value="8">ICT</option><option value="9">Geography</option>
+            </select>
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Class *</label>
+            <select id="addBookClass" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px">
+                <option value="Class 6">Class 6</option><option value="Class 7">Class 7</option><option value="Class 8" selected>Class 8</option><option value="Class 9">Class 9</option><option value="Class 10">Class 10</option>
+            </select>
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Type</label>
+            <select id="addBookType" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px">
+                <option value="textbook">Textbook</option><option value="notes">Notes</option><option value="video">Video</option><option value="guide">Guide</option><option value="reference">Reference</option>
+            </select>
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Description</label>
+            <textarea id="addBookDesc" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px;resize:vertical;min-height:60px" placeholder="Brief description"></textarea>
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">File URL</label>
+            <input type="text" id="addBookFileUrl" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px" placeholder="https://...">
+        </div>
+        <div id="addBookError" style="display:none;padding:8px 12px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;font-size:11px;color:#DC2626;margin-bottom:12px"></div>
+        <button onclick="submitAddBook()" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--primary),#7C3AED);color:white;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer">Add Book</button>
+    </div>
+</div>
+
+<!-- ========== ADD QUESTION MODAL ========== -->
+<div id="addQuestionModalOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center" onclick="closeAddQuestionModal()">
+    <div style="background:var(--card);border-radius:20px;width:90%;max-width:400px;padding:24px;animation:slideUp 0.3s ease;max-height:85vh;overflow-y:auto" onclick="event.stopPropagation()">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+            <h3 style="font-size:16px;font-weight:700;margin:0">Add Question</h3>
+            <button onclick="closeAddQuestionModal()" style="background:none;border:none;cursor:pointer;padding:4px"><i data-lucide="x" style="width:20px;height:20px;color:var(--text3)"></i></button>
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Subject *</label>
+            <select id="addQSubject" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px">
+                <option value="1">Mathematics</option><option value="2">English</option><option value="3">Science</option><option value="4">Bangla</option><option value="5">Physics</option><option value="6">Chemistry</option><option value="7">Biology</option><option value="8">ICT</option><option value="9">Geography</option>
+            </select>
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Chapter</label>
+            <input type="text" id="addQChapter" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px" placeholder="e.g. Algebra">
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Type</label>
+            <select id="addQType" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px" onchange="toggleQuestionOptions()">
+                <option value="mcq">MCQ</option><option value="written">Written</option><option value="cq">CQ</option>
+            </select>
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Question *</label>
+            <textarea id="addQQuestion" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px;resize:vertical;min-height:60px" placeholder="Enter question text"></textarea>
+        </div>
+        <div id="mcqOptionsGroup">
+            <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Option A</label><input type="text" id="addQOptA" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px" placeholder="Option A"></div>
+            <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Option B</label><input type="text" id="addQOptB" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px" placeholder="Option B"></div>
+            <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Option C</label><input type="text" id="addQOptC" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px" placeholder="Option C"></div>
+            <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Option D</label><input type="text" id="addQOptD" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px" placeholder="Option D"></div>
+            <div style="margin-bottom:14px"><label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Correct Answer</label>
+                <select id="addQCorrect" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select>
+            </div>
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Difficulty</label>
+            <select id="addQDifficulty" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px">
+                <option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option>
+            </select>
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Marks</label>
+            <input type="number" id="addQMarks" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px" value="1" min="1">
+        </div>
+        <div id="addQError" style="display:none;padding:8px 12px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;font-size:11px;color:#DC2626;margin-bottom:12px"></div>
+        <button onclick="submitAddQuestion()" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--primary),#7C3AED);color:white;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer">Add Question</button>
+    </div>
+</div>
+
+<!-- ========== ADD CALENDAR EVENT MODAL ========== -->
+<div id="addEventModalOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center" onclick="closeAddCalendarEventModal()">
+    <div style="background:var(--card);border-radius:20px;width:90%;max-width:400px;padding:24px;animation:slideUp 0.3s ease;max-height:85vh;overflow-y:auto" onclick="event.stopPropagation()">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+            <h3 style="font-size:16px;font-weight:700;margin:0">Add Calendar Event</h3>
+            <button onclick="closeAddCalendarEventModal()" style="background:none;border:none;cursor:pointer;padding:4px"><i data-lucide="x" style="width:20px;height:20px;color:var(--text3)"></i></button>
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Event Title *</label>
+            <input type="text" id="eventTitle" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px" placeholder="e.g., Math Class, Exam Day">
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Subject</label>
+            <select id="eventSubject" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px">
+                <option value="">Select Subject</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="Science">Science</option>
+                <option value="English">English</option>
+                <option value="Physics">Physics</option>
+                <option value="Chemistry">Chemistry</option>
+                <option value="Bangla">Bangla</option>
+                <option value="ICT">ICT</option>
+            </select>
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Date *</label>
+            <input type="date" id="eventDate" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px">
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:14px">
+            <div style="flex:1">
+                <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Start Time</label>
+                <input type="time" id="eventStartTime" value="09:00" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px">
+            </div>
+            <div style="flex:1">
+                <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">End Time</label>
+                <input type="time" id="eventEndTime" value="10:00" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px">
+            </div>
+        </div>
+        <div id="addEventError" style="display:none;padding:8px 12px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;font-size:11px;color:#DC2626;margin-bottom:12px"></div>
+        <button onclick="submitCalendarEvent()" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--primary),#7C3AED);color:white;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer">Add Event</button>
+    </div>
+</div>
+
+<!-- ========== SESSION BOOKING MODAL ========== -->
+<div id="bookSessionOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center" onclick="closeBookSessionModal()">
+    <div style="background:var(--card);border-radius:20px;width:90%;max-width:400px;padding:24px;animation:slideUp 0.3s ease" onclick="event.stopPropagation()">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+            <h3 style="font-size:16px;font-weight:700;margin:0">Book a Session</h3>
+            <button onclick="closeBookSessionModal()" style="background:none;border:none;cursor:pointer;padding:4px"><i data-lucide="x" style="width:20px;height:20px;color:var(--text3)"></i></button>
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Select Date</label>
+            <input type="date" id="bookSessionDate" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px">
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:8px">Available Time Slots</label>
+            <div id="bookSessionSlots" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"></div>
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Duration</label>
+            <select id="bookSessionDuration" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px">
+                <option value="1">1 Hour - ৳300</option>
+                <option value="2">2 Hours - ৳600</option>
+                <option value="3">3 Hours - ৳900</option>
+            </select>
+        </div>
+        <button onclick="confirmBookSession()" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--primary),#7C3AED);color:white;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer">Confirm Booking</button>
+    </div>
+</div>
+
+<!-- ========== CALENDAR SETTINGS MODAL ========== -->
+<div id="calendarSettingsOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center" onclick="closeCalendarSettingsModal()">
+    <div style="background:var(--card);border-radius:20px;width:90%;max-width:400px;padding:24px;animation:slideUp 0.3s ease" onclick="event.stopPropagation()">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+            <h3 style="font-size:16px;font-weight:700;margin:0">Calendar Settings</h3>
+            <button onclick="closeCalendarSettingsModal()" style="background:none;border:none;cursor:pointer;padding:4px"><i data-lucide="x" style="width:20px;height:20px;color:var(--text3)"></i></button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+                <div><div style="font-size:13px;font-weight:600">Show Holidays</div><div style="font-size:11px;color:var(--text3)">Display holiday markers on calendar</div></div>
+                <label class="toggle-switch"><input type="checkbox" id="calToggleHolidays" onchange="saveCalendarSettings()"><span class="toggle-slider"></span></label>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+                <div><div style="font-size:13px;font-weight:600">Show Exam Days</div><div style="font-size:11px;color:var(--text3)">Highlight exam dates</div></div>
+                <label class="toggle-switch"><input type="checkbox" id="calToggleExams" onchange="saveCalendarSettings()"><span class="toggle-slider"></span></label>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+                <div><div style="font-size:13px;font-weight:600">Show Live Classes</div><div style="font-size:11px;color:var(--text3)">Display live class sessions</div></div>
+                <label class="toggle-switch"><input type="checkbox" id="calToggleLive" onchange="saveCalendarSettings()"><span class="toggle-slider"></span></label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== REPORT TYPE MODAL ========== -->
+<div id="reportTypeOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center" onclick="closeReportTypeModal()">
+    <div style="background:var(--card);border-radius:20px;width:90%;max-width:400px;padding:24px;animation:slideUp 0.3s ease" onclick="event.stopPropagation()">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+            <h3 id="reportTypeTitle" style="font-size:16px;font-weight:700;margin:0">Report</h3>
+            <button onclick="closeReportTypeModal()" style="background:none;border:none;cursor:pointer;padding:4px"><i data-lucide="x" style="width:20px;height:20px;color:var(--text3)"></i></button>
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Date Range</label>
+            <div style="display:flex;gap:8px;align-items:center">
+                <input type="date" id="reportTypeStart" style="flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:12px">
+                <span style="font-size:11px;color:var(--text3)">to</span>
+                <input type="date" id="reportTypeEnd" style="flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:12px">
+            </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px">
+            <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px;text-align:center">
+                <div style="font-size:20px;font-weight:800;color:var(--primary)" id="reportTypeCount">0</div>
+                <div style="font-size:10px;color:var(--text3)">Total Reports</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px;text-align:center">
+                <div style="font-size:20px;font-weight:800;color:#10B981" id="reportTypeAvg">--</div>
+                <div style="font-size:10px;color:var(--text3)">Avg. Grade</div>
+            </div>
+        </div>
+        <div style="font-size:12px;color:var(--text3);text-align:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:10px">
+            Report data will appear here once generated.
+        </div>
+    </div>
+</div>
 
 <script src="js/app.js"></script>
 </body>

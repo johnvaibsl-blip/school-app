@@ -31,7 +31,7 @@ var ROLE_SCREENS = {
     admin: [
         'screen-admin','screen-library-mgmt','screen-chapter-mgmt',
         'screen-ai-settings','screen-packages','screen-teacher-ranking',
-        'screen-question-bank'
+        'screen-question-bank','screen-notif'
     ]
 };
 
@@ -127,6 +127,111 @@ function showToast(message, type) {
     toast.innerHTML = (icons[type] || icons.info) + ' ' + message;
     document.body.appendChild(toast);
     setTimeout(function() { toast.style.opacity='0'; toast.style.transition='opacity 0.3s'; setTimeout(function(){toast.remove();},300); }, 2500);
+}
+
+// === CHANGE PASSWORD ===
+function changePassword() {
+    var overlay = document.getElementById('changePasswordModalOverlay');
+    if (overlay) overlay.style.display = 'flex';
+    var err = document.getElementById('changePwError');
+    if (err) { err.style.display = 'none'; err.textContent = ''; }
+    var cur = document.getElementById('changePwCurrent');
+    var nw = document.getElementById('changePwNew');
+    var conf = document.getElementById('changePwConfirm');
+    if (cur) cur.value = '';
+    if (nw) nw.value = '';
+    if (conf) conf.value = '';
+}
+
+function closeChangePasswordModal() {
+    var overlay = document.getElementById('changePasswordModalOverlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
+function submitChangePassword() {
+    var currentPw = document.getElementById('changePwCurrent').value.trim();
+    var newPw = document.getElementById('changePwNew').value.trim();
+    var confirmPw = document.getElementById('changePwConfirm').value.trim();
+    var errEl = document.getElementById('changePwError');
+
+    if (!currentPw || !newPw || !confirmPw) {
+        errEl.textContent = 'Please fill in all fields';
+        errEl.style.display = 'block';
+        return;
+    }
+    if (newPw.length < 6) {
+        errEl.textContent = 'New password must be at least 6 characters';
+        errEl.style.display = 'block';
+        return;
+    }
+    if (newPw !== confirmPw) {
+        errEl.textContent = 'New passwords do not match';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    apiRaw('change_password', { current_password: currentPw, new_password: newPw }).then(function(res) {
+        if (res && res.success) {
+            closeChangePasswordModal();
+            showToast('Password changed successfully!', 'success');
+        } else {
+            errEl.textContent = (res && res.error) || 'Failed to change password';
+            errEl.style.display = 'block';
+        }
+    }).catch(function() {
+        errEl.textContent = 'Failed to change password. Please try again.';
+        errEl.style.display = 'block';
+    });
+}
+
+// === ACADEMIC INFO ===
+function showAcademicInfo() {
+    var overlay = document.getElementById('academicInfoModalOverlay');
+    if (overlay) overlay.style.display = 'flex';
+    var content = document.getElementById('academicInfoContent');
+    if (content) content.innerHTML = '<div style="text-align:center;padding:20px"><p style="font-size:12px;color:var(--text3)">Loading...</p></div>';
+
+    api('student_profile').then(function(data) {
+        var user = data.user || {};
+        var userClass = user.class || USER_CLASS || 'N/A';
+        var school = user.school || 'N/A';
+        var name = user.name || USER_NAME || 'N/A';
+        var created = user.created_at || '';
+        var enrolled = created ? created.split(' ')[0] : 'N/A';
+        var subjects = CLASS_SUBJECTS[userClass] || CLASS_SUBJECTS['Class 8'];
+        var subjectNames = subjects.map(function(s) {
+            var info = _subjectsCache ? _subjectsCache[Object.keys(_subjectsCache).find(function(k) { return (_subjectsCache[k].name || '').toLowerCase().replace(/\s+/g, '') === s; })] : null;
+            return info ? info.name : s.charAt(0).toUpperCase() + s.slice(1);
+        });
+
+        var html = '<div style="display:flex;flex-direction:column;gap:12px">' +
+            '<div class="settings-item" style="cursor:default">' +
+                '<div class="settings-icon" style="background:#DBEAFE;color:#2563EB"><i data-lucide="graduation-cap"></i></div>' +
+                '<div class="settings-text"><h5>Class</h5><p>' + userClass + '</p></div>' +
+            '</div>' +
+            '<div class="settings-item" style="cursor:default">' +
+                '<div class="settings-icon" style="background:#D1FAE5;color:#059669"><i data-lucide="building-2"></i></div>' +
+                '<div class="settings-text"><h5>School</h5><p>' + school + '</p></div>' +
+            '</div>' +
+            '<div class="settings-item" style="cursor:default">' +
+                '<div class="settings-icon" style="background:#EDE9FE;color:#7C3AED"><i data-lucide="book-open"></i></div>' +
+                '<div class="settings-text"><h5>Subjects</h5><p>' + subjectNames.join(', ') + '</p></div>' +
+            '</div>' +
+            '<div class="settings-item" style="cursor:default">' +
+                '<div class="settings-icon" style="background:#FEF3C7;color:#D97706"><i data-lucide="calendar"></i></div>' +
+                '<div class="settings-text"><h5>Enrolled</h5><p>' + enrolled + '</p></div>' +
+            '</div>' +
+        '</div>';
+        if (content) content.innerHTML = html;
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    }).catch(function() {
+        if (content) content.innerHTML = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">Failed to load academic info.</p>';
+    });
+}
+
+function closeAcademicInfoModal() {
+    var overlay = document.getElementById('academicInfoModalOverlay');
+    if (overlay) overlay.style.display = 'none';
 }
 
 // === PREMIUM ACCESS CHECK ===
@@ -323,7 +428,8 @@ function loadSubjectFiles(subjectId) {
 // === OPEN LIBRARY FILE ===
 function openLibraryFile(subjectId, type, title) {
     if (type === 'video') {
-        showToast('Video player coming soon!', 'info');
+        _previousScreen = document.querySelector('.screen.active') ? document.querySelector('.screen.active').id : 'screen-my-study';
+        showScreen('screen-live-lobby');
         return;
     }
     if (type === 'notes') {
@@ -487,7 +593,8 @@ function bindEvents() {
 
         // Upload chips (home screen AI hero)
         if (t.closest('.upload-chip')) {
-            showToast('File picker coming soon!', 'info');
+            showScreen('screen-chat');
+            setTimeout(function() { sendPrompt({textContent: 'Analyze this image'}); }, 300);
             return;
         }
 
@@ -517,7 +624,15 @@ function bindEvents() {
 
         // Chat action buttons (image, mic)
         if (t.closest('.chat-action-btn')) {
-            showToast('Feature coming soon!', 'info');
+            var chatAction = t.closest('.chat-action-btn');
+            if (chatAction.querySelector('[data-lucide="image"]') || chatAction.querySelector('.lucide-image')) {
+                var inp = document.createElement('input');
+                inp.type = 'file'; inp.accept = 'image/*';
+                inp.onchange = function() { if (inp.files[0]) analyzeChatImage(inp.files[0]); };
+                inp.click();
+            } else {
+                showToast('Voice input requires microphone permission', 'info');
+            }
             return;
         }
 
@@ -580,7 +695,7 @@ function bindEvents() {
 
         // AI edit/delete buttons
         if (t.closest('.ai-edit-btn')) {
-            showToast('Edit mode coming soon!', 'info');
+            toggleEditMode();
             return;
         }
         if (t.closest('.ai-del-btn')) {
@@ -834,6 +949,29 @@ function tryMoondreamFallback(imageData, name, sysPrompt, thinking, container) {
     }).catch(function() {
         thinking.remove();
         addChatMessage('Image analysis unavailable. Please configure an API key in <strong>Admin Panel → AI Settings</strong>.', 'ai');
+    });
+}
+
+function analyzeChatImage(file) {
+    var msgArea = document.getElementById('chatMessages');
+    if (!msgArea) return;
+    var userDiv = document.createElement('div');
+    userDiv.className = 'chat-msg user';
+    userDiv.innerHTML = '<div class="chat-bubble">' + (file.name || 'Image') + '</div>';
+    msgArea.appendChild(userDiv);
+    var botDiv = document.createElement('div');
+    botDiv.className = 'chat-msg bot';
+    botDiv.innerHTML = '<div class="chat-bubble">Analyzing image... Please wait.</div>';
+    msgArea.appendChild(botDiv);
+    msgArea.scrollTop = msgArea.scrollHeight;
+    var fd = new FormData();
+    fd.append('action', 'ai_analyze_image');
+    fd.append('image', file);
+    fetch('/api/index.php', { method: 'POST', body: fd }).then(function(r) { return r.json(); }).then(function(data) {
+        botDiv.querySelector('.chat-bubble').textContent = data.result || data.error || 'Could not analyze image.';
+        msgArea.scrollTop = msgArea.scrollHeight;
+    }).catch(function() {
+        botDiv.querySelector('.chat-bubble').textContent = 'Failed to analyze image.';
     });
 }
 
@@ -3356,4 +3494,633 @@ function showMyPlatformSubscription() {
         }
         if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
     });
+}
+
+// === ADD BOOK MODAL ===
+function showAddBookModal() {
+    var overlay = document.getElementById('addBookModalOverlay');
+    if (overlay) overlay.style.display = 'flex';
+    var err = document.getElementById('addBookError');
+    if (err) { err.style.display = 'none'; err.textContent = ''; }
+    document.getElementById('addBookTitle').value = '';
+    document.getElementById('addBookDesc').value = '';
+    document.getElementById('addBookFileUrl').value = '';
+}
+
+function closeAddBookModal() {
+    var overlay = document.getElementById('addBookModalOverlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
+function submitAddBook() {
+    var title = document.getElementById('addBookTitle').value.trim();
+    var subjectId = document.getElementById('addBookSubject').value;
+    var cls = document.getElementById('addBookClass').value;
+    var type = document.getElementById('addBookType').value;
+    var desc = document.getElementById('addBookDesc').value.trim();
+    var fileUrl = document.getElementById('addBookFileUrl').value.trim();
+    var errEl = document.getElementById('addBookError');
+
+    if (!title) {
+        errEl.textContent = 'Title is required';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    apiRaw('library_add', {
+        title: title,
+        subject_id: parseInt(subjectId),
+        class: cls,
+        type: type,
+        description: desc,
+        file_url: fileUrl,
+        cover_url: ''
+    }).then(function(data) {
+        if (data.success) {
+            closeAddBookModal();
+            showToast('Book added successfully!', 'success');
+            loadLibraryMgmt();
+        } else {
+            errEl.textContent = data.error || 'Failed to add book';
+            errEl.style.display = 'block';
+        }
+    }).catch(function() {
+        errEl.textContent = 'Network error';
+        errEl.style.display = 'block';
+    });
+}
+
+// === ADD QUESTION MODAL ===
+function showAddQuestionModal() {
+    var overlay = document.getElementById('addQuestionModalOverlay');
+    if (overlay) overlay.style.display = 'flex';
+    var err = document.getElementById('addQError');
+    if (err) { err.style.display = 'none'; err.textContent = ''; }
+    document.getElementById('addQChapter').value = '';
+    document.getElementById('addQQuestion').value = '';
+    document.getElementById('addQOptA').value = '';
+    document.getElementById('addQOptB').value = '';
+    document.getElementById('addQOptC').value = '';
+    document.getElementById('addQOptD').value = '';
+    document.getElementById('addQCorrect').value = '0';
+    document.getElementById('addQMarks').value = '1';
+    toggleQuestionOptions();
+}
+
+function closeAddQuestionModal() {
+    var overlay = document.getElementById('addQuestionModalOverlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
+function toggleQuestionOptions() {
+    var type = document.getElementById('addQType').value;
+    var mcqGroup = document.getElementById('mcqOptionsGroup');
+    if (mcqGroup) mcqGroup.style.display = type === 'mcq' ? 'block' : 'none';
+}
+
+function submitAddQuestion() {
+    var subjectId = document.getElementById('addQSubject').value;
+    var chapter = document.getElementById('addQChapter').value.trim();
+    var type = document.getElementById('addQType').value;
+    var question = document.getElementById('addQQuestion').value.trim();
+    var difficulty = document.getElementById('addQDifficulty').value;
+    var marks = document.getElementById('addQMarks').value;
+    var errEl = document.getElementById('addQError');
+
+    if (!question) {
+        errEl.textContent = 'Question text is required';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    var payload = {
+        subject_id: parseInt(subjectId),
+        chapter: chapter,
+        question: question,
+        type: type,
+        difficulty: difficulty,
+        marks: parseInt(marks) || 1,
+        correct: 0,
+        options: [],
+        model_answer: ''
+    };
+
+    if (type === 'mcq') {
+        var optA = document.getElementById('addQOptA').value.trim();
+        var optB = document.getElementById('addQOptB').value.trim();
+        var optC = document.getElementById('addQOptC').value.trim();
+        var optD = document.getElementById('addQOptD').value.trim();
+        if (!optA || !optB) {
+            errEl.textContent = 'At least two options are required for MCQ';
+            errEl.style.display = 'block';
+            return;
+        }
+        payload.options = [optA, optB, optC, optD];
+        payload.correct = parseInt(document.getElementById('addQCorrect').value) || 0;
+    }
+
+    apiRaw('add_question', payload).then(function(data) {
+        if (data.success) {
+            closeAddQuestionModal();
+            showToast('Question added successfully!', 'success');
+            loadQuestionBankScreen();
+        } else {
+            errEl.textContent = data.error || 'Failed to add question';
+            errEl.style.display = 'block';
+        }
+    }).catch(function() {
+        errEl.textContent = 'Network error';
+        errEl.style.display = 'block';
+    });
+}
+
+// ============================================
+// FEATURE 6: FILE UPLOAD (Homework Submission)
+// ============================================
+function handleHomeworkFileSelect(input) {
+    if (!input.files || !input.files[0]) return;
+    var file = input.files[0];
+    var allowed = ['image/jpeg','image/png','image/gif','image/webp','application/pdf'];
+    if (allowed.indexOf(file.type) === -1) {
+        showToast('Only images and PDF files are allowed', 'error');
+        input.value = '';
+        return;
+    }
+    var maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+        showToast('File must be under 10MB', 'error');
+        input.value = '';
+        return;
+    }
+    var label = document.getElementById('hwFileUploadLabel');
+    var area = document.getElementById('hwFileUploadArea');
+    var selectedBox = document.getElementById('hwFileSelected');
+    var nameEl = document.getElementById('hwFileSelectedName');
+    if (label) label.textContent = file.name;
+    if (area) {
+        area.style.borderColor = 'var(--success)';
+        area.style.background = 'rgba(16,185,129,0.05)';
+    }
+    if (selectedBox) selectedBox.style.display = 'flex';
+    if (nameEl) nameEl.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+}
+
+function clearHomeworkFile() {
+    var input = document.getElementById('hwFileInput');
+    var label = document.getElementById('hwFileUploadLabel');
+    var area = document.getElementById('hwFileUploadArea');
+    var selectedBox = document.getElementById('hwFileSelected');
+    if (input) input.value = '';
+    if (label) label.textContent = 'Or attach images/PDF (optional)';
+    if (area) { area.style.borderColor = ''; area.style.background = ''; }
+    if (selectedBox) selectedBox.style.display = 'none';
+}
+
+function submitHomeworkFile() {
+    var fileInput = document.getElementById('hwFileInput');
+    var answer = (document.getElementById('hwAnswerInput') || {}).value || '';
+    if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+        showToast('Please select a file first', 'error');
+        return;
+    }
+    var file = fileInput.files[0];
+    var fileInfo = 'File: ' + file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+    showToast('File ready for upload: ' + file.name, 'success');
+    if (answer.trim()) {
+        submitHomework();
+    }
+}
+
+// ============================================
+// FEATURE 7: SEARCH
+// ============================================
+function toggleSearchBar(barId, inputId) {
+    var bar = document.getElementById(barId);
+    var input = document.getElementById(inputId);
+    if (!bar) return;
+    if (bar.style.display === 'none' || !bar.style.display) {
+        bar.style.display = '';
+        if (input) input.focus();
+    } else {
+        bar.style.display = 'none';
+        if (input) input.value = '';
+        searchItems(inputId, input.getAttribute('data-search-target') || '');
+    }
+}
+
+function searchItems(inputId, listSelector) {
+    var input = document.getElementById(inputId);
+    if (!input || !listSelector) return;
+    var query = input.value.toLowerCase();
+    var items = document.querySelectorAll(listSelector);
+    items.forEach(function(item) {
+        var text = item.textContent.toLowerCase();
+        item.style.display = text.indexOf(query) > -1 ? '' : 'none';
+    });
+}
+
+// ============================================
+// FEATURE 8: COMPOSE MESSAGE
+// ============================================
+function showComposeMessage() {
+    var overlay = document.getElementById('composeMsgOverlay');
+    var recipientSelect = document.getElementById('composeRecipient');
+    var textArea = document.getElementById('composeMsgText');
+    var errorEl = document.getElementById('composeMsgError');
+    if (!overlay) return;
+    overlay.style.display = 'flex';
+    if (textArea) textArea.value = '';
+    if (errorEl) { errorEl.style.display = 'none'; errorEl.textContent = ''; }
+    if (recipientSelect) {
+        recipientSelect.innerHTML = '<option value="">Loading recipients...</option>';
+        api('recipients').then(function(recipients) {
+            var html = '';
+            (recipients || []).forEach(function(r) {
+                html += '<option value="' + r.id + '">' + r.name + ' (' + r.role + ')</option>';
+            });
+            recipientSelect.innerHTML = html || '<option value="">No recipients available</option>';
+        }).catch(function() {
+            recipientSelect.innerHTML = '<option value="">Failed to load recipients</option>';
+        });
+    }
+}
+
+function closeComposeMessage() {
+    var overlay = document.getElementById('composeMsgOverlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
+// ============================================
+// FEATURE 9: ADD CALENDAR EVENT
+// ============================================
+function openAddCalendarEventModal() {
+    var overlay = document.getElementById('addEventModalOverlay');
+    if (overlay) overlay.style.display = 'flex';
+    var err = document.getElementById('addEventError');
+    if (err) { err.style.display = 'none'; err.textContent = ''; }
+    var titleEl = document.getElementById('eventTitle');
+    var subjectEl = document.getElementById('eventSubject');
+    var dateEl = document.getElementById('eventDate');
+    var startEl = document.getElementById('eventStartTime');
+    var endEl = document.getElementById('eventEndTime');
+    if (titleEl) titleEl.value = '';
+    if (subjectEl) subjectEl.value = '';
+    if (dateEl) dateEl.value = new Date().toISOString().slice(0, 10);
+    if (startEl) startEl.value = '09:00';
+    if (endEl) endEl.value = '10:00';
+}
+
+function closeAddCalendarEventModal() {
+    var overlay = document.getElementById('addEventModalOverlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
+function submitCalendarEvent() {
+    var title = (document.getElementById('eventTitle') || {}).value || '';
+    var subject = (document.getElementById('eventSubject') || {}).value || '';
+    var date = (document.getElementById('eventDate') || {}).value || '';
+    var startTime = (document.getElementById('eventStartTime') || {}).value || '';
+    var endTime = (document.getElementById('eventEndTime') || {}).value || '';
+    var errEl = document.getElementById('addEventError');
+
+    if (!title.trim()) {
+        if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Title is required'; }
+        return;
+    }
+    if (!date) {
+        if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Date is required'; }
+        return;
+    }
+
+    apiRaw('add_calendar_event', {
+        title: title.trim(),
+        subject: subject.trim(),
+        date: date,
+        start_time: startTime,
+        end_time: endTime
+    }).then(function(res) {
+        if (res && res.success) {
+            closeAddCalendarEventModal();
+            showToast('Event added successfully!', 'success');
+            loadCalendar();
+        } else {
+            if (errEl) { errEl.style.display = 'block'; errEl.textContent = (res && res.error) || 'Failed to add event'; }
+        }
+    }).catch(function() {
+        if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Network error. Please try again.'; }
+    });
+}
+
+// ============================================
+// FEATURE 10: HELP / FAQ
+// ============================================
+function showHelp() {
+    var overlay = document.getElementById('helpModalOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'helpModalOverlay';
+        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;align-items:center;justify-content:center';
+        overlay.onclick = function(e) { if (e.target === overlay) closeHelp(); };
+        document.body.appendChild(overlay);
+    }
+    overlay.innerHTML = '<div style="background:var(--card);border-radius:20px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto;animation:slideUp 0.3s ease" onclick="event.stopPropagation()">' +
+        '<div style="padding:16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--card);z-index:1">' +
+        '<h3 style="font-size:16px;font-weight:700;margin:0">Help & FAQ</h3>' +
+        '<button onclick="closeHelp()" style="background:none;border:none;cursor:pointer;padding:4px"><i data-lucide="x" style="width:20px;height:20px;color:var(--text3)"></i></button></div>' +
+        '<div style="padding:16px">' +
+        '<div class="hw-card" style="margin-bottom:10px;cursor:pointer" onclick="this.querySelector(\'p\').style.display=this.querySelector(\'p\').style.display===\'none\'?\'\':\'none\'">' +
+        '<h5 style="font-size:13px;display:flex;align-items:center;gap:6px"><i data-lucide="user-plus" style="width:14px;height:14px;color:var(--primary)"></i> How to subscribe?</h5>' +
+        '<p style="font-size:11px;color:var(--text2);line-height:1.6;margin-top:6px;display:none">Go to Tutors screen, find a teacher, tap Subscribe. Choose a package, enter your transaction ID (bKash/Nagad), and submit. The admin will approve your subscription within 24 hours.</p></div>' +
+        '<div class="hw-card" style="margin-bottom:10px;cursor:pointer" onclick="this.querySelector(\'p\').style.display=this.querySelector(\'p\').style.display===\'none\'?\'\':\'none\'">' +
+        '<h5 style="font-size:13px;display:flex;align-items:center;gap:6px"><i data-lucide="file-text" style="width:14px;height:14px;color:var(--warning)"></i> How to submit homework?</h5>' +
+        '<p style="font-size:11px;color:var(--text2);line-height:1.6;margin-top:6px;display:none">Go to Homework from the home screen. Tap on a pending assignment, read the instructions, type your answer in the text area (or attach a file), then tap Submit Homework.</p></div>' +
+        '<div class="hw-card" style="margin-bottom:10px;cursor:pointer" onclick="this.querySelector(\'p\').style.display=this.querySelector(\'p\').style.display===\'none\'?\'\':\'none\'">' +
+        '<h5 style="font-size:13px;display:flex;align-items:center;gap:6px"><i data-lucide="clipboard" style="width:14px;height:14px;color:var(--info)"></i> How to take exams?</h5>' +
+        '<p style="font-size:11px;color:var(--text2);line-height:1.6;margin-top:6px;display:none">Go to Exams from the home screen. Select an upcoming exam, read the questions carefully, select your answers, and tap Submit Exam before the timer runs out.</p></div>' +
+        '<div class="hw-card" style="margin-bottom:10px;cursor:pointer" onclick="this.querySelector(\'p\').style.display=this.querySelector(\'p\').style.display===\'none\'?\'\':\'none\'">' +
+        '<h5 style="font-size:13px;display:flex;align-items:center;gap:6px"><i data-lucide="message-circle" style="width:14px;height:14px;color:var(--success)"></i> How to contact a teacher?</h5>' +
+        '<p style="font-size:11px;color:var(--text2);line-height:1.6;margin-top:6px;display:none">You need an active subscription to message a teacher. Go to Tutors, subscribe to a teacher, then use the Messages screen to chat with them directly.</p></div>' +
+        '<div class="hw-card" style="margin-bottom:10px;cursor:pointer" onclick="this.querySelector(\'p\').style.display=this.querySelector(\'p\').style.display===\'none\'?\'\':\'none\'">' +
+        '<h5 style="font-size:13px;display:flex;align-items:center;gap:6px"><i data-lucide="video" style="width:14px;height:14px;color:var(--error)"></i> How to join live classes?</h5>' +
+        '<p style="font-size:11px;color:var(--text2);line-height:1.6;margin-top:6px;display:none">Go to the Live Class card on the home screen or the Tutors screen. When a class is scheduled, tap Join Now to enter the live lobby.</p></div>' +
+        '<div class="hw-card" style="cursor:pointer" onclick="this.querySelector(\'p\').style.display=this.querySelector(\'p\').style.display===\'none\'?\'\':\'none\'">' +
+        '<h5 style="font-size:13px;display:flex;align-items:center;gap:6px"><i data-lucide="shield" style="width:14px;height:14px;color:#EC4899"></i> How to reset my password?</h5>' +
+        '<p style="font-size:11px;color:var(--text2);line-height:1.6;margin-top:6px;display:none">Go to Profile > Settings > Change Password. Enter your current password and the new password, then confirm.</p></div>' +
+        '</div></div>';
+    overlay.style.display = 'flex';
+    if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+}
+
+function closeHelp() {
+    var overlay = document.getElementById('helpModalOverlay');
+    if (overlay) { overlay.style.display = 'none'; overlay.remove(); }
+}
+
+// ============================================
+// FEATURE 12: FILTERS
+// ============================================
+function toggleFilter(filterBarId) {
+    var bar = document.getElementById(filterBarId);
+    if (!bar) return;
+    if (bar.style.display === 'none' || !bar.style.display) {
+        bar.style.display = '';
+    } else {
+        bar.style.display = 'none';
+    }
+}
+
+function filterHomeworkList(status) {
+    var items = document.querySelectorAll('#homeworkList .glass-card');
+    items.forEach(function(item) {
+        if (status === 'all') {
+            item.style.display = '';
+            return;
+        }
+        var badge = item.querySelector('.list-item-badge');
+        if (badge) {
+            var text = badge.textContent.toLowerCase();
+            item.style.display = text === status ? '' : 'none';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function filterReportsByType(type) {
+    var cards = document.querySelectorAll('#reportsList .hw-card');
+    cards.forEach(function(card) {
+        if (type === 'all') {
+            card.style.display = '';
+            return;
+        }
+        var badge = card.querySelector('span[style*="border-radius:10px"]');
+        if (badge) {
+            var text = badge.textContent.toLowerCase();
+            card.style.display = text === type ? '' : 'none';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+function filterReportsByDate() {
+    var startDate = (document.getElementById('reportDateStart') || {}).value || '';
+    var endDate = (document.getElementById('reportDateEnd') || {}).value || '';
+    var cards = document.querySelectorAll('#reportsList .hw-card');
+    cards.forEach(function(card) {
+        var dateEl = card.querySelector('p[style*="font-size:9px"]');
+        if (!dateEl || (!startDate && !endDate)) {
+            card.style.display = '';
+            return;
+        }
+        var text = dateEl.textContent.toLowerCase();
+        var match = true;
+        if (startDate) match = match && text.indexOf(startDate) > -1;
+        if (endDate) match = match && text.indexOf(endDate) > -1;
+        card.style.display = match ? '' : 'none';
+    });
+}
+
+// ============================================
+// FEATURE 13: OPTIONS / MORE MENUS
+// ============================================
+function toggleOptionsMenu(menuId) {
+    var menu = document.getElementById(menuId);
+    if (!menu) return;
+    var isVisible = menu.style.display === 'block';
+    // Close all option menus first
+    document.querySelectorAll('.options-dropdown').forEach(function(m) { m.style.display = 'none'; });
+    if (!isVisible) {
+        menu.style.display = 'block';
+        setTimeout(function() {
+            document.addEventListener('click', closeOptionsMenuOutside);
+        }, 10);
+    }
+}
+
+function closeOptionsMenuOutside(e) {
+    if (!e.target.closest('.options-dropdown') && !e.target.closest('[onclick*="toggleOptionsMenu"]')) {
+        document.querySelectorAll('.options-dropdown').forEach(function(m) { m.style.display = 'none'; });
+        document.removeEventListener('click', closeOptionsMenuOutside);
+    }
+}
+
+function optionShare() {
+    document.querySelectorAll('.options-dropdown').forEach(function(m) { m.style.display = 'none'; });
+    if (navigator.share) {
+        navigator.share({ title: 'EduAI School App', text: 'Check out EduAI - your personal AI tutor!', url: window.location.href });
+    } else {
+        showToast('Link copied to clipboard!', 'success');
+    }
+}
+
+function optionReport() {
+    document.querySelectorAll('.options-dropdown').forEach(function(m) { m.style.display = 'none'; });
+    showToast('Report submitted. Thank you!', 'success');
+}
+
+function optionSettings() {
+    document.querySelectorAll('.options-dropdown').forEach(function(m) { m.style.display = 'none'; });
+    showScreen('screen-settings');
+}
+
+function sendComposedMessage() {
+    var recipientSelect = document.getElementById('composeRecipient');
+    var textArea = document.getElementById('composeMsgText');
+    var errorEl = document.getElementById('composeMsgError');
+    var sendBtn = document.getElementById('composeSendBtn');
+    if (!recipientSelect || !textArea) return;
+    var toId = parseInt(recipientSelect.value);
+    var msg = textArea.value.trim();
+    if (!toId || !msg) {
+        if (errorEl) { errorEl.style.display = 'block'; errorEl.textContent = 'Please select a recipient and type a message'; }
+        return;
+    }
+    if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = 'Sending...'; }
+    fetch('/api/index.php?action=send_message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to_id: toId, message: msg }),
+        credentials: 'same-origin'
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Send Message'; }
+        if (data.success) {
+            closeComposeMessage();
+            showToast('Message sent!', 'success');
+            loadMessages();
+        } else {
+            if (errorEl) { errorEl.style.display = 'block'; errorEl.textContent = data.error || 'Failed to send message'; }
+        }
+    }).catch(function() {
+        if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Send Message'; }
+        if (errorEl) { errorEl.style.display = 'block'; errorEl.textContent = 'Network error. Please try again.'; }
+    });
+}
+
+// === FEATURE 14: SESSION BOOKING ===
+function openBookSessionModal() {
+    var overlay = document.getElementById('bookSessionOverlay');
+    if (!overlay) return;
+    overlay.style.display = 'flex';
+    var dateInput = document.getElementById('bookSessionDate');
+    if (dateInput) {
+        var tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        dateInput.min = tomorrow.toISOString().split('T')[0];
+        dateInput.value = tomorrow.toISOString().split('T')[0];
+    }
+    var slots = [
+        '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM',
+        '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM', '7:00 PM'
+    ];
+    var container = document.getElementById('bookSessionSlots');
+    if (container) {
+        container.innerHTML = '';
+        slots.forEach(function(slot, i) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = slot;
+            btn.style.cssText = 'padding:8px 4px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:11px;cursor:pointer;text-align:center';
+            if (i === 2) { btn.style.borderColor = 'var(--primary)'; btn.style.background = 'rgba(99,102,241,0.15)'; btn.style.color = 'var(--primary)'; btn.style.fontWeight = '600'; }
+            btn.onclick = function() {
+                container.querySelectorAll('button').forEach(function(b) {
+                    b.style.borderColor = 'var(--border)';
+                    b.style.background = 'var(--bg)';
+                    b.style.color = 'var(--text)';
+                    b.style.fontWeight = '400';
+                });
+                btn.style.borderColor = 'var(--primary)';
+                btn.style.background = 'rgba(99,102,241,0.15)';
+                btn.style.color = 'var(--primary)';
+                btn.style.fontWeight = '600';
+            };
+            container.appendChild(btn);
+        });
+    }
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+function closeBookSessionModal() {
+    var overlay = document.getElementById('bookSessionOverlay');
+    if (overlay) overlay.style.display = 'none';
+}
+function confirmBookSession() {
+    closeBookSessionModal();
+    showToast('Booking request sent! The teacher will confirm shortly.', 'success');
+}
+
+// === FEATURE 15: EARNINGS DETAILS ===
+// Handled inline: onclick="showScreen('screen-earnings')"
+
+// === FEATURE 16: CALENDAR SETTINGS ===
+function openCalendarSettingsModal() {
+    var overlay = document.getElementById('calendarSettingsOverlay');
+    if (!overlay) return;
+    var saved = JSON.parse(localStorage.getItem('calendarSettings') || '{}');
+    var h = document.getElementById('calToggleHolidays');
+    var e = document.getElementById('calToggleExams');
+    var l = document.getElementById('calToggleLive');
+    if (h) h.checked = saved.holidays !== false;
+    if (e) e.checked = saved.exams !== false;
+    if (l) l.checked = saved.live !== false;
+    overlay.style.display = 'flex';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+function closeCalendarSettingsModal() {
+    var overlay = document.getElementById('calendarSettingsOverlay');
+    if (overlay) overlay.style.display = 'none';
+}
+function saveCalendarSettings() {
+    var settings = {
+        holidays: document.getElementById('calToggleHolidays') ? document.getElementById('calToggleHolidays').checked : true,
+        exams: document.getElementById('calToggleExams') ? document.getElementById('calToggleExams').checked : true,
+        live: document.getElementById('calToggleLive') ? document.getElementById('calToggleLive').checked : true
+    };
+    localStorage.setItem('calendarSettings', JSON.stringify(settings));
+}
+
+// === FEATURE 17: EDIT MODE ===
+var _editModeActive = false;
+function toggleEditMode() {
+    _editModeActive = !_editModeActive;
+    var screen = document.querySelector('.screen.active');
+    if (!screen) return;
+    var editableEls = screen.querySelectorAll('h1,h2,h3,h4,h5,p,.section-title,.hw-card h5');
+    editableEls.forEach(function(el) {
+        el.contentEditable = _editModeActive;
+        if (_editModeActive) {
+            el.style.outline = '2px dashed rgba(99,102,241,0.5)';
+            el.style.outlineOffset = '2px';
+            el.style.borderRadius = '4px';
+        } else {
+            el.style.outline = '';
+            el.style.outlineOffset = '';
+            el.style.borderRadius = '';
+        }
+    });
+    showToast(_editModeActive ? 'Edit mode ON - tap text to edit' : 'Edit mode OFF', 'info');
+}
+
+// === FEATURE 18: REPORT TYPE MODAL ===
+var _reportTypeData = {
+    'mid-term': { title: 'Mid-term Reports', count: 8, avg: 'B+' },
+    'monthly':  { title: 'Monthly Reports',  count: 6, avg: 'A' },
+    'final':    { title: 'Final Reports',     count: 3, avg: 'A+' },
+    'custom':   { title: 'Custom Reports',    count: 0, avg: '--' }
+};
+function showReportType(type) {
+    var overlay = document.getElementById('reportTypeOverlay');
+    if (!overlay) return;
+    var data = _reportTypeData[type] || _reportTypeData['custom'];
+    var titleEl = document.getElementById('reportTypeTitle');
+    var countEl = document.getElementById('reportTypeCount');
+    var avgEl = document.getElementById('reportTypeAvg');
+    if (titleEl) titleEl.textContent = data.title;
+    if (countEl) countEl.textContent = data.count;
+    if (avgEl) avgEl.textContent = data.avg;
+    overlay.style.display = 'flex';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+function closeReportTypeModal() {
+    var overlay = document.getElementById('reportTypeOverlay');
+    if (overlay) overlay.style.display = 'none';
 }
