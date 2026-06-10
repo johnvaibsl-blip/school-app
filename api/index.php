@@ -84,6 +84,7 @@ switch ($path) {
         jsonResponse($results);
         break;
     case 'library':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
         $class = $_GET['class'] ?? '';
         $subjectId = $_GET['subject_id'] ?? '';
         $all = $db->query('library');
@@ -459,11 +460,13 @@ switch ($path) {
         break;
 
     case 'chapters':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
         $sid = intval($_GET['subject_id'] ?? 0);
         jsonResponse($db->findAll('chapters', 'subject_id', $sid));
         break;
 
     case 'book_content':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
         $cid = intval($_GET['chapter_id'] ?? 0);
         $all = $db->query('book_content');
         $found = null;

@@ -868,7 +868,7 @@
 <div id="screen-my-study" class="screen">
     <header class="header glass-header">
         <div class="header-center" style="display:flex;align-items:center;gap:10px">
-            <div class="user-avatar" style="background:linear-gradient(135deg,#4F46E5,#7C3AED)">A</div>
+            <div class="user-avatar" id="myStudyAvatar" style="background:linear-gradient(135deg,#4F46E5,#7C3AED)">S</div>
             <div class="user-info"><h3>My Study</h3><p>Track your progress</p></div>
         </div>
         <button class="icon-btn glass-card-sm" onclick="showScreen('screen-notif')"><i data-lucide="bell"></i></button>
@@ -929,12 +929,12 @@
             <div class="glass-card" style="padding:16px;text-align:center;cursor:pointer" onclick="showScreen('screen-homework')">
                 <div class="icon-box orange" style="margin:0 auto 8px"><i data-lucide="file-text" class="icon-md"></i></div>
                 <h5 style="font-size:13px;font-weight:600">Homework</h5>
-                <p style="font-size:10px;color:var(--text3)">4 pending</p>
+                <p id="myStudyHwPending" style="font-size:10px;color:var(--text3)">4 pending</p>
             </div>
             <div class="glass-card" style="padding:16px;text-align:center;cursor:pointer" onclick="showScreen('screen-exam')">
                 <div class="icon-box purple" style="margin:0 auto 8px"><i data-lucide="clipboard" class="icon-md"></i></div>
                 <h5 style="font-size:13px;font-weight:600">Exams</h5>
-                <p style="font-size:10px;color:var(--text3)">2 upcoming</p>
+                <p id="myStudyExamUpcoming" style="font-size:10px;color:var(--text3)">2 upcoming</p>
             </div>
         </div>
 
@@ -968,15 +968,15 @@
 
             <!-- Quick Actions -->
             <div class="sp-actions">
-                <button class="sp-action-btn" onclick="showScreen('screen-edit-profile');loadEditProfile()">
+                <button class="sp-action-btn" onclick="showScreen('screen-edit-profile')">
                     <div class="sp-action-icon purple"><i data-lucide="pencil"></i></div>
                     <span>Edit Profile</span>
                 </button>
-                <button class="sp-action-btn" onclick="showScreen('screen-hw-detail')">
+                <button class="sp-action-btn" onclick="showScreen('screen-my-study')">
                     <div class="sp-action-icon green"><i data-lucide="bar-chart-3"></i></div>
                     <span>Progress</span>
                 </button>
-                <button class="sp-action-btn" onclick="showToast('Achievements loaded!','info')">
+                <button class="sp-action-btn" onclick="var el=document.getElementById('profileBadges');if(el)el.scrollIntoView({behavior:'smooth'})">
                     <div class="sp-action-icon orange"><i data-lucide="award"></i></div>
                     <span>Badges</span>
                 </button>
@@ -1019,7 +1019,7 @@
     <div class="profile-menu">
         <div class="profile-section">
             <h4>Account</h4>
-            <div class="menu-item" onclick="showScreen('screen-edit-profile');loadEditProfile()">
+            <div class="menu-item" onclick="showScreen('screen-edit-profile')">
                 <div class="menu-icon purple"><i data-lucide="user"></i></div>
                 <div class="menu-text"><h5>Edit Profile</h5><p>Name, email, phone</p></div>
                 <span class="menu-arrow"><i data-lucide="chevron-right"></i></span>
@@ -1042,12 +1042,12 @@
         </div>
         <div class="profile-section">
             <h4>History</h4>
-            <div class="menu-item" onclick="showToast('Purchase history coming soon!','info')">
+            <div class="menu-item" onclick="showMySubscriptions()">
                 <div class="menu-icon green"><i data-lucide="shopping-bag"></i></div>
                 <div class="menu-text"><h5>Purchase History</h5><p>View all purchases</p></div>
                 <span class="menu-arrow"><i data-lucide="chevron-right"></i></span>
             </div>
-            <div class="menu-item" onclick="showToast('Payment history coming soon!','info')">
+            <div class="menu-item" onclick="showMySubscriptions()">
                 <div class="menu-icon blue"><i data-lucide="credit-card"></i></div>
                 <div class="menu-text"><h5>Payment History</h5><p>Transactions & receipts</p></div>
                 <span class="menu-arrow"><i data-lucide="chevron-right"></i></span>
@@ -1269,29 +1269,22 @@
 <!-- ========== 12. BOOK READER ========== -->
 <div id="screen-reader" class="screen">
     <header class="header">
-        <button class="header-back" onclick="showScreen('screen-subject')"><i data-lucide="arrow-left"></i></button>
-        <h3 id="bookTitle" class="header-title">Chapter 3: Quadrilaterals</h3>
+        <button class="header-back" onclick="goBackFromReader()"><i data-lucide="arrow-left"></i></button>
+        <h3 id="bookTitle" class="header-title">Loading...</h3>
         <button class="icon-btn" onclick="showToast('Bookmark saved!')"><i data-lucide="bookmark"></i></button>
     </header>
     <div class="reader-header">
         <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3)">
-            <span id="bookChapterInfo">Chapter 3 of 12</span><span id="bookProgress">35% complete</span>
+            <span id="bookChapterInfo">Chapter</span><span id="bookProgress">0% complete</span>
         </div>
-        <div class="reader-progress"><div id="bookProgressBar" class="reader-progress-fill" style="width:35%"></div></div>
+        <div class="reader-progress"><div id="bookProgressBar" class="reader-progress-fill" style="width:0%"></div></div>
     </div>
     <div id="bookContent" class="reader-content">
-        <h3>3.1 Introduction to Quadrilaterals</h3>
-        <p>A quadrilateral is a polygon with four sides and four vertices. The word "quadrilateral" is derived from the Latin words "quadri" (meaning four) and "latus" (meaning side).</p>
-        <p>Quadrilaterals are everywhere in our daily life - from the tiles on our floor to the screens of our devices. Understanding their properties is fundamental to geometry.</p>
-        <h3>3.2 Types of Quadrilaterals</h3>
-        <p>There are several types of quadrilaterals, each with unique properties:</p>
-        <p><strong>Parallelogram:</strong> A quadrilateral with both pairs of opposite sides parallel. Properties include equal opposite sides and angles.</p>
-        <p><strong>Rectangle:</strong> A parallelogram with four right angles. All rectangles are parallelograms, but not all parallelograms are rectangles.</p>
-        <p><strong>Square:</strong> A rectangle with all four sides equal. A square is both a rectangle and a rhombus.</p>
+        <p style="text-align:center;padding:40px;color:var(--text3)">Loading content...</p>
     </div>
     <div class="reader-nav">
-        <button class="reader-btn prev" onclick="showToast('Previous chapter','info')"><i data-lucide="arrow-left" style="width:14px;height:14px"></i> Previous</button>
-        <button class="reader-btn next" onclick="showToast('Next chapter loaded','success')"><i data-lucide="arrow-right" style="width:14px;height:14px"></i> Next</button>
+        <button class="reader-btn prev" id="readerPrevBtn" onclick="readerNavigate(-1)"><i data-lucide="arrow-left" style="width:14px;height:14px"></i> Previous</button>
+        <button class="reader-btn next" id="readerNextBtn" onclick="readerNavigate(1)"><i data-lucide="arrow-right" style="width:14px;height:14px"></i> Next</button>
     </div>
     </div>
 </div>
@@ -1701,7 +1694,7 @@
 <!-- ========== 19. SETTINGS ========== -->
 <div id="screen-settings" class="screen">
     <header class="header">
-        <button class="header-back" onclick="showScreen('screen-profile')"><i data-lucide="arrow-left"></i></button>
+        <button class="header-back" onclick="showScreen(USER_ROLE==='teacher'?'screen-teacher-profile-view':'screen-profile')"><i data-lucide="arrow-left"></i></button>
         <h3 class="header-title">Settings</h3>
     </header>
     <div class="main-content">
@@ -2136,7 +2129,7 @@
     <!-- Conversation List View -->
     <div id="msgListView">
         <header class="header glass-header">
-            <button class="header-back" onclick="showScreen(USER_ROLE==='teacher'?'screen-teacher-dash':'screen-home')"><i data-lucide="arrow-left"></i></button>
+            <button class="header-back" onclick="goBackFromMessages()"><i data-lucide="arrow-left"></i></button>
             <h3 class="header-title">Messages</h3>
             <button class="icon-btn glass-card-sm" onclick="showToast('New message coming soon!','info')"><i data-lucide="edit"></i></button>
         </header>

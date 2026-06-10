@@ -2,6 +2,7 @@
 var USER_ROLE = window.__USER_ROLE || '';
 var USER_NAME = window.__USER_NAME || '';
 var USER_CLASS = window.__USER_CLASS || 'Class 8';
+var USER_EMAIL = window.__USER_EMAIL || '';
 var _previousScreen = 'screen-home';
 
 var ROLE_SCREENS = {
@@ -187,6 +188,11 @@ function goBackFromChat() {
     showScreen(_previousScreen);
 }
 
+function goBackFromMessages() {
+    var back = _previousScreen || (USER_ROLE === 'teacher' ? 'screen-teacher-dash' : 'screen-home');
+    showScreen(back);
+}
+
 function openChatFromFAB() {
     var activeScreen = document.querySelector('.screen.active');
     _previousScreen = activeScreen ? activeScreen.id : 'screen-home';
@@ -264,7 +270,7 @@ function loadSubjectFiles(subjectId) {
                 var boxClass = mappedType === 'book' ? 'blue' : mappedType === 'notes' ? 'purple' : 'red';
                 var badge = '';
                 if (f.uploader_type === 'admin') badge = '<span class="list-item-badge" style="background:#EEF2FF;color:#6366F1">Admin</span>';
-                html += '<div class="list-item card-enter" data-type="' + mappedType + '" onclick="showToast(\'Opening file...\',\'info\')">' +
+                html += '<div class="list-item card-enter" data-type="' + mappedType + '" onclick="openLibraryFile(' + (f.subject_id || 0) + ',\'' + mappedType + '\',\'' + (f.title || '').replace(/'/g, "\\'") + '\')">' +
                     '<div class="icon-box ' + boxClass + ' sm"><i data-lucide="' + typeIcon + '" class="icon-sm"></i></div>' +
                     '<div class="list-item-content"><h5>' + (f.title || 'Untitled') + '</h5>' +
                     '<p>' + (f.type || 'file') + ' - ' + (f.description || '') + '</p></div>' + badge + '</div>';
@@ -282,6 +288,39 @@ function loadSubjectFiles(subjectId) {
         .catch(function() {
             fileContainer.innerHTML = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">Failed to load files.</p>';
         });
+}
+
+// === OPEN LIBRARY FILE ===
+function openLibraryFile(subjectId, type, title) {
+    if (type === 'video') {
+        showToast('Video player coming soon!', 'info');
+        return;
+    }
+    if (type === 'notes') {
+        api('chapters&subject_id=' + subjectId).then(function(chapters) {
+            var ch = (chapters || [])[0];
+            if (ch) {
+                openBookReader(ch.id, ch.title);
+            } else {
+                showToast('No content available yet', 'info');
+            }
+        });
+        return;
+    }
+    api('chapters&subject_id=' + subjectId).then(function(chapters) {
+        var ch = (chapters || [])[0];
+        if (ch) {
+            openBookReader(ch.id, ch.title);
+        } else {
+            showToast('No chapters available for this subject', 'info');
+        }
+    });
+}
+
+function openBookReader(chapterId, chapterTitle) {
+    _previousScreen = document.querySelector('.screen.active') ? document.querySelector('.screen.active').id : 'screen-my-study';
+    loadBookContent(chapterId);
+    showScreen('screen-reader');
 }
 
 // === FILE FOLDER VIEW ===
@@ -1507,14 +1546,17 @@ function loadStudentProfile() {
         var setEl = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
         setEl('profileUserName', u.name || USER_NAME);
         setEl('profileUserEmail', u.email || USER_EMAIL);
-        setEl('profileUserClass', (u.class || USER_CLASS) + ' - Premium Student');
+        var classText = u.class || USER_CLASS;
+        if (u.is_premium) classText += ' - Premium Student';
+        setEl('profileUserClass', classText);
         var avatarEl = document.getElementById('profileUserAvatar');
         if (avatarEl) avatarEl.textContent = (u.name || USER_NAME || 'S')[0].toUpperCase();
+        var proBadge = document.querySelector('.sp-pro-badge');
+        if (proBadge) proBadge.style.display = u.is_premium ? '' : 'none';
         setEl('profileStat1', p.books_read || 0);
         setEl('profileStat2', (p.homework_score || 0) + '%');
         setEl('profileStat3', p.streak || 0);
         setEl('profileStat4', p.badges_count || 0);
-        // Badges
         var badgeContainer = document.getElementById('profileBadges');
         if (badgeContainer && data.badges && data.badges.length > 0) {
             var colors = ['gold','green','blue','purple','red'];
@@ -1525,6 +1567,8 @@ function loadStudentProfile() {
             });
             badgeContainer.innerHTML = bhtml;
             if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+        } else if (badgeContainer) {
+            badgeContainer.innerHTML = '<p style="font-size:12px;color:var(--text3);padding:8px 0">No badges earned yet</p>';
         }
     });
 }
@@ -1690,6 +1734,38 @@ function openSubscribeModal(teacherId, teacherName, teacherSubject) {
 function closeSubscribeModal() {
     var overlay = document.getElementById('subscribeModalOverlay');
     if (overlay) overlay.style.display = 'none';
+}
+
+function showMySubscriptions() {
+    api('my_subscriptions').then(function(subs) {
+        var html = '<div style="padding:16px">';
+        if (!subs || subs.length === 0) {
+            html += '<div style="text-align:center;padding:30px"><i data-lucide="credit-card" style="width:40px;height:40px;color:var(--text3);margin-bottom:12px"></i><h4 style="font-size:14px;margin-bottom:6px">No Subscriptions</h4><p style="font-size:12px;color:var(--text3)">You haven\'t subscribed to any teacher yet</p></div>';
+        } else {
+            subs.forEach(function(s) {
+                var statusColor = s.status === 'approved' ? '#10B981' : s.status === 'pending' ? '#F59E0B' : '#EF4444';
+                html += '<div style="padding:14px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px">' +
+                    '<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">' +
+                    '<div><h4 style="font-size:14px;font-weight:600">' + (s.teacher_name || 'Unknown') + '</h4>' +
+                    '<p style="font-size:11px;color:var(--text3)">' + (s.teacher_subject || '') + '</p></div>' +
+                    '<span style="padding:3px 10px;border-radius:12px;font-size:10px;font-weight:600;color:white;background:' + statusColor + '">' + s.status.charAt(0).toUpperCase() + s.status.slice(1) + '</span></div>' +
+                    '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3)">' +
+                    '<span>' + (s.package_name || '') + '</span><span style="font-weight:600;color:var(--primary)">৳' + (s.amount || 0) + '</span></div>' +
+                    '<div style="font-size:10px;color:var(--text3);margin-top:4px">Tx: ' + (s.transaction_id || '') + ' · ' + (s.created_at || '').split(' ')[0] + '</div></div>';
+            });
+        }
+        html += '</div>';
+        var overlay = document.createElement('div');
+        overlay.id = 'subHistoryOverlay';
+        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;align-items:center;justify-content:center';
+        overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+        overlay.innerHTML = '<div style="background:var(--card);border-radius:16px;width:90%;max-width:400px;max-height:70vh;overflow-y:auto">' +
+            '<div style="padding:16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">' +
+            '<h3 style="font-size:16px;font-weight:700;margin:0">My Subscriptions</h3>' +
+            '<button onclick="document.getElementById(\'subHistoryOverlay\').remove()" style="background:none;border:none;cursor:pointer"><i data-lucide="x" style="width:20px;height:20px"></i></button></div>' + html + '</div>';
+        document.body.appendChild(overlay);
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    });
 }
 
 function onSubPackageChange() {
@@ -2274,6 +2350,16 @@ function renderMyStudyStats(p) {
         var pct = Math.min(p.homework_score || 0, 100);
         goalRing.style.background = 'conic-gradient(#4F46E5 ' + pct + '%, rgba(255,255,255,0.1) ' + pct + '%)';
     }
+    var avatarEl = document.getElementById('myStudyAvatar');
+    if (avatarEl) avatarEl.textContent = (USER_NAME || 'S')[0].toUpperCase();
+    api('homework').then(function(hw) {
+        var pending = (hw || []).filter(function(h) { return h.status === 'pending'; }).length;
+        setText('myStudyHwPending', pending + ' pending');
+    });
+    api('exams').then(function(exams) {
+        var upcoming = (exams || []).filter(function(e) { return e.status === 'upcoming'; }).length;
+        setText('myStudyExamUpcoming', upcoming + ' upcoming');
+    });
 }
 
 // --- HOMEWORK DETAIL ---
@@ -2438,7 +2524,7 @@ function loadSubjectChapters(subjectId) {
             var statusIcon = ch.status === 'completed' ? 'check-circle' : ch.status === 'in_progress' ? 'play-circle' : ch.status === 'locked' ? 'lock' : 'circle';
             var statusColor = ch.status === 'completed' ? '#10B981' : ch.status === 'in_progress' ? '#4F46E5' : '#9CA3AF';
             var pct = ch.status === 'completed' ? 100 : ch.status === 'in_progress' ? 50 : 0;
-            html += '<div class="list-item" style="cursor:pointer' + (ch.status === 'locked' ? 'opacity:0.5' : '') + '">' +
+            html += '<div class="list-item" style="cursor:pointer' + (ch.status === 'locked' ? 'opacity:0.5' : '') + '"' + (ch.status !== 'locked' ? ' onclick="openBookReader(' + ch.id + ',\'' + (ch.title || '').replace(/'/g, "\\'") + '\')"' : '') + '>' +
                 '<div class="icon-box sm" style="background:' + statusColor + '20;color:' + statusColor + '"><i data-lucide="' + statusIcon + '" class="icon-sm"></i></div>' +
                 '<div class="list-item-content"><h5>' + ch.title + '</h5><p>' + ch.pages + ' pages · ' + pct + '% complete</p>' +
                 '<div style="background:rgba(255,255,255,0.1);border-radius:4px;height:4px;margin-top:4px"><div style="background:' + statusColor + ';height:100%;border-radius:4px;width:' + pct + '%"></div></div></div></div>';
@@ -2450,23 +2536,53 @@ function loadSubjectChapters(subjectId) {
 }
 
 // --- BOOK CONTENT ---
+var _currentBookChapterId = null;
+var _currentBookSubjectId = null;
+
 function loadBookContent(chapterId) {
     if (!chapterId) return;
+    _currentBookChapterId = chapterId;
     api('book_content&chapter_id=' + chapterId).then(function(book) {
-        if (!book || !book.content) return;
+        if (!book || !book.content) {
+            var contentEl = document.getElementById('bookContent');
+            if (contentEl) contentEl.innerHTML = '<p style="text-align:center;padding:40px;color:var(--text3)">No content available for this chapter yet.</p>';
+            return;
+        }
+        _currentBookSubjectId = book.subject_id || null;
         logActivity('read', 'Read ' + (book.title || 'chapter'));
         var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
         setText('bookTitle', book.title || '');
-        setText('bookProgress', Math.round((book.pages_read || 0) / (book.pages_total || 1) * 100) + '% complete');
+        var pct = book.pages_total ? Math.round((book.pages_read || 0) / book.pages_total * 100) : 0;
+        setText('bookProgress', pct + '% complete');
         var bar = document.getElementById('bookProgressBar');
-        if (bar) bar.style.width = Math.round((book.pages_read || 0) / (book.pages_total || 1) * 100) + '%';
-        setText('bookChapterInfo', 'Chapter of ' + (book.pages_total || 1));
+        if (bar) bar.style.width = pct + '%';
+        setText('bookChapterInfo', 'Page ' + (book.pages_read || 0) + ' of ' + (book.pages_total || 1));
         var contentEl = document.getElementById('bookContent');
         if (contentEl) {
-            var lines = (book.content || '').split('\\n');
+            var lines = (book.content || '').split(/\n/);
             contentEl.innerHTML = '<h3 style="font-size:16px;font-weight:700;margin-bottom:12px">' + (book.title || '') + '</h3>' +
                 lines.map(function(l) { return '<p style="font-size:13px;line-height:1.8;color:var(--text2);margin-bottom:8px">' + l + '</p>'; }).join('');
         }
+        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+    });
+}
+
+function goBackFromReader() {
+    var back = _previousScreen || 'screen-my-study';
+    showScreen(back);
+}
+
+function readerNavigate(dir) {
+    if (!_currentBookSubjectId) { showToast('No more chapters', 'info'); return; }
+    api('chapters&subject_id=' + _currentBookSubjectId).then(function(chapters) {
+        var list = chapters || [];
+        var idx = -1;
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].id === _currentBookChapterId) { idx = i; break; }
+        }
+        var nextIdx = idx + dir;
+        if (nextIdx < 0 || nextIdx >= list.length) { showToast('No more chapters', 'info'); return; }
+        openBookReader(list[nextIdx].id, list[nextIdx].title);
     });
 }
 

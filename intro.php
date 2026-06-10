@@ -29,6 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($user && password_verify($password, $user['password'])) {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user_name'] = $user['name'];
+            $_SESSION['user_email'] = $user['email'] ?? '';
+            $_SESSION['user_class'] = $user['class'] ?? 'Class 8';
             $_SESSION['role'] = $user['role'];
             
             redirectByRole($user['role']);
