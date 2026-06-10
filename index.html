@@ -969,63 +969,72 @@
 <!-- ========== 5. STUDENT PROFILE ========== -->
 <div id="screen-profile" class="screen">
     <div class="sp-header">
-        <div class="sp-cover"></div>
+        <div class="sp-cover">
+            <div class="sp-cover-orb sp-cover-orb-1"></div>
+            <div class="sp-cover-orb sp-cover-orb-2"></div>
+            <div class="sp-cover-orb sp-cover-orb-3"></div>
+            <div class="sp-cover-grid"></div>
+        </div>
         <div class="sp-body">
-            <!-- Avatar Row -->
-            <div class="sp-avatar-row">
-                <div class="sp-avatar">
-                    <span id="profileUserAvatar">A</span>
+            <!-- Avatar + Name -->
+            <div class="sp-hero">
+                <div class="sp-avatar-wrap">
+                    <div class="sp-avatar-ring"></div>
+                    <div class="sp-avatar" id="profileUserAvatar">A</div>
                     <div class="sp-pro-badge" style="display:none">PRO</div>
                 </div>
-                <div class="sp-name-area">
-                    <h2 id="profileUserName">Loading...</h2>
-                    <div class="sp-role" id="profileUserClass">Loading...</div>
-                    <div class="sp-welcome" id="profileUserEmail"></div>
+                <h2 class="sp-name" id="profileUserName">Loading...</h2>
+                <div class="sp-class-row">
+                    <span class="sp-tag sp-tag-blue" id="profileUserClass"><i data-lucide="graduation-cap" style="width:10px;height:10px"></i> Loading...</span>
+                    <span class="sp-tag sp-tag-purple" id="profileUserEmail"></span>
+                </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="sp-stats">
+                <div class="sp-stat">
+                    <div class="sp-stat-icon sp-stat-icon-blue"><i data-lucide="book-open"></i></div>
+                    <div class="sp-stat-num" id="profileStat1">0</div>
+                    <div class="sp-stat-label">Books</div>
+                </div>
+                <div class="sp-stat-divider"></div>
+                <div class="sp-stat">
+                    <div class="sp-stat-icon sp-stat-icon-green"><i data-lucide="target"></i></div>
+                    <div class="sp-stat-num" id="profileStat2">0%</div>
+                    <div class="sp-stat-label">Score</div>
+                </div>
+                <div class="sp-stat-divider"></div>
+                <div class="sp-stat">
+                    <div class="sp-stat-icon sp-stat-icon-orange"><i data-lucide="flame"></i></div>
+                    <div class="sp-stat-num" id="profileStat3">0</div>
+                    <div class="sp-stat-label">Streak</div>
+                </div>
+                <div class="sp-stat-divider"></div>
+                <div class="sp-stat">
+                    <div class="sp-stat-icon sp-stat-icon-gold"><i data-lucide="award"></i></div>
+                    <div class="sp-stat-num" id="profileStat4">0</div>
+                    <div class="sp-stat-label">Badges</div>
                 </div>
             </div>
 
             <!-- Quick Actions -->
             <div class="sp-actions">
                 <button class="sp-action-btn" onclick="showScreen('screen-edit-profile')">
-                    <div class="sp-action-icon purple"><i data-lucide="pencil"></i></div>
+                    <div class="sp-action-icon sp-action-purple"><i data-lucide="pencil"></i></div>
                     <span>Edit Profile</span>
                 </button>
                 <button class="sp-action-btn" onclick="showScreen('screen-my-study')">
-                    <div class="sp-action-icon green"><i data-lucide="bar-chart-3"></i></div>
-                    <span>Progress</span>
+                    <div class="sp-action-icon sp-action-green"><i data-lucide="bar-chart-3"></i></div>
+                    <span>My Study</span>
                 </button>
                 <button class="sp-action-btn" onclick="var el=document.getElementById('profileBadges');if(el)el.scrollIntoView({behavior:'smooth'})">
-                    <div class="sp-action-icon orange"><i data-lucide="award"></i></div>
+                    <div class="sp-action-icon sp-action-amber"><i data-lucide="award"></i></div>
                     <span>Badges</span>
                 </button>
                 <button class="sp-action-btn" onclick="showScreen('screen-pricing')">
-                    <div class="sp-action-icon blue"><i data-lucide="crown"></i></div>
+                    <div class="sp-action-icon sp-action-indigo"><i data-lucide="crown"></i></div>
                     <span>Upgrade</span>
                 </button>
-            </div>
-
-            <!-- Stat Cards -->
-            <div class="sp-stat-row">
-                <div class="sp-stat-card">
-                    <i data-lucide="book-open"></i>
-                    <span class="sp-stat-val" id="profileStat1">0</span>
-                    <span class="sp-stat-lbl">Books</span>
-                </div>
-                <div class="sp-stat-card">
-                    <i data-lucide="target"></i>
-                    <span class="sp-stat-val" id="profileStat2">0%</span>
-                    <span class="sp-stat-lbl">Score</span>
-                </div>
-                <div class="sp-stat-card">
-                    <i data-lucide="flame"></i>
-                    <span class="sp-stat-val" id="profileStat3">0</span>
-                    <span class="sp-stat-lbl">Streak</span>
-                </div>
-                <div class="sp-stat-card">
-                    <i data-lucide="award"></i>
-                    <span class="sp-stat-val" id="profileStat4">0</span>
-                    <span class="sp-stat-lbl">Badges</span>
-                </div>
             </div>
 
             <!-- Achievement Chips -->
