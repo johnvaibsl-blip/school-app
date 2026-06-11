@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nav Debug Test</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body style="max-width:430px;margin:0 auto;min-height:100vh;background:#f8fafc;">
+<div class="screen active" style="min-height:100vh;padding-bottom:90px;">
+    <div class="ai-hero" style="margin:16px;border-radius:16px;padding:20px;background:linear-gradient(135deg,#1E1B4B,#4338CA);color:white;">
+        <h2>Home Screen Test</h2>
+        <p>Scroll down - the nav should stay fixed at the bottom</p>
+    </div>
+    <div style="padding:16px;">
+        <div style="height:300px;background:#e0e7ff;border-radius:12px;margin-bottom:16px;">Content 1</div>
+        <div style="height:300px;background:#c7d2fe;border-radius:12px;margin-bottom:16px;">Content 2</div>
+        <div style="height:300px;background:#a5b4fc;border-radius:12px;">Content 3</div>
+    </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav">
+    <button class="nav-item active" data-screen="screen-home">
+        <span class="nav-icon"><i data-lucide="home"></i></span>
+        <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item" data-screen="screen-tutors">
+        <span class="nav-icon"><i data-lucide="users"></i></span>
+        <span class="nav-label">Tutors</span>
+    </button>
+    <button class="nav-item" data-screen="screen-my-study">
+        <span class="nav-icon"><i data-lucide="book-open"></i></span>
+        <span class="nav-label">My Study</span>
+    </button>
+    <button class="nav-item" data-screen="screen-profile">
+        <span class="nav-icon"><i data-lucide="user"></i></span>
+        <span class="nav-label">Profile</span>
+    </button>
+</nav>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>if(typeof lucide!=='undefined')lucide.createIcons();</script>
+</body>
+</html>
