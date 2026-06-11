@@ -409,10 +409,12 @@ $euTeacher=$eu&&$eu['role']==='teacher'?$db->queryOne('SELECT * FROM teachers WH
 <?php /* === TEACHERS === */ ?>
 <?php elseif($page==='teachers'):
 $et=$edit>0?$db->find('teachers','id',$edit):null;
+if($et){$etu=$db->find('users','id',$et['user_id']);$et['name']=$etu['name']??'';$et['email']=$etu['email']??'';}
 $ranked=$allTeachers;usort($ranked,fn($a,$b)=>$b['rating'] <=> $a['rating']);
 ?>
 
 <div class="card">
+<?php if($et): ?><div style="padding:10px 14px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;margin-bottom:16px;font-size:13px"><strong style="color:#166534">Editing:</strong> <span style="font-weight:600"><?php echo htmlspecialchars($et['name']); ?></span> <span style="color:#6B7280">(<?php echo htmlspecialchars($et['email']); ?>)</span></div><?php endif; ?>
 <h3><i data-lucide="<?php echo $et?'edit':'user-plus'; ?>"></i><?php echo $et?'Edit Teacher':'Add Teacher Profile'; ?></h3>
 <form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="<?php echo $et?'edit_teacher':'add_teacher_profile'; ?>">
 <?php if($et): ?><input type="hidden" name="id" value="<?php echo $et['id']; ?>"><?php endif; ?>
