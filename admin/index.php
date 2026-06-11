@@ -137,7 +137,7 @@ $premiumUsers=count($db->findAll('users','is_premium',1));
 
 $sidebar=[
 ['s'=>'Main','i'=>[['dashboard','layout-dashboard','Dashboard']]],
-['s'=>'User Management','i'=>[['users','users','All Users'],['teachers','user-check','Teachers'],['featured_teachers','star','Featured Teachers'],['student_progress','bar-chart-3','Student Progress'],['rankings','trophy','Teacher Rankings']]],
+['s'=>'User Management','i'=>[['users','users','All Users'],['teachers','user-check','Teachers'],['student_progress','bar-chart-3','Student Progress']]],
 ['s'=>'Academics','i'=>[['subjects','book-open','Subjects'],['chapters','layers','Chapters'],['class_schedule','clock','Class Schedule']]],
 ['s'=>'Content','i'=>[['homework','file-text','Homework'],['exams','calendar','Exams'],['library','library','Library']]],
 ['s'=>'Assessment','i'=>[['questions','help-circle','Question Bank'],['submissions','inbox','Submissions'],['results','award','Exam Results'],['exam_analytics','bar-chart','Exam Analytics'],['hw_analytics','pie-chart','Homework Analytics'],['reports','file-bar-chart','Reports']]],
@@ -270,7 +270,7 @@ body{background:white!important;color:black!important;-webkit-print-color-adjust
 <div class="main">
 <div class="topbar">
 <h1><?php
-$t=['dashboard'=>'Dashboard','users'=>'All Users','teachers'=>'Teachers','featured_teachers'=>'Featured Teachers','subjects'=>'Subjects','chapters'=>'Chapters','homework'=>'Homework','exams'=>'Exams','questions'=>'Question Bank','submissions'=>'Submissions','results'=>'Exam Results','live_classes'=>'Live Classes','announcements'=>'Announcements','messages'=>'Messages','packages'=>'Packages','subscriptions'=>'Subscriptions','revenue'=>'Revenue','settings'=>'General Settings','ai_settings'=>'AI Settings','library'=>'Library','student_progress'=>'Student Progress','rankings'=>'Teacher Rankings','exam_analytics'=>'Exam Analytics','hw_analytics'=>'Homework Analytics','notifications'=>'Notifications','calendar'=>'Calendar','calendar_events'=>'Calendar Events','class_schedule'=>'Class Schedule','reports'=>'Reports','activity_log'=>'Activity Log'];
+$t=['dashboard'=>'Dashboard','users'=>'All Users','teachers'=>'Teachers','subjects'=>'Subjects','chapters'=>'Chapters','homework'=>'Homework','exams'=>'Exams','questions'=>'Question Bank','submissions'=>'Submissions','results'=>'Exam Results','live_classes'=>'Live Classes','announcements'=>'Announcements','messages'=>'Messages','packages'=>'Packages','subscriptions'=>'Subscriptions','revenue'=>'Revenue','settings'=>'General Settings','ai_settings'=>'AI Settings','library'=>'Library','student_progress'=>'Student Progress','exam_analytics'=>'Exam Analytics','hw_analytics'=>'Homework Analytics','notifications'=>'Notifications','calendar'=>'Calendar','calendar_events'=>'Calendar Events','class_schedule'=>'Class Schedule','reports'=>'Reports','activity_log'=>'Activity Log'];
 echo $t[$page]??ucfirst(str_replace('_',' ',$page));
 ?></h1>
 <div class="info"><div><div class="name"><?php echo htmlspecialchars($_SESSION['user_name']); ?></div><div class="role">Administrator</div></div></div>
@@ -280,7 +280,7 @@ echo $t[$page]??ucfirst(str_replace('_',' ',$page));
 <?php if($page!=='dashboard'): ?>
 <div class="breadcrumb"><a href="?page=dashboard"><i data-lucide="home" style="width:12px;height:12px"></i></a><span style="margin:0 6px;color:#D1D5DB">/</span><span style="color:#6B7280;font-size:12px"><?php echo $t[$page]??ucfirst(str_replace('_',' ',$page)); ?></span></div>
 <?php
-$pageDescs=['users'=>'Manage all registered users, roles, and permissions','teachers'=>'View and manage teacher profiles','featured_teachers'=>'Feature top-rated teachers on the student app','subjects'=>'Add and organize subjects','chapters'=>'Manage book chapters and content','homework'=>'Create and grade homework assignments','exams'=>'Schedule and manage exams','questions'=>'Build your question bank for exams','submissions'=>'Review student homework submissions','results'=>'View exam results and scores','live_classes'=>'Schedule and manage live class sessions','announcements'=>'Send announcements to students and teachers','messages'=>'View platform messages','packages'=>'Create and manage subscription packages','subscriptions'=>'Approve or reject student subscriptions','revenue'=>'Track subscription revenue','settings'=>'General platform settings','ai_settings'=>'Configure AI tutor settings','library'=>'Manage library resources','student_progress'=>'Track student learning progress','rankings'=>'Teacher performance leaderboard','exam_analytics'=>'Detailed exam performance analytics','hw_analytics'=>'Homework completion analytics','notifications'=>'Manage push notifications','calendar'=>'Weekly class timetable','calendar_events'=>'Manage calendar events','class_schedule'=>'Master class schedule','reports'=>'Student academic reports','activity_log'=>'View all user activity across the platform'];
+$pageDescs=['users'=>'Manage all registered users, roles, and permissions','teachers'=>'Add, edit, and feature teachers with rankings and video trailers','subjects'=>'Add and organize subjects','chapters'=>'Manage book chapters and content','homework'=>'Create and grade homework assignments','exams'=>'Schedule and manage exams','questions'=>'Build your question bank for exams','submissions'=>'Review student homework submissions','results'=>'View exam results and scores','live_classes'=>'Schedule and manage live class sessions','announcements'=>'Send announcements to students and teachers','messages'=>'View platform messages','packages'=>'Create and manage subscription packages','subscriptions'=>'Approve or reject student subscriptions','revenue'=>'Track subscription revenue','settings'=>'General platform settings','ai_settings'=>'Configure AI tutor settings','library'=>'Manage library resources','student_progress'=>'Track student learning progress','exam_analytics'=>'Detailed exam performance analytics','hw_analytics'=>'Homework completion analytics','notifications'=>'Manage push notifications','calendar'=>'Weekly class timetable','calendar_events'=>'Manage calendar events','class_schedule'=>'Master class schedule','reports'=>'Student academic reports','activity_log'=>'View all user activity across the platform'];
 $desc=$pageDescs[$page]??''; ?>
 <div style="margin-bottom:20px"><h2 style="font-size:18px;margin:0 0 4px"><?php echo $t[$page]??ucfirst(str_replace('_',' ',$page)); ?></h2>
 <?php if($desc): ?><p style="font-size:12px;color:#9CA3AF;margin:0"><?php echo $desc; ?></p><?php endif; ?></div>
@@ -411,9 +411,22 @@ $euTeacher=$eu&&$eu['role']==='teacher'?$db->queryOne('SELECT * FROM teachers WH
 <td class="actions"><a href="?page=users&edit=<?php echo $u['id']; ?>" class="btn btn-primary btn-sm"><i data-lucide="edit-2" style="width:12px;height:12px"></i></a><a href="?page=users&edit=<?php echo $u['id']; ?>&del_table=users" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
 <?php endforeach; ?></table></div>
 
-<?php /* === TEACHERS === */ ?>
+<?php /* === TEACHERS (merged: Teachers + Featured + Rankings) === */ ?>
 <?php elseif($page==='teachers'):
-$et=$edit>0?$db->find('teachers','id',$edit):null; ?>
+$et=$edit>0?$db->find('teachers','id',$edit):null;
+$ftId=0;$ftVideo='';$trId=0;$fpId=0;$fnId=0;
+foreach($allSettings as $s){
+    if($s['key']==='featured_teacher_id') $ftId=intval($s['value']);
+    if($s['key']==='featured_teacher_video') $ftVideo=$s['value'];
+    if($s['key']==='top_rated_teacher_id') $trId=intval($s['value']);
+    if($s['key']==='popular_teacher_id') $fpId=intval($s['value']);
+    if($s['key']==='new_teacher_id') $fnId=intval($s['value']);
+}
+$ftTeacher=null;foreach($allTeachers as $t){if($t['id']===$ftId){$ftTeacher=$t;break;}}
+$featured=array_filter($allTeachers,fn($t)=>$t['is_featured']);
+$ranked=$allTeachers;usort($ranked,fn($a,$b)=>$b['rating'] <=> $a['rating']);
+?>
+
 <div class="card">
 <h3><i data-lucide="<?php echo $et?'edit':'user-plus'; ?>"></i><?php echo $et?'Edit Teacher':'Add Teacher Profile'; ?></h3>
 <form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="<?php echo $et?'edit_teacher':'add_teacher_profile'; ?>">
@@ -424,59 +437,14 @@ $et=$edit>0?$db->find('teachers','id',$edit):null; ?>
 <div class="form-row">
 <div class="form-group"><label>Class / Group</label><select name="class_name"><option value="All">All Classes</option><option value="Class 7" <?php echo $et&&($et['class_name']??'')==='Class 7'?'selected':''; ?>>Class 7</option><option value="Class 8" <?php echo $et&&($et['class_name']??'')==='Class 8'?'selected':''; ?>>Class 8</option><option value="Class 9 Science" <?php echo $et&&($et['class_name']??'')==='Class 9 Science'?'selected':''; ?>>Class 9 - Science</option><option value="Class 9 Commerce" <?php echo $et&&($et['class_name']??'')==='Class 9 Commerce'?'selected':''; ?>>Class 9 - Commerce</option><option value="Class 9 Arts" <?php echo $et&&($et['class_name']??'')==='Class 9 Arts'?'selected':''; ?>>Class 9 - Arts</option><option value="Class 10 Science" <?php echo $et&&($et['class_name']??'')==='Class 10 Science'?'selected':''; ?>>Class 10 - Science</option><option value="Class 10 Commerce" <?php echo $et&&($et['class_name']??'')==='Class 10 Commerce'?'selected':''; ?>>Class 10 - Commerce</option><option value="Class 10 Arts" <?php echo $et&&($et['class_name']??'')==='Class 10 Arts'?'selected':''; ?>>Class 10 - Arts</option></select></div>
 <div class="form-group"><label>Experience (years)</label><input type="number" name="experience" value="<?php echo $et?$et['experience']:1; ?>"></div></div>
-<?php if($et): ?><div class="form-group"><label>Rating</label><input type="number" name="rating" step="0.1" min="0" max="5" value="<?php echo $et['rating']; ?>"></div><?php endif; ?></div>
+<?php if($et): ?><div class="form-row"><div class="form-group"><label>Rating</label><input type="number" name="rating" step="0.1" min="0" max="5" value="<?php echo $et['rating']; ?>"></div><div class="form-group"><label>Featured</label><select name="is_featured"><option value="0" <?php echo !$et['is_featured']?'selected':''; ?>>No</option><option value="1" <?php echo $et['is_featured']?'selected':''; ?>>Yes</option></select></div></div>
+<div class="form-group"><label>Active</label><select name="is_active"><option value="1" <?php echo $et['is_active']?'selected':''; ?>>Active</option><option value="0" <?php echo !$et['is_active']?'selected':''; ?>>Inactive</option></select></div><?php endif; ?>
 <div class="form-group"><label>Bio</label><textarea name="bio" rows="2"><?php echo $et?htmlspecialchars($et['bio']):''; ?></textarea></div>
-<?php if($et): ?><div class="form-row"><div class="form-group"><label>Featured</label><select name="is_featured"><option value="0" <?php echo !$et['is_featured']?'selected':''; ?>>No</option><option value="1" <?php echo $et['is_featured']?'selected':''; ?>>Yes</option></select></div><div class="form-group"><label>Active</label><select name="is_active"><option value="1" <?php echo $et['is_active']?'selected':''; ?>>Active</option><option value="0" <?php echo !$et['is_active']?'selected':''; ?>>Inactive</option></select></div></div><?php endif; ?>
 <div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary"><?php echo $et?'Update':'Add'; ?></button><?php if($et): ?><a href="?page=teachers" class="btn btn-outline">Cancel</a><?php endif; ?></div></form></div>
-<div class="card"><h3><i data-lucide="user-check"></i>All Teachers (<?php echo count($allTeachers); ?>)</h3>
-<table><tr><th>Name</th><th>Subject</th><th>Class</th><th>Exp</th><th>Rating</th><th>Students</th><th>Status</th><th>Actions</th></tr>
-<?php foreach($allTeachers as $t): ?>
-<tr><td><strong><?php echo htmlspecialchars($t['name']); ?></strong><br><span style="font-size:10px;color:#9CA3AF"><?php echo htmlspecialchars($t['email']); ?></span></td>
-<td><?php echo htmlspecialchars($t['subject']); ?></td><td><?php echo htmlspecialchars($t['class_name']??'All'); ?></td><td><?php echo $t['experience']; ?>yr</td>
-<td><span class="badge bg"><?php echo $t['rating']; ?></span></td><td><?php echo $t['total_students']; ?></td>
-<td><?php echo $t['is_featured']?'<span class="badge bo">Featured</span>':''; ?><?php echo $t['is_active']?'':'<span class="badge br">Inactive</span>'; ?></td>
-<td class="actions"><a href="?page=teachers&edit=<?php echo $t['id']; ?>" class="btn btn-primary btn-sm"><i data-lucide="edit-2" style="width:12px;height:12px"></i></a><a href="?page=teachers&edit=<?php echo $t['id']; ?>&del_table=teachers" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
-<?php endforeach; ?></table></div>
 
-<?php /* === RANKINGS === */ ?>
-<?php elseif($page==='rankings'):
-$featured=array_filter($allTeachers,fn($t)=>$t['is_featured']);
-$ranked=$allTeachers;usort($ranked,fn($a,$b)=>$b['rating'] <=> $a['rating']);
-?>
-<div class="card"><h3><i data-lucide="star"></i>Featured Mentors</h3>
-<div style="display:flex;gap:14px;overflow-x:auto;padding-bottom:8px">
-<?php foreach($featured as $ft): ?>
-<div style="min-width:160px;background:linear-gradient(135deg,#4F46E5,#7C3AED);border-radius:14px;padding:16px;color:white;text-align:center;flex-shrink:0">
-<div style="width:50px;height:50px;background:rgba(255,255,255,0.2);border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center"><i data-lucide="user" style="width:24px;height:24px"></i></div>
-<div style="font-size:14px;font-weight:700"><?php echo htmlspecialchars($ft['name']); ?></div>
-<div style="font-size:11px;opacity:0.8;margin-bottom:4px"><?php echo htmlspecialchars($ft['subject']); ?></div>
-<div style="font-size:12px">&#9733; <?php echo $ft['rating']; ?> | <?php echo $ft['total_students']; ?> students</div>
-</div>
-<?php endforeach; if(empty($featured)): ?><div style="color:#9CA3AF;padding:20px">No featured teachers yet</div><?php endif; ?>
-</div></div>
-<div class="card"><h3><i data-lucide="trophy"></i>All Teachers Ranked</h3>
-<table><tr><th>Rank</th><th>Teacher</th><th>Subject</th><th>Rating</th><th>Students</th><th>Classes</th></tr>
-<?php $rank=1;foreach($ranked as $rk): ?>
-<tr><td><div class="rank-num <?php echo $rank<=3?'rank-'.$rank:'rank-other'; ?>"><?php echo $rank; ?></div></td>
-<td><strong><?php echo htmlspecialchars($rk['name']); ?></strong></td><td><?php echo htmlspecialchars($rk['subject']); ?></td>
-<td><span class="badge bg">&#9733; <?php echo $rk['rating']; ?></span></td><td><?php echo $rk['total_students']; ?></td><td><?php echo $rk['total_classes']; ?></td></tr>
-<?php $rank++;endforeach; ?></table></div>
-
-<?php /* === FEATURED TEACHERS === */ ?>
-<?php elseif($page==='featured_teachers'):
-$ftId=0;$ftVideo='';$trId=0;$fpId=0;$fnId=0;
-foreach($allSettings as $s){
-    if($s['key']==='featured_teacher_id') $ftId=intval($s['value']);
-    if($s['key']==='featured_teacher_video') $ftVideo=$s['value'];
-    if($s['key']==='top_rated_teacher_id') $trId=intval($s['value']);
-    if($s['key']==='popular_teacher_id') $fpId=intval($s['value']);
-    if($s['key']==='new_teacher_id') $fnId=intval($s['value']);
-}
-$ftTeacher=null;foreach($allTeachers as $t){if($t['id']===$ftId){$ftTeacher=$t;break;}}
-?>
 <div class="card">
 <h3><i data-lucide="star"></i>Featured Teacher Selection</h3>
-<p style="font-size:12px;color:#6B7280;margin-bottom:16px">Select teachers for each category on the student app homepage. The featured teacher will appear with a video trailer.</p>
+<p style="font-size:12px;color:#6B7280;margin-bottom:16px">Select teachers for each category on the student app homepage.</p>
 <form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="update_settings">
 <div class="form-row">
 <div class="form-group"><label>Featured Teacher</label><select name="featured_teacher_id"><option value="">-- Select --</option><?php foreach($allTeachers as $t): ?><option value="<?php echo $t['id']; ?>" <?php echo $ftId===$t['id']?'selected':''; ?>><?php echo htmlspecialchars($t['name']); ?> (<?php echo htmlspecialchars($t['subject']); ?>)</option><?php endforeach; ?></select></div>
@@ -508,11 +476,7 @@ $ftTeacher=null;foreach($allTeachers as $t){if($t['id']===$ftId){$ftTeacher=$t;b
 <div style="flex:1">
 <div style="font-size:13px;font-weight:600;margin-bottom:8px">Video Trailer</div>
 <?php if($ftVideo): ?>
-<?php
-$vid='';
-if(preg_match('/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]+)/',$ftVideo,$m)) $vid=$m[1];
-if(!$vid && preg_match('/embed\/([a-zA-Z0-9_-]+)/',$ftVideo,$m)) $vid=$m[1];
-?>
+<?php $vid='';if(preg_match('/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]+)/',$ftVideo,$m)) $vid=$m[1];if(!$vid && preg_match('/embed\/([a-zA-Z0-9_-]+)/',$ftVideo,$m)) $vid=$m[1]; ?>
 <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px"><iframe src="https://www.youtube.com/embed/<?php echo $vid; ?>" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;border-radius:12px" allowfullscreen></iframe></div>
 <?php else: ?>
 <div style="background:#F3F4F6;border-radius:12px;padding:40px;text-align:center;color:#9CA3AF"><i data-lucide="video-off" style="width:32px;height:32px;margin-bottom:8px"></i><div style="font-size:12px">No video link set</div></div>
@@ -522,24 +486,37 @@ if(!$vid && preg_match('/embed\/([a-zA-Z0-9_-]+)/',$ftVideo,$m)) $vid=$m[1];
 </div>
 <?php endif; ?>
 
+<div class="card"><h3><i data-lucide="trophy"></i>Featured Mentors</h3>
+<div style="display:flex;gap:14px;overflow-x:auto;padding-bottom:8px">
+<?php foreach($featured as $ft): ?>
+<div style="min-width:160px;background:linear-gradient(135deg,#4F46E5,#7C3AED);border-radius:14px;padding:16px;color:white;text-align:center;flex-shrink:0">
+<div style="width:50px;height:50px;background:rgba(255,255,255,0.2);border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center"><i data-lucide="user" style="width:24px;height:24px"></i></div>
+<div style="font-size:14px;font-weight:700"><?php echo htmlspecialchars($ft['name']); ?></div>
+<div style="font-size:11px;opacity:0.8;margin-bottom:4px"><?php echo htmlspecialchars($ft['subject']); ?></div>
+<div style="font-size:12px">&#9733; <?php echo $ft['rating']; ?> | <?php echo $ft['total_students']; ?> students</div>
+</div>
+<?php endforeach; if(empty($featured)): ?><div style="color:#9CA3AF;padding:20px">No featured teachers yet</div><?php endif; ?>
+</div></div>
+
 <div class="card">
-<h3><i data-lucide="list"></i>All Teachers (<?php echo count($allTeachers); ?>)</h3>
-<table><tr><th>Teacher</th><th>Subject</th><th>Rating</th><th>Students</th><th>Role</th></tr>
-<?php
-$roleMap=['featured'=>$ftId,'top_rated'=>$trId,'popular'=>$fpId,'new'=>$fnId];
-foreach($allTeachers as $t):
-$role='';
-if($t['id']===$ftId) $role='<span class="badge bo">Featured</span>';
-elseif($t['id']===$trId) $role='<span class="badge bg">Top Rated</span>';
-elseif($t['id']===$fpId) $role='<span class="badge bb">Popular</span>';
-elseif($t['id']===$fnId) $role='<span class="badge bp">New</span>';
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="margin-bottom:0"><i data-lucide="user-check"></i>All Teachers (<?php echo count($allTeachers); ?>)</h3>
+<div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="exportTable('teachers-table','teachers.csv')"><i data-lucide="download" style="width:12px;height:12px"></i>Export CSV</button></div></div>
+<div class="search-bar"><i data-lucide="search"></i><input type="text" placeholder="Search teachers..." oninput="filterTable(this,'teachers-table')"></div>
+<table id="teachers-table"><tr><th>Rank</th><th>Teacher</th><th>Subject</th><th>Class</th><th>Exp</th><th>Rating</th><th>Students</th><th>Role</th><th>Actions</th></tr>
+<?php $rank=1;foreach($ranked as $t):
+$roleBadge='';
+if($t['id']===$ftId) $roleBadge='<span class="badge bo">Featured</span>';
+elseif($t['id']===$trId) $roleBadge='<span class="badge bg">Top Rated</span>';
+elseif($t['id']===$fpId) $roleBadge='<span class="badge bb">Popular</span>';
+elseif($t['id']===$fnId) $roleBadge='<span class="badge bp">New</span>';
 ?>
-<tr><td><strong><?php echo htmlspecialchars($t['name']); ?></strong></td>
-<td><?php echo htmlspecialchars($t['subject']); ?></td>
-<td><span class="badge bg">&#9733; <?php echo $t['rating']; ?></span></td>
-<td><?php echo $t['total_students']; ?></td>
-<td><?php echo $role ?: '<span style="color:#9CA3AF">-</span>'; ?></td></tr>
-<?php endforeach; ?></table></div>
+<tr><td><div class="rank-num <?php echo $rank<=3?'rank-'.$rank:'rank-other'; ?>"><?php echo $rank; ?></div></td>
+<td><strong><?php echo htmlspecialchars($t['name']); ?></strong><br><span style="font-size:10px;color:#9CA3AF"><?php echo htmlspecialchars($t['email']); ?></span></td>
+<td><?php echo htmlspecialchars($t['subject']); ?></td><td><?php echo htmlspecialchars($t['class_name']??'All'); ?></td><td><?php echo $t['experience']; ?>yr</td>
+<td><span class="badge bg">&#9733; <?php echo $t['rating']; ?></span></td><td><?php echo $t['total_students']; ?></td>
+<td><?php echo $roleBadge ?: ($t['is_active']?'<span style="color:#9CA3AF">-</span>':'<span class="badge br">Inactive</span>'); ?></td>
+<td class="actions"><a href="?page=teachers&edit=<?php echo $t['id']; ?>" class="btn btn-primary btn-sm"><i data-lucide="edit-2" style="width:12px;height:12px"></i></a><a href="?page=teachers&edit=<?php echo $t['id']; ?>&del_table=teachers" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
+<?php $rank++;endforeach; ?></table></div>
 
 <?php /* === SUBJECTS === */ ?>
 <?php elseif($page==='subjects'):
