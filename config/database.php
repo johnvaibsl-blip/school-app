@@ -179,6 +179,8 @@ class JsonDB {
             ['id'=>8,'name'=>'ICT','icon'=>'monitor','color'=>'#8B5CF6'],
             ['id'=>9,'name'=>'Geography','icon'=>'globe','color'=>'#F97316'],
             ['id'=>10,'name'=>'Religion','icon'=>'landmark','color'=>'#14B8A6'],
+            ['id'=>11,'name'=>'Commerce','icon'=>'shopping-cart','color'=>'#84CC16'],
+            ['id'=>12,'name'=>'Arts','icon'=>'palette','color'=>'#E879F9'],
         ];
         
         $this->data['homework'] = [
