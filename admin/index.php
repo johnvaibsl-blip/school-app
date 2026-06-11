@@ -381,14 +381,10 @@ $euTeacher=$eu&&$eu['role']==='teacher'?$db->queryOne('SELECT * FROM teachers WH
 <form method="POST" enctype="multipart/form-data" id="bulkUploadForm">
 <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
 <input type="hidden" name="action" value="bulk_upload_users">
-<div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
-<div class="form-group" style="flex:1;min-width:200px">
-<label>CSV File</label>
-<input type="file" name="csv_file" accept=".csv" required style="padding:8px;border:1px solid #D1D5DB;border-radius:6px;width:100%">
-</div>
-<div style="display:flex;gap:8px">
+<div style="margin-bottom:8px"><label style="font-size:13px;font-weight:600">CSV File</label></div>
+<div style="display:flex;gap:8px;align-items:center">
+<input type="file" name="csv_file" accept=".csv" required style="flex:1;padding:8px;border:1px solid #D1D5DB;border-radius:6px">
 <button type="submit" class="btn btn-primary"><i data-lucide="upload" style="width:14px;height:14px"></i> Upload</button>
-</div>
 </div>
 <div style="margin-top:12px;padding:12px;background:#F9FAFB;border-radius:8px;font-size:12px;color:#6B7280">
 <strong>CSV Format:</strong> name, email, password, class, phone, school, role, subject, class_name, experience, bio<br>
