@@ -409,34 +409,58 @@ $euTeacher=$eu&&$eu['role']==='teacher'?$db->queryOne('SELECT * FROM teachers WH
 <?php /* === TEACHERS === */ ?>
 <?php elseif($page==='teachers'):
 $et=$edit>0?$db->find('teachers','id',$edit):null;
-if($et){$etu=$db->find('users','id',$et['user_id']);$et['name']=$etu['name']??'';$et['email']=$etu['email']??'';}
 $ranked=$allTeachers;usort($ranked,fn($a,$b)=>$b['rating'] <=> $a['rating']);
+$subjectsJson=json_encode(array_map(fn($s)=>$s['name'],$allSubjects));
+$teachersJson=[];
+foreach($allTeachers as $t){$teachersJson[]=['id'=>$t['id'],'name'=>$t['name'],'email'=>$t['email'],'subject'=>$t['subject'],'class_name'=>$t['class_name']??'All','experience'=>$t['experience'],'bio'=>$t['bio']??'','featured_video'=>$t['featured_video']??'','rating'=>$t['rating'],'is_featured'=>intval($t['is_featured']),'is_top_rated'=>intval($t['is_top_rated']??0),'is_popular'=>intval($t['is_popular']??0),'is_new'=>intval($t['is_new']??0),'is_active'=>intval($t['is_active'])];}
+$teachersJson=json_encode($teachersJson);
 ?>
 
 <div class="card">
-<?php if($et): ?><div style="padding:10px 14px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;margin-bottom:16px;font-size:13px"><strong style="color:#166534">Editing:</strong> <span style="font-weight:600"><?php echo htmlspecialchars($et['name']); ?></span> <span style="color:#6B7280">(<?php echo htmlspecialchars($et['email']); ?>)</span></div><?php endif; ?>
-<h3><i data-lucide="<?php echo $et?'edit':'user-plus'; ?>"></i><?php echo $et?'Edit Teacher':'Add Teacher Profile'; ?></h3>
-<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="<?php echo $et?'edit_teacher':'add_teacher_profile'; ?>">
-<?php if($et): ?><input type="hidden" name="id" value="<?php echo $et['id']; ?>"><?php endif; ?>
+<h3><i data-lucide="user-plus"></i>Add Teacher Profile</h3>
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="add_teacher_profile">
 <div class="form-row">
-<?php if(!$et): ?><div class="form-group"><label>User Account</label><select name="user_id"><?php foreach($allUsers as $u): if($u['role']==='teacher'): ?><option value="<?php echo $u['id']; ?>"><?php echo htmlspecialchars($u['name']); ?></option><?php endif; endforeach; ?></select></div><?php endif; ?>
-<div class="form-group"><label>Subject</label><select name="subject" required><option value="">-- Select Subject --</option><?php foreach($allSubjects as $s): ?><option value="<?php echo htmlspecialchars($s['name']); ?>" <?php echo $et&&$et['subject']===$s['name']?'selected':''; ?>><?php echo htmlspecialchars($s['name']); ?></option><?php endforeach; ?></select></div></div>
+<div class="form-group"><label>User Account</label><select name="user_id"><?php foreach($allUsers as $u): if($u['role']==='teacher'): ?><option value="<?php echo $u['id']; ?>"><?php echo htmlspecialchars($u['name']); ?></option><?php endif; endforeach; ?></select></div>
+<div class="form-group"><label>Subject</label><select name="subject" required><option value="">-- Select Subject --</option><?php foreach($allSubjects as $s): ?><option value="<?php echo htmlspecialchars($s['name']); ?>"><?php echo htmlspecialchars($s['name']); ?></option><?php endforeach; ?></select></div></div>
 <div class="form-row">
-<div class="form-group"><label>Class / Group</label><select name="class_name"><option value="All">All Classes</option><option value="Class 7" <?php echo $et&&($et['class_name']??'')==='Class 7'?'selected':''; ?>>Class 7</option><option value="Class 8" <?php echo $et&&($et['class_name']??'')==='Class 8'?'selected':''; ?>>Class 8</option><option value="Class 9 Science" <?php echo $et&&($et['class_name']??'')==='Class 9 Science'?'selected':''; ?>>Class 9 - Science</option><option value="Class 9 Commerce" <?php echo $et&&($et['class_name']??'')==='Class 9 Commerce'?'selected':''; ?>>Class 9 - Commerce</option><option value="Class 9 Arts" <?php echo $et&&($et['class_name']??'')==='Class 9 Arts'?'selected':''; ?>>Class 9 - Arts</option><option value="Class 10 Science" <?php echo $et&&($et['class_name']??'')==='Class 10 Science'?'selected':''; ?>>Class 10 - Science</option><option value="Class 10 Commerce" <?php echo $et&&($et['class_name']??'')==='Class 10 Commerce'?'selected':''; ?>>Class 10 - Commerce</option><option value="Class 10 Arts" <?php echo $et&&($et['class_name']??'')==='Class 10 Arts'?'selected':''; ?>>Class 10 - Arts</option></select></div>
-<div class="form-group"><label>Experience (years)</label><input type="number" name="experience" value="<?php echo $et?$et['experience']:1; ?>" min="0"></div></div>
-<div class="form-group"><label>Bio</label><textarea name="bio" rows="2" placeholder="Short bio..."><?php echo $et?htmlspecialchars($et['bio']):''; ?></textarea></div>
-<div class="form-group"><label>YouTube Video Link</label><input type="url" name="featured_video" value="<?php echo $et?htmlspecialchars($et['featured_video']??''):''; ?>" placeholder="https://www.youtube.com/watch?v=..."></div>
-<?php if($et): ?>
-<div class="form-row"><div class="form-group"><label>Rating</label><input type="number" name="rating" step="0.1" min="0" max="5" value="<?php echo $et['rating']; ?>"></div></div>
-<?php endif; ?>
+<div class="form-group"><label>Class / Group</label><select name="class_name"><option value="All">All Classes</option><option value="Class 7">Class 7</option><option value="Class 8">Class 8</option><option value="Class 9 Science">Class 9 - Science</option><option value="Class 9 Commerce">Class 9 - Commerce</option><option value="Class 9 Arts">Class 9 - Arts</option><option value="Class 10 Science">Class 10 - Science</option><option value="Class 10 Commerce">Class 10 - Commerce</option><option value="Class 10 Arts">Class 10 - Arts</option></select></div>
+<div class="form-group"><label>Experience (years)</label><input type="number" name="experience" value="1" min="0"></div></div>
+<div class="form-group"><label>Bio</label><textarea name="bio" rows="2" placeholder="Short bio..."></textarea></div>
+<div class="form-group"><label>YouTube Video Link</label><input type="url" name="featured_video" placeholder="https://www.youtube.com/watch?v=..."></div>
 <div style="display:flex;gap:16px;flex-wrap:wrap;margin:8px 0">
-<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" name="is_featured" value="1" <?php echo $et&&$et['is_featured']?'checked':''; ?> style="width:16px;height:16px"> Featured</label>
-<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" name="is_top_rated" value="1" <?php echo $et&&($et['is_top_rated']??0)?'checked':''; ?> style="width:16px;height:16px"> Top Rated</label>
-<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" name="is_popular" value="1" <?php echo $et&&($et['is_popular']??0)?'checked':''; ?> style="width:16px;height:16px"> Popular</label>
-<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" name="is_new" value="1" <?php echo $et&&($et['is_new']??0)?'checked':''; ?> style="width:16px;height:16px"> New</label>
-<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" name="is_active" value="1" <?php echo !$et||$et['is_active']?'checked':''; ?> style="width:16px;height:16px"> Active</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" name="is_featured" value="1" style="width:16px;height:16px"> Featured</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" name="is_top_rated" value="1" style="width:16px;height:16px"> Top Rated</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" name="is_popular" value="1" style="width:16px;height:16px"> Popular</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" name="is_new" value="1" style="width:16px;height:16px"> New</label>
 </div>
-<div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary"><?php echo $et?'Update':'Add'; ?></button><?php if($et): ?><a href="?page=teachers" class="btn btn-outline">Cancel</a><?php endif; ?></div></form></div>
+<div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary">Add Teacher</button></div></form></div>
+
+<div id="editTeacherModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;justify-content:center;align-items:center">
+<div style="background:white;border-radius:16px;width:90%;max-width:600px;max-height:90vh;overflow-y:auto;padding:24px;position:relative">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+<h3 style="margin:0"><i data-lucide="edit-2"></i> Edit Teacher</h3>
+<button onclick="closeEditModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#9CA3AF;padding:4px 8px">&times;</button>
+</div>
+<div id="editTeacherBanner" style="padding:10px 14px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;margin-bottom:16px;font-size:13px"></div>
+<form method="POST" id="editTeacherForm"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="edit_teacher"><input type="hidden" name="id" id="edit_id">
+<div class="form-row">
+<div class="form-group"><label>Subject</label><select name="subject" id="edit_subject" required><option value="">-- Select Subject --</option></select></div>
+<div class="form-group"><label>Class / Group</label><select name="class_name" id="edit_class_name"><option value="All">All Classes</option><option value="Class 7">Class 7</option><option value="Class 8">Class 8</option><option value="Class 9 Science">Class 9 - Science</option><option value="Class 9 Commerce">Class 9 - Commerce</option><option value="Class 9 Arts">Class 9 - Arts</option><option value="Class 10 Science">Class 10 - Science</option><option value="Class 10 Commerce">Class 10 - Commerce</option><option value="Class 10 Arts">Class 10 - Arts</option></select></div></div>
+<div class="form-row">
+<div class="form-group"><label>Experience (years)</label><input type="number" name="experience" id="edit_experience" min="0"></div>
+<div class="form-group"><label>Rating</label><input type="number" name="rating" id="edit_rating" step="0.1" min="0" max="5"></div></div>
+<div class="form-group"><label>Bio</label><textarea name="bio" id="edit_bio" rows="2" placeholder="Short bio..."></textarea></div>
+<div class="form-group"><label>YouTube Video Link</label><input type="url" name="featured_video" id="edit_featured_video" placeholder="https://www.youtube.com/watch?v=..."></div>
+<div style="display:flex;gap:16px;flex-wrap:wrap;margin:8px 0">
+<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" name="is_featured" id="edit_is_featured" value="1" style="width:16px;height:16px"> Featured</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" name="is_top_rated" id="edit_is_top_rated" value="1" style="width:16px;height:16px"> Top Rated</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" name="is_popular" id="edit_is_popular" value="1" style="width:16px;height:16px"> Popular</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" name="is_new" id="edit_is_new" value="1" style="width:16px;height:16px"> New</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" name="is_active" id="edit_is_active" value="1" style="width:16px;height:16px"> Active</label>
+</div>
+<div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" onclick="closeEditModal()" class="btn btn-outline">Cancel</button><button type="submit" class="btn btn-primary">Save Changes</button></div></form>
+</div>
+</div>
 
 <div class="card">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="margin-bottom:0"><i data-lucide="user-check"></i>All Teachers (<?php echo count($allTeachers); ?>)</h3>
@@ -456,8 +480,35 @@ if(!$t['is_active']) $badges.='<span class="badge br">Inactive</span>';
 <td><?php echo htmlspecialchars($t['subject']); ?></td><td><?php echo htmlspecialchars($t['class_name']??'All'); ?></td><td><?php echo $t['experience']; ?>yr</td>
 <td><span class="badge bg">&#9733; <?php echo $t['rating']; ?></span></td><td><?php echo $t['total_students']; ?></td>
 <td><?php echo $badges?:'<span style="color:#9CA3AF">-</span>'; ?></td>
-<td class="actions"><a href="?page=teachers&edit=<?php echo $t['id']; ?>" class="btn btn-primary btn-sm"><i data-lucide="edit-2" style="width:12px;height:12px"></i></a><a href="?page=teachers&edit=<?php echo $t['id']; ?>&del_table=teachers" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
+<td class="actions"><button onclick="openEditModal(<?php echo $t['id']; ?>)" class="btn btn-primary btn-sm"><i data-lucide="edit-2" style="width:12px;height:12px"></i></button><a href="?page=teachers&edit=<?php echo $t['id']; ?>&del_table=teachers" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
 <?php $rank++;endforeach; ?></table></div>
+
+<script>
+var _teachersData=<?php echo $teachersJson; ?>;
+var _subjectsList=<?php echo $subjectsJson; ?>;
+function openEditModal(tid){
+var t=null;for(var i=0;i<_teachersData.length;i++){if(_teachersData[i].id==tid){t=_teachersData[i];break;}}
+if(!t)return;
+document.getElementById('edit_id').value=t.id;
+document.getElementById('editTeacherBanner').innerHTML='<strong style="color:#166534">Editing:</strong> <span style="font-weight:600">'+t.name+'</span> <span style="color:#6B7280">('+t.email+')</span>';
+var subSel=document.getElementById('edit_subject');subSel.innerHTML='<option value="">-- Select Subject --</option>';
+for(var i=0;i<_subjectsList.length;i++){subSel.innerHTML+='<option value="'+_subjectsList[i]+'"'+(_subjectsList[i]===t.subject?' selected':'')+'>'+_subjectsList[i]+'</option>';}
+document.getElementById('edit_class_name').value=t.class_name||'All';
+document.getElementById('edit_experience').value=t.experience;
+document.getElementById('edit_rating').value=t.rating;
+document.getElementById('edit_bio').value=t.bio||'';
+document.getElementById('edit_featured_video').value=t.featured_video||'';
+document.getElementById('edit_is_featured').checked=!!t.is_featured;
+document.getElementById('edit_is_top_rated').checked=!!t.is_top_rated;
+document.getElementById('edit_is_popular').checked=!!t.is_popular;
+document.getElementById('edit_is_new').checked=!!t.is_new;
+document.getElementById('edit_is_active').checked=!!t.is_active;
+document.getElementById('editTeacherModal').style.display='flex';
+lucide.createIcons();
+}
+function closeEditModal(){document.getElementById('editTeacherModal').style.display='none';}
+document.getElementById('editTeacherModal').addEventListener('click',function(e){if(e.target===this)closeEditModal();});
+</script>
 
 <?php /* === SUBJECTS === */ ?>
 <?php elseif($page==='subjects'):
