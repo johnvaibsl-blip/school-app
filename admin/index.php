@@ -105,6 +105,7 @@ $allCalendarEvents=$db->queryAll('SELECT * FROM calendar_events ORDER BY date');
 $allClassSchedule=$db->queryAll('SELECT * FROM class_schedule ORDER BY FIELD(day,"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"), time');
 $allReports=$db->queryAll('SELECT * FROM reports ORDER BY id DESC');
 $allBadges=$db->queryAll('SELECT * FROM badges ORDER BY id DESC');
+$allActivityLog=$db->queryAll('SELECT * FROM activity_log ORDER BY id DESC');
 $students=count($db->findAll('users','role','student'));
 $teachersCount=count($db->findAll('users','role','teacher'));
 $premiumUsers=count($db->findAll('users','is_premium',1));
@@ -117,7 +118,7 @@ $sidebar=[
 ['s'=>'Assessment','i'=>[['questions','help-circle','Question Bank'],['submissions','inbox','Submissions'],['results','award','Exam Results'],['exam_analytics','bar-chart','Exam Analytics'],['hw_analytics','pie-chart','Homework Analytics'],['reports','file-bar-chart','Reports']]],
 ['s'=>'Communication','i'=>[['live_classes','tv','Live Classes'],['announcements','megaphone','Announcements'],['messages','message-square','Messages'],['notifications','bell','Notifications'],['calendar','calendar-days','Calendar'],['calendar_events','calendar-range','Calendar Events']]],
 ['s'=>'Business','i'=>[['packages','credit-card','Packages'],['subscriptions','user-check','Subscriptions'],['revenue','dollar-sign','Revenue']]],
-['s'=>'System','i'=>[['settings','settings','General Settings'],['ai_settings','brain','AI Settings']]]
+['s'=>'System','i'=>[['settings','settings','General Settings'],['ai_settings','brain','AI Settings'],['activity_log','list','Activity Log']]]
 ];
 ?>
 <!DOCTYPE html>
@@ -244,7 +245,7 @@ body{background:white!important;color:black!important;-webkit-print-color-adjust
 <div class="main">
 <div class="topbar">
 <h1><?php
-$t=['dashboard'=>'Dashboard','users'=>'All Users','teachers'=>'Teachers','featured_teachers'=>'Featured Teachers','subjects'=>'Subjects','chapters'=>'Chapters','homework'=>'Homework','exams'=>'Exams','questions'=>'Question Bank','submissions'=>'Submissions','results'=>'Exam Results','live_classes'=>'Live Classes','announcements'=>'Announcements','messages'=>'Messages','packages'=>'Packages','subscriptions'=>'Subscriptions','revenue'=>'Revenue','settings'=>'General Settings','ai_settings'=>'AI Settings','library'=>'Library','student_progress'=>'Student Progress','rankings'=>'Teacher Rankings','exam_analytics'=>'Exam Analytics','hw_analytics'=>'Homework Analytics','notifications'=>'Notifications','calendar'=>'Calendar','calendar_events'=>'Calendar Events','class_schedule'=>'Class Schedule','reports'=>'Reports'];
+$t=['dashboard'=>'Dashboard','users'=>'All Users','teachers'=>'Teachers','featured_teachers'=>'Featured Teachers','subjects'=>'Subjects','chapters'=>'Chapters','homework'=>'Homework','exams'=>'Exams','questions'=>'Question Bank','submissions'=>'Submissions','results'=>'Exam Results','live_classes'=>'Live Classes','announcements'=>'Announcements','messages'=>'Messages','packages'=>'Packages','subscriptions'=>'Subscriptions','revenue'=>'Revenue','settings'=>'General Settings','ai_settings'=>'AI Settings','library'=>'Library','student_progress'=>'Student Progress','rankings'=>'Teacher Rankings','exam_analytics'=>'Exam Analytics','hw_analytics'=>'Homework Analytics','notifications'=>'Notifications','calendar'=>'Calendar','calendar_events'=>'Calendar Events','class_schedule'=>'Class Schedule','reports'=>'Reports','activity_log'=>'Activity Log'];
 echo $t[$page]??ucfirst(str_replace('_',' ',$page));
 ?></h1>
 <div class="info"><div><div class="name"><?php echo htmlspecialchars($_SESSION['user_name']); ?></div><div class="role">Administrator</div></div></div>
@@ -253,6 +254,11 @@ echo $t[$page]??ucfirst(str_replace('_',' ',$page));
 <?php if($msg): ?><div class="msg"><i data-lucide="check-circle" style="width:14px;height:14px"></i><?php echo $msg==='broadcast'?'Broadcast sent!':ucfirst($msg).' successfully!'; ?></div><?php endif; ?>
 <?php if($page!=='dashboard'): ?>
 <div class="breadcrumb"><a href="?page=dashboard"><i data-lucide="home" style="width:12px;height:12px"></i></a><span style="margin:0 6px;color:#D1D5DB">/</span><span style="color:#6B7280;font-size:12px"><?php echo $t[$page]??ucfirst(str_replace('_',' ',$page)); ?></span></div>
+<?php
+$pageDescs=['users'=>'Manage all registered users, roles, and permissions','teachers'=>'View and manage teacher profiles','featured_teachers'=>'Feature top-rated teachers on the student app','subjects'=>'Add and organize subjects','chapters'=>'Manage book chapters and content','homework'=>'Create and grade homework assignments','exams'=>'Schedule and manage exams','questions'=>'Build your question bank for exams','submissions'=>'Review student homework submissions','results'=>'View exam results and scores','live_classes'=>'Schedule and manage live class sessions','announcements'=>'Send announcements to students and teachers','messages'=>'View platform messages','packages'=>'Create and manage subscription packages','subscriptions'=>'Approve or reject student subscriptions','revenue'=>'Track subscription revenue','settings'=>'General platform settings','ai_settings'=>'Configure AI tutor settings','library'=>'Manage library resources','student_progress'=>'Track student learning progress','rankings'=>'Teacher performance leaderboard','exam_analytics'=>'Detailed exam performance analytics','hw_analytics'=>'Homework completion analytics','notifications'=>'Manage push notifications','calendar'=>'Weekly class timetable','calendar_events'=>'Manage calendar events','class_schedule'=>'Master class schedule','reports'=>'Student academic reports','activity_log'=>'View all user activity across the platform'];
+$desc=$pageDescs[$page]??''; ?>
+<div style="margin-bottom:20px"><h2 style="font-size:18px;margin:0 0 4px"><?php echo $t[$page]??ucfirst(str_replace('_',' ',$page)); ?></h2>
+<?php if($desc): ?><p style="font-size:12px;color:#9CA3AF;margin:0"><?php echo $desc; ?></p><?php endif; ?></div>
 <?php endif; ?>
 
 <?php /* === DASHBOARD === */ ?>
@@ -1073,6 +1079,52 @@ foreach($allBadgesRaw as $b){
 <td style="font-size:11px;color:#9CA3AF"><?php echo $b['earned_date']; ?></td>
 <td class="actions"><a href="?page=student_progress&edit=<?php echo $b['id']; ?>&del_table=badges" class="btn btn-danger btn-sm" onclick="return confirm('Delete badge?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
 <?php endforeach; ?></table></div>
+
+<?php /* === ACTIVITY LOG === */ ?>
+<?php elseif($page==='activity_log'):
+$allActivityLog=$db->queryAll('SELECT al.*, u.name as user_name, u.role as user_role FROM activity_log al LEFT JOIN users u ON al.user_id = u.id ORDER BY al.created_at DESC');
+?>
+<div class="card"><h3><i data-lucide="list"></i>Activity Log</h3>
+<p style="font-size:12px;color:#9CA3AF;margin:0 0 12px">All user actions across the platform.</p>
+<div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+<div class="search-bar" style="flex:1"><i data-lucide="search"></i><input type="text" placeholder="Search activity..." oninput="filterTable(this,'actlog-table')"></div>
+<select id="actlog-role-filter" class="form-input" style="width:auto;padding:6px 10px" onchange="filterActivityLog()">
+<option value="">All Roles</option><option value="student">Students</option><option value="teacher">Teachers</option>
+</select>
+<select id="actlog-action-filter" class="form-input" style="width:auto;padding:6px 10px" onchange="filterActivityLog()">
+<option value="">All Actions</option><option value="login">Login</option><option value="view_homework">View HW</option><option value="submit_homework">Submit HW</option><option value="create_homework">Create HW</option><option value="start_exam">Start Exam</option><option value="view_chapter">Read Chapter</option>
+</select>
+<button class="btn btn-outline btn-sm" onclick="exportTable('actlog-table','activity-log.csv')"><i data-lucide="download" style="width:12px;height:12px"></i> Export CSV</button>
+<button class="btn btn-outline btn-sm" onclick="window.print()"><i data-lucide="printer" style="width:12px;height:12px"></i> Print</button>
+</div>
+<table id="actlog-table"><tr><th>#</th><th>User</th><th>Role</th><th>Action</th><th>Details</th><th>Date</th></tr>
+<?php if(empty($allActivityLog)): ?>
+<tr><td colspan="6" style="text-align:center;color:#9CA3AF;padding:20px">No activity recorded yet.</td></tr>
+<?php else: foreach($allActivityLog as $al): ?>
+<tr>
+<td><?php echo $al['id']; ?></td>
+<td><strong><?php echo htmlspecialchars($al['user_name']??'Unknown'); ?></strong></td>
+<td><span class="badge <?php echo ($al['user_role']??'')==='teacher'?'bo':(($al['user_role']??'')==='admin'?'bp':'bg'); ?>"><?php echo ucfirst(htmlspecialchars($al['user_role']??'N/A')); ?></span></td>
+<td><span class="badge br"><?php echo htmlspecialchars($al['action']); ?></span></td>
+<td style="font-size:12px"><?php echo htmlspecialchars($al['details']??'-'); ?></td>
+<td style="font-size:11px;color:#9CA3AF"><?php echo htmlspecialchars($al['created_at']); ?></td>
+</tr>
+<?php endforeach; endif; ?></table>
+</div>
+<script>
+function filterActivityLog(){
+var role=document.getElementById('actlog-role-filter').value.toLowerCase();
+var action=document.getElementById('actlog-action-filter').value.toLowerCase();
+var rows=document.getElementById('actlog-table').getElementsByTagName('tr');
+for(var i=1;i<rows.length;i++){
+var cells=rows[i].getElementsByTagName('td');
+if(cells.length<6)continue;
+var r=cells[2].textContent.toLowerCase();
+var a=cells[3].textContent.toLowerCase();
+var show=(role===''||r.indexOf(role)>-1)&&(action===''||a.indexOf(action)>-1);
+rows[i].style.display=show?'':'none';
+}}
+</script>
 
 <?php /* === BANK QUESTIONS removed (merged into Question Bank) === */ ?>
 <?php elseif($page==='bank-questions'): ?>
