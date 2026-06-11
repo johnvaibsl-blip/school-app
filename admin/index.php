@@ -388,14 +388,14 @@ $euTeacher=$eu&&$eu['role']==='teacher'?$db->queryOne('SELECT * FROM teachers WH
 </div>
 <div style="display:flex;gap:8px">
 <button type="submit" class="btn btn-primary"><i data-lucide="upload" style="width:14px;height:14px"></i> Upload</button>
-<a href="assets/sample-users.csv" download class="btn btn-outline"><i data-lucide="download" style="width:14px;height:14px"></i> Sample CSV</a>
+<a href="../assets/sample-users.csv" download class="btn btn-outline"><i data-lucide="download" style="width:14px;height:14px"></i> Sample CSV</a>
 </div>
 </div>
 <div style="margin-top:12px;padding:12px;background:#F9FAFB;border-radius:8px;font-size:12px;color:#6B7280">
 <strong>CSV Format:</strong> name, email, password, class, phone, school, role, subject, class_name, experience, bio<br>
 <strong>Required fields:</strong> name, email, password, class (for students)<br>
 <strong>Teacher fields:</strong> subject, class_name, experience, bio (only needed when role=teacher)<br>
-<a href="assets/sample-users.csv" download style="color:#4F46E5">Download sample file</a> to see examples.
+<a href="../assets/sample-users.csv" download style="color:#4F46E5">Download sample file</a> to see examples.
 </div>
 </form>
 </div>

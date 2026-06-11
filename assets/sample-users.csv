@@ -1,10 +1,10 @@
 name,email,password,class,phone,school,role,subject,class_name,experience,bio
-Ahmed Khan,ahmed8@student.com,password123,Class 8,01711111111,Govt Primary School,student,,,,
-Sakib Hasan,sakib8@student.com,password123,Class 8,01722222222,Green Valley School,student,,,,
-Nusrat Jahan,nusrat8@student.com,password123,Class 8,01733333333,City School,student,,,,
-Tanvir Rahman,tanvir9s@student.com,password123,Class 9 Science,01744444444,Modern School,student,,,,
-Kamal Hossain,kamal9s@student.com,password123,Class 9 Science,01755555555,Govt High School,student,,,,
-Ruma Akter,ruma9c@student.com,password123,Class 9 Commerce,01766666666,Commerce College School,student,,,,
-Farhana Islam,farhana10s@student.com,password123,Class 10 Science,01777777777,Science School,student,,,,
-Rahim Uddin,rahim2@teacher.com,password123,,01788888888,Govt School,teacher,Mathematics,Class 8,5,Passionate math teacher with 5 years experience
-Sarah Khan,sarah2@teacher.com,password123,,01799999999,Green Valley School,teacher,English Literature,Class 9 Science,8,English literature specialist focusing on creative writing
+Ahmed Khan,ahmed8@student.com,password123,Class 8,01711111111,Govt Primary School,student
+Sakib Hasan,sakib8@student.com,password123,Class 8,01722222222,Green Valley School,student
+Nusrat Jahan,nusrat8@student.com,password123,Class 8,01733333333,City School,student
+Tanvir Rahman,tanvir9s@student.com,password123,Class 9 Science,01744444444,Modern School,student
+Kamal Hossain,kamal9s@student.com,password123,Class 9 Science,01755555555,Govt High School,student
+Ruma Akter,ruma9c@student.com,password123,Class 9 Commerce,01766666666,Commerce College School,student
+Farhana Islam,farhana10s@student.com,password123,Class 10 Science,01777777777,Science School,student
+Rahim Uddin,rahim2@teacher.com,password123,,01788888888,Govt School,teacher,Mathematics,Class 8,5,Passionate math teacher
+Sarah Khan,sarah2@teacher.com,password123,,01799999999,Govt School,teacher,English Literature,Class 9 Science,8,English specialist
