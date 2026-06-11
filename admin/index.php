@@ -204,6 +204,9 @@ td{color:#374151}
 .cal-day:hover{background:#F3F4F6}.cal-day.today{background:#EEF2FF;color:#4F46E5;font-weight:700}
 .cal-day.has-event{position:relative}.cal-day.has-event::after{content:'';width:4px;height:4px;background:#EF4444;border-radius:50%;position:absolute;bottom:2px}
 .cal-day.empty{opacity:0.3}
+.breadcrumb{display:flex;align-items:center;margin-bottom:16px;padding:8px 14px;background:#F9FAFB;border-radius:10px;font-size:13px}
+.breadcrumb a{color:#4F46E5;text-decoration:none;font-weight:500;display:flex;align-items:center}
+.breadcrumb a:hover{text-decoration:underline}
 .rank-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
 .rank-1{background:linear-gradient(135deg,#FFD700,#FFA500);color:white}.rank-2{background:linear-gradient(135deg,#C0C0C0,#A0A0A0);color:white}
 .rank-3{background:linear-gradient(135deg,#CD7F32,#B8860B);color:white}.rank-other{background:#F3F4F6;color:#6B7280}
@@ -212,6 +215,14 @@ td{color:#374151}
 .main{margin-left:0}.topbar{padding-left:60px}.content{padding:16px}
 .sg{grid-template-columns:repeat(2,1fr);gap:10px}.form-row{grid-template-columns:1fr}.grid-2,.grid-3{grid-template-columns:1fr}
 .quick-actions{grid-template-columns:repeat(2,1fr)}table{font-size:11px}th,td{padding:8px 10px}
+}
+@media print{
+.sidebar,.topbar,.sb-toggle,.sb-overlay,.btn,.search-bar,.actions,.breadcrumb,.msg,.quick-actions,.sg,.chart-bar,.cal-grid,.sb-foot{display:none!important}
+.main{margin-left:0!important;padding:0!important}
+.content{padding:10px!important}
+.card{box-shadow:none!important;border:1px solid #E5E7EB;break-inside:avoid}
+table{font-size:10px}th,td{padding:6px 8px;border:1px solid #E5E7EB}
+body{background:white!important;color:black!important;-webkit-print-color-adjust:exact}
 }
 </style>
 </head>
@@ -240,6 +251,9 @@ echo $t[$page]??ucfirst(str_replace('_',' ',$page));
 </div>
 <div class="content">
 <?php if($msg): ?><div class="msg"><i data-lucide="check-circle" style="width:14px;height:14px"></i><?php echo $msg==='broadcast'?'Broadcast sent!':ucfirst($msg).' successfully!'; ?></div><?php endif; ?>
+<?php if($page!=='dashboard'): ?>
+<div class="breadcrumb"><a href="?page=dashboard"><i data-lucide="home" style="width:12px;height:12px"></i></a><span style="margin:0 6px;color:#D1D5DB">/</span><span style="color:#6B7280;font-size:12px"><?php echo $t[$page]??ucfirst(str_replace('_',' ',$page)); ?></span></div>
+<?php endif; ?>
 
 <?php /* === DASHBOARD === */ ?>
 <?php if($page==='dashboard'):
@@ -614,6 +628,7 @@ $pass=count($allExamResults)>0?round(count(array_filter($allExamResults,fn($r)=>
 $highest=count($allExamResults)>0?max(array_column($allExamResults,'percentage')):0;
 $lowest=count($allExamResults)>0?min(array_column($allExamResults,'percentage')):0;
 ?>
+<div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn btn-outline btn-sm" onclick="window.print()"><i data-lucide="printer" style="width:12px;height:12px"></i> Print / Export PDF</button></div>
 <div class="sg">
 <div class="sc"><div class="si p"><i data-lucide="bar-chart"></i></div><div class="st"><h3><?php echo count($allExamResults); ?></h3><p>Total Results</p></div></div>
 <div class="sc"><div class="si g"><i data-lucide="trending-up"></i></div><div class="st"><h3><?php echo $avg; ?>%</h3><p>Average Score</p></div></div>
@@ -650,6 +665,7 @@ $totalSub=count($allSubmissions);$graded=count(array_filter($allSubmissions,fn($
 $rev=count(array_filter($allSubmissions,fn($s)=>$s['status']==='revision'));
 $avgM=$graded>0?round(array_sum(array_column(array_filter($allSubmissions,fn($s)=>$s['status']==='graded'),'marks_obtained'))/$graded):0;
 ?>
+<div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn btn-outline btn-sm" onclick="window.print()"><i data-lucide="printer" style="width:12px;height:12px"></i> Print / Export PDF</button></div>
 <div class="sg">
 <div class="sc"><div class="si p"><i data-lucide="inbox"></i></div><div class="st"><h3><?php echo $totalSub; ?></h3><p>Total Submissions</p></div></div>
 <div class="sc"><div class="si g"><i data-lucide="check-circle"></i></div><div class="st"><h3><?php echo $graded; ?></h3><p>Graded</p></div></div>
@@ -884,6 +900,8 @@ $teacherSubs=array_filter($approvedSubs,function($s){return($s['type']??'teacher
 $platformRevenue=0;foreach($platformSubs as $s){$platformRevenue+=floatval($s['amount']);}
 $teacherRevenue=0;foreach($teacherSubs as $s){$teacherRevenue+=floatval($s['amount']);}
 ?>
+<div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn btn-outline btn-sm" onclick="window.print()"><i data-lucide="printer" style="width:12px;height:12px"></i> Print / Export PDF</button></div>
+<div class="sg">
 <div class="sg">
 <div class="sc"><div class="si g"><i data-lucide="dollar-sign"></i></div><div class="st"><h3><?php echo number_format($tr); ?> BDT</h3><p>Total Revenue</p></div></div>
 <div class="sc"><div class="si p"><i data-lucide="users"></i></div><div class="st"><h3><?php echo $pu; ?></h3><p>Premium Users</p></div></div>
