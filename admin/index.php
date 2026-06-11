@@ -18,8 +18,8 @@ if ($edit > 0 && isset($_GET['del_table'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if (($_POST['csrf_token'] ?? '') !== ($_SESSION['csrf_token'] ?? '')) { die('Invalid CSRF token'); }
     $a = $_POST['action'];
-    if ($a === 'add_user') { $uid=$db->insert('users', ['name'=>sanitize($_POST['name']),'email'=>sanitize($_POST['email']),'password'=>password_hash($_POST['password'],PASSWORD_DEFAULT),'role'=>sanitize($_POST['role']),'class'=>sanitize($_POST['class']??''),'phone'=>sanitize($_POST['phone']??''),'school'=>sanitize($_POST['school']??''),'is_premium'=>0]); if(sanitize($_POST['role'])==='teacher'&&isset($_POST['t_subject'])&&$_POST['t_subject']!==''){$db->insert('teachers',['user_id'=>$uid,'subject'=>sanitize($_POST['t_subject']),'class_name'=>sanitize($_POST['t_class_name']??'All'),'experience'=>intval($_POST['t_experience']??1),'bio'=>sanitize($_POST['t_bio']??''),'rating'=>0,'total_students'=>0,'total_classes'=>0,'is_featured'=>0,'is_active'=>1]);} header('Location: ?page=users&msg=added'); exit; }
-    if ($a === 'edit_user') { $d = ['name'=>sanitize($_POST['name']),'email'=>sanitize($_POST['email']),'role'=>sanitize($_POST['role']),'class'=>sanitize($_POST['class']??''),'phone'=>sanitize($_POST['phone']??''),'school'=>sanitize($_POST['school']??''),'is_premium'=>intval($_POST['is_premium']??0)]; if(!empty($_POST['password'])) $d['password']=password_hash($_POST['password'],PASSWORD_DEFAULT); $db->update('users',intval($_POST['id']),$d); if(sanitize($_POST['role'])==='teacher'&&isset($_POST['t_subject'])&&$_POST['t_subject']!==''){$etp=$db->queryOne('SELECT * FROM teachers WHERE user_id='.intval($_POST['id']));$td=['user_id'=>intval($_POST['id']),'subject'=>sanitize($_POST['t_subject']),'class_name'=>sanitize($_POST['t_class_name']??'All'),'experience'=>intval($_POST['t_experience']??1),'bio'=>sanitize($_POST['t_bio']??''),'rating'=>0,'total_students'=>0,'total_classes'=>0,'is_featured'=>0,'is_active'=>1];if($etp){$db->update('teachers',$etp['id'],$td);}else{$db->insert('teachers',$td);}} header('Location: ?page=users&msg=updated'); exit; }
+    if ($a === 'add_user') { $uid=$db->insert('users', ['name'=>sanitize($_POST['name']),'email'=>sanitize($_POST['email']),'password'=>password_hash($_POST['password'],PASSWORD_DEFAULT),'role'=>sanitize($_POST['role']),'class'=>sanitize($_POST['class']??''),'phone'=>sanitize($_POST['phone']??''),'school'=>sanitize($_POST['school']??''),'is_premium'=>0]); if(sanitize($_POST['role'])==='teacher'&&isset($_POST['t_subject'])&&$_POST['t_subject']!==''){$db->insert('teachers',['user_id'=>$uid,'subject'=>sanitize($_POST['t_subject']),'class_name'=>sanitize($_POST['t_class_name']??'All'),'experience'=>intval($_POST['t_experience']??1),'bio'=>sanitize($_POST['t_bio']??''),'featured_video'=>'','rating'=>0,'total_students'=>0,'total_classes'=>0,'is_featured'=>0,'is_top_rated'=>0,'is_popular'=>0,'is_new'=>0,'is_active'=>1]);} header('Location: ?page=users&msg=added'); exit; }
+    if ($a === 'edit_user') { $d = ['name'=>sanitize($_POST['name']),'email'=>sanitize($_POST['email']),'role'=>sanitize($_POST['role']),'class'=>sanitize($_POST['class']??''),'phone'=>sanitize($_POST['phone']??''),'school'=>sanitize($_POST['school']??''),'is_premium'=>intval($_POST['is_premium']??0)]; if(!empty($_POST['password'])) $d['password']=password_hash($_POST['password'],PASSWORD_DEFAULT); $db->update('users',intval($_POST['id']),$d); if(sanitize($_POST['role'])==='teacher'&&isset($_POST['t_subject'])&&$_POST['t_subject']!==''){$etp=$db->queryOne('SELECT * FROM teachers WHERE user_id='.intval($_POST['id']));$td=['user_id'=>intval($_POST['id']),'subject'=>sanitize($_POST['t_subject']),'class_name'=>sanitize($_POST['t_class_name']??'All'),'experience'=>intval($_POST['t_experience']??1),'bio'=>sanitize($_POST['t_bio']??''),'featured_video'=>'','rating'=>0,'total_students'=>0,'total_classes'=>0,'is_featured'=>0,'is_top_rated'=>0,'is_popular'=>0,'is_new'=>0,'is_active'=>1];if($etp){$db->update('teachers',$etp['id'],$td);}else{$db->insert('teachers',$td);}} header('Location: ?page=users&msg=updated'); exit; }
     if ($a === 'bulk_upload_users') {
         $validClasses = ['Class 7','Class 8','Class 9 Science','Class 9 Commerce','Class 9 Arts','Class 10 Science','Class 10 Commerce','Class 10 Arts'];
         $added=0; $skipped=0; $errors=[];
@@ -66,8 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($a === 'edit_library') { $db->update('library',intval($_POST['id']),['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'class'=>sanitize($_POST['class']??'Class 8'),'type'=>sanitize($_POST['type']),'description'=>sanitize($_POST['description']??''),'file_url'=>sanitize($_POST['file_url']??''),'cover_url'=>sanitize($_POST['cover_url']??''),'is_active'=>intval($_POST['is_active']??1)]); header('Location: ?page=library&msg=updated'); exit; }
     if ($a === 'add_live_class') { $db->insert('live_classes', ['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'teacher_id'=>intval($_POST['teacher_id']??1),'class_date'=>sanitize($_POST['class_date']),'start_time'=>sanitize($_POST['start_time']),'end_time'=>sanitize($_POST['end_time']),'status'=>'scheduled','meeting_link'=>sanitize($_POST['meeting_link']??'#')]); header('Location: ?page=live_classes&msg=added'); exit; }
     if ($a === 'edit_live_class') { $db->update('live_classes',intval($_POST['id']),['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'teacher_id'=>intval($_POST['teacher_id']??1),'class_date'=>sanitize($_POST['class_date']),'start_time'=>sanitize($_POST['start_time']),'end_time'=>sanitize($_POST['end_time']),'status'=>sanitize($_POST['status']),'meeting_link'=>sanitize($_POST['meeting_link']??'#')]); header('Location: ?page=live_classes&msg=updated'); exit; }
-    if ($a === 'add_teacher_profile') { $db->insert('teachers', ['user_id'=>intval($_POST['user_id']),'subject'=>sanitize($_POST['subject']),'class_name'=>sanitize($_POST['class_name']??'All'),'experience'=>intval($_POST['experience']),'bio'=>sanitize($_POST['bio']??''),'rating'=>0,'total_students'=>0,'total_classes'=>0,'is_featured'=>0,'is_active'=>1]); header('Location: ?page=teachers&msg=added'); exit; }
-    if ($a === 'edit_teacher') { $db->update('teachers',intval($_POST['id']),['subject'=>sanitize($_POST['subject']),'class_name'=>sanitize($_POST['class_name']??'All'),'experience'=>intval($_POST['experience']),'bio'=>sanitize($_POST['bio']??''),'rating'=>floatval($_POST['rating']??0),'is_featured'=>intval($_POST['is_featured']??0),'is_active'=>intval($_POST['is_active']??1)]); header('Location: ?page=teachers&msg=updated'); exit; }
+    if ($a === 'add_teacher_profile') { $db->insert('teachers', ['user_id'=>intval($_POST['user_id']),'subject'=>sanitize($_POST['subject']),'class_name'=>sanitize($_POST['class_name']??'All'),'experience'=>intval($_POST['experience']),'bio'=>sanitize($_POST['bio']??''),'featured_video'=>sanitize($_POST['featured_video']??''),'rating'=>0,'total_students'=>0,'total_classes'=>0,'is_featured'=>intval($_POST['is_featured']??0),'is_top_rated'=>intval($_POST['is_top_rated']??0),'is_popular'=>intval($_POST['is_popular']??0),'is_new'=>intval($_POST['is_new']??0),'is_active'=>1]); header('Location: ?page=teachers&msg=added'); exit; }
+    if ($a === 'edit_teacher') { $db->update('teachers',intval($_POST['id']),['subject'=>sanitize($_POST['subject']),'class_name'=>sanitize($_POST['class_name']??'All'),'experience'=>intval($_POST['experience']),'bio'=>sanitize($_POST['bio']??''),'featured_video'=>sanitize($_POST['featured_video']??''),'rating'=>floatval($_POST['rating']??0),'is_featured'=>intval($_POST['is_featured']??0),'is_top_rated'=>intval($_POST['is_top_rated']??0),'is_popular'=>intval($_POST['is_popular']??0),'is_new'=>intval($_POST['is_new']??0),'is_active'=>intval($_POST['is_active']??1)]); header('Location: ?page=teachers&msg=updated'); exit; }
     if ($a === 'update_settings') { foreach($_POST as $k=>$v){if($k==='action')continue;$e=$db->find('settings','key',$k);if($e){$db->update('settings',$e['id'],['value'=>sanitize($v)]);}else{$db->insert('settings',['key'=>$k,'value'=>sanitize($v)]);}} header('Location: ?page=settings&msg=updated'); exit; }
     if ($a === 'grade_submission') { $db->update('homework_submissions',intval($_POST['id']),['marks_obtained'=>intval($_POST['marks_obtained']),'comments'=>sanitize($_POST['comments']??''),'status'=>sanitize($_POST['status']??'graded'),'graded_at'=>date('Y-m-d H:i:s')]); header('Location: ?page=submissions&msg=updated'); exit; }
     if ($a === 'add_notification') { $db->insert('notifications', ['title'=>sanitize($_POST['title']),'message'=>sanitize($_POST['message']),'type'=>sanitize($_POST['type']),'target_role'=>sanitize($_POST['target_role']),'is_read'=>0]); header('Location: ?page=notifications&msg=added'); exit; }
@@ -411,19 +411,9 @@ $euTeacher=$eu&&$eu['role']==='teacher'?$db->queryOne('SELECT * FROM teachers WH
 <td class="actions"><a href="?page=users&edit=<?php echo $u['id']; ?>" class="btn btn-primary btn-sm"><i data-lucide="edit-2" style="width:12px;height:12px"></i></a><a href="?page=users&edit=<?php echo $u['id']; ?>&del_table=users" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
 <?php endforeach; ?></table></div>
 
-<?php /* === TEACHERS (merged: Teachers + Featured + Rankings) === */ ?>
+<?php /* === TEACHERS === */ ?>
 <?php elseif($page==='teachers'):
 $et=$edit>0?$db->find('teachers','id',$edit):null;
-$ftId=0;$ftVideo='';$trId=0;$fpId=0;$fnId=0;
-foreach($allSettings as $s){
-    if($s['key']==='featured_teacher_id') $ftId=intval($s['value']);
-    if($s['key']==='featured_teacher_video') $ftVideo=$s['value'];
-    if($s['key']==='top_rated_teacher_id') $trId=intval($s['value']);
-    if($s['key']==='popular_teacher_id') $fpId=intval($s['value']);
-    if($s['key']==='new_teacher_id') $fnId=intval($s['value']);
-}
-$ftTeacher=null;foreach($allTeachers as $t){if($t['id']===$ftId){$ftTeacher=$t;break;}}
-$featured=array_filter($allTeachers,fn($t)=>$t['is_featured']);
 $ranked=$allTeachers;usort($ranked,fn($a,$b)=>$b['rating'] <=> $a['rating']);
 ?>
 
@@ -436,85 +426,39 @@ $ranked=$allTeachers;usort($ranked,fn($a,$b)=>$b['rating'] <=> $a['rating']);
 <div class="form-group"><label>Subject</label><select name="subject" required><option value="">-- Select Subject --</option><?php foreach($allSubjects as $s): ?><option value="<?php echo htmlspecialchars($s['name']); ?>" <?php echo $et&&$et['subject']===$s['name']?'selected':''; ?>><?php echo htmlspecialchars($s['name']); ?></option><?php endforeach; ?></select></div></div>
 <div class="form-row">
 <div class="form-group"><label>Class / Group</label><select name="class_name"><option value="All">All Classes</option><option value="Class 7" <?php echo $et&&($et['class_name']??'')==='Class 7'?'selected':''; ?>>Class 7</option><option value="Class 8" <?php echo $et&&($et['class_name']??'')==='Class 8'?'selected':''; ?>>Class 8</option><option value="Class 9 Science" <?php echo $et&&($et['class_name']??'')==='Class 9 Science'?'selected':''; ?>>Class 9 - Science</option><option value="Class 9 Commerce" <?php echo $et&&($et['class_name']??'')==='Class 9 Commerce'?'selected':''; ?>>Class 9 - Commerce</option><option value="Class 9 Arts" <?php echo $et&&($et['class_name']??'')==='Class 9 Arts'?'selected':''; ?>>Class 9 - Arts</option><option value="Class 10 Science" <?php echo $et&&($et['class_name']??'')==='Class 10 Science'?'selected':''; ?>>Class 10 - Science</option><option value="Class 10 Commerce" <?php echo $et&&($et['class_name']??'')==='Class 10 Commerce'?'selected':''; ?>>Class 10 - Commerce</option><option value="Class 10 Arts" <?php echo $et&&($et['class_name']??'')==='Class 10 Arts'?'selected':''; ?>>Class 10 - Arts</option></select></div>
-<div class="form-group"><label>Experience (years)</label><input type="number" name="experience" value="<?php echo $et?$et['experience']:1; ?>"></div></div>
-<?php if($et): ?><div class="form-row"><div class="form-group"><label>Rating</label><input type="number" name="rating" step="0.1" min="0" max="5" value="<?php echo $et['rating']; ?>"></div><div class="form-group"><label>Featured</label><select name="is_featured"><option value="0" <?php echo !$et['is_featured']?'selected':''; ?>>No</option><option value="1" <?php echo $et['is_featured']?'selected':''; ?>>Yes</option></select></div></div>
-<div class="form-group"><label>Active</label><select name="is_active"><option value="1" <?php echo $et['is_active']?'selected':''; ?>>Active</option><option value="0" <?php echo !$et['is_active']?'selected':''; ?>>Inactive</option></select></div><?php endif; ?>
-<div class="form-group"><label>Bio</label><textarea name="bio" rows="2"><?php echo $et?htmlspecialchars($et['bio']):''; ?></textarea></div>
+<div class="form-group"><label>Experience (years)</label><input type="number" name="experience" value="<?php echo $et?$et['experience']:1; ?>" min="0"></div></div>
+<div class="form-group"><label>Bio</label><textarea name="bio" rows="2" placeholder="Short bio..."><?php echo $et?htmlspecialchars($et['bio']):''; ?></textarea></div>
+<div class="form-group"><label>YouTube Video Link</label><input type="url" name="featured_video" value="<?php echo $et?htmlspecialchars($et['featured_video']??''):''; ?>" placeholder="https://www.youtube.com/watch?v=..."></div>
+<?php if($et): ?>
+<div class="form-row"><div class="form-group"><label>Rating</label><input type="number" name="rating" step="0.1" min="0" max="5" value="<?php echo $et['rating']; ?>"></div></div>
+<?php endif; ?>
+<div style="display:flex;gap:16px;flex-wrap:wrap;margin:8px 0">
+<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" name="is_featured" value="1" <?php echo $et&&$et['is_featured']?'checked':''; ?> style="width:16px;height:16px"> Featured</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" name="is_top_rated" value="1" <?php echo $et&&($et['is_top_rated']??0)?'checked':''; ?> style="width:16px;height:16px"> Top Rated</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" name="is_popular" value="1" <?php echo $et&&($et['is_popular']??0)?'checked':''; ?> style="width:16px;height:16px"> Popular</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" name="is_new" value="1" <?php echo $et&&($et['is_new']??0)?'checked':''; ?> style="width:16px;height:16px"> New</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" name="is_active" value="1" <?php echo !$et||$et['is_active']?'checked':''; ?> style="width:16px;height:16px"> Active</label>
+</div>
 <div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary"><?php echo $et?'Update':'Add'; ?></button><?php if($et): ?><a href="?page=teachers" class="btn btn-outline">Cancel</a><?php endif; ?></div></form></div>
-
-<div class="card">
-<h3><i data-lucide="star"></i>Featured Teacher Selection</h3>
-<p style="font-size:12px;color:#6B7280;margin-bottom:16px">Select teachers for each category on the student app homepage.</p>
-<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="update_settings">
-<div class="form-row">
-<div class="form-group"><label>Featured Teacher</label><select name="featured_teacher_id"><option value="">-- Select --</option><?php foreach($allTeachers as $t): ?><option value="<?php echo $t['id']; ?>" <?php echo $ftId===$t['id']?'selected':''; ?>><?php echo htmlspecialchars($t['name']); ?> (<?php echo htmlspecialchars($t['subject']); ?>)</option><?php endforeach; ?></select></div>
-<div class="form-group"><label>YouTube Video Link</label><input type="url" name="featured_teacher_video" value="<?php echo htmlspecialchars($ftVideo); ?>" placeholder="https://www.youtube.com/watch?v=..."></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label>Top Rated Teacher</label><select name="top_rated_teacher_id"><option value="">-- Auto (by rating) --</option><?php foreach($allTeachers as $t): ?><option value="<?php echo $t['id']; ?>" <?php echo $trId===$t['id']?'selected':''; ?>><?php echo htmlspecialchars($t['name']); ?> (<?php echo htmlspecialchars($t['subject']); ?>)</option><?php endforeach; ?></select></div>
-<div class="form-group"><label>Most Popular Teacher</label><select name="popular_teacher_id"><option value="">-- Auto (by students) --</option><?php foreach($allTeachers as $t): ?><option value="<?php echo $t['id']; ?>" <?php echo $fpId===$t['id']?'selected':''; ?>><?php echo htmlspecialchars($t['name']); ?> (<?php echo htmlspecialchars($t['subject']); ?>)</option><?php endforeach; ?></select></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label>New Teacher</label><select name="new_teacher_id"><option value="">-- Auto (least experienced) --</option><?php foreach($allTeachers as $t): ?><option value="<?php echo $t['id']; ?>" <?php echo $fnId===$t['id']?'selected':''; ?>><?php echo htmlspecialchars($t['name']); ?> (<?php echo htmlspecialchars($t['subject']); ?>)</option><?php endforeach; ?></select></div>
-</div>
-<div style="margin-top:8px"><button type="submit" class="btn btn-primary"><i data-lucide="save" style="width:14px;height:14px"></i> Save Selection</button></div>
-</form>
-</div>
-
-<?php if($ftTeacher): ?>
-<div class="card">
-<h3><i data-lucide="video"></i>Featured Teacher Preview</h3>
-<div style="display:flex;gap:16px;align-items:start">
-<div style="flex:1">
-<div style="background:linear-gradient(135deg,#4F46E5,#7C3AED);border-radius:14px;padding:20px;color:white;text-align:center">
-<div style="width:64px;height:64px;background:rgba(255,255,255,0.2);border-radius:16px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;border:2px solid rgba(255,255,255,0.3)"><?php echo strtoupper(substr($ftTeacher['name'],0,1)); ?></div>
-<div style="font-size:16px;font-weight:700;margin-bottom:2px"><?php echo htmlspecialchars($ftTeacher['name']); ?></div>
-<div style="font-size:12px;opacity:0.8;margin-bottom:8px"><?php echo htmlspecialchars($ftTeacher['subject']); ?></div>
-<div style="font-size:13px">&#9733; <?php echo $ftTeacher['rating']; ?> | <?php echo $ftTeacher['total_students']; ?> students | <?php echo $ftTeacher['experience']; ?>yr exp</div>
-</div>
-</div>
-<div style="flex:1">
-<div style="font-size:13px;font-weight:600;margin-bottom:8px">Video Trailer</div>
-<?php if($ftVideo): ?>
-<?php $vid='';if(preg_match('/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]+)/',$ftVideo,$m)) $vid=$m[1];if(!$vid && preg_match('/embed\/([a-zA-Z0-9_-]+)/',$ftVideo,$m)) $vid=$m[1]; ?>
-<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px"><iframe src="https://www.youtube.com/embed/<?php echo $vid; ?>" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;border-radius:12px" allowfullscreen></iframe></div>
-<?php else: ?>
-<div style="background:#F3F4F6;border-radius:12px;padding:40px;text-align:center;color:#9CA3AF"><i data-lucide="video-off" style="width:32px;height:32px;margin-bottom:8px"></i><div style="font-size:12px">No video link set</div></div>
-<?php endif; ?>
-</div>
-</div>
-</div>
-<?php endif; ?>
-
-<div class="card"><h3><i data-lucide="trophy"></i>Featured Mentors</h3>
-<div style="display:flex;gap:14px;overflow-x:auto;padding-bottom:8px">
-<?php foreach($featured as $ft): ?>
-<div style="min-width:160px;background:linear-gradient(135deg,#4F46E5,#7C3AED);border-radius:14px;padding:16px;color:white;text-align:center;flex-shrink:0">
-<div style="width:50px;height:50px;background:rgba(255,255,255,0.2);border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center"><i data-lucide="user" style="width:24px;height:24px"></i></div>
-<div style="font-size:14px;font-weight:700"><?php echo htmlspecialchars($ft['name']); ?></div>
-<div style="font-size:11px;opacity:0.8;margin-bottom:4px"><?php echo htmlspecialchars($ft['subject']); ?></div>
-<div style="font-size:12px">&#9733; <?php echo $ft['rating']; ?> | <?php echo $ft['total_students']; ?> students</div>
-</div>
-<?php endforeach; if(empty($featured)): ?><div style="color:#9CA3AF;padding:20px">No featured teachers yet</div><?php endif; ?>
-</div></div>
 
 <div class="card">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="margin-bottom:0"><i data-lucide="user-check"></i>All Teachers (<?php echo count($allTeachers); ?>)</h3>
 <div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="exportTable('teachers-table','teachers.csv')"><i data-lucide="download" style="width:12px;height:12px"></i>Export CSV</button></div></div>
 <div class="search-bar"><i data-lucide="search"></i><input type="text" placeholder="Search teachers..." oninput="filterTable(this,'teachers-table')"></div>
-<table id="teachers-table"><tr><th>Rank</th><th>Teacher</th><th>Subject</th><th>Class</th><th>Exp</th><th>Rating</th><th>Students</th><th>Role</th><th>Actions</th></tr>
+<table id="teachers-table"><tr><th>Rank</th><th>Teacher</th><th>Subject</th><th>Class</th><th>Exp</th><th>Rating</th><th>Students</th><th>Badges</th><th>Actions</th></tr>
 <?php $rank=1;foreach($ranked as $t):
-$roleBadge='';
-if($t['id']===$ftId) $roleBadge='<span class="badge bo">Featured</span>';
-elseif($t['id']===$trId) $roleBadge='<span class="badge bg">Top Rated</span>';
-elseif($t['id']===$fpId) $roleBadge='<span class="badge bb">Popular</span>';
-elseif($t['id']===$fnId) $roleBadge='<span class="badge bp">New</span>';
+$badges='';
+if($t['is_featured']) $badges.='<span class="badge bo">Featured</span> ';
+if($t['is_top_rated']??0) $badges.='<span class="badge bg">Top Rated</span> ';
+if($t['is_popular']??0) $badges.='<span class="badge bb">Popular</span> ';
+if($t['is_new']??0) $badges.='<span class="badge bp">New</span> ';
+if(!$t['is_active']) $badges.='<span class="badge br">Inactive</span>';
 ?>
 <tr><td><div class="rank-num <?php echo $rank<=3?'rank-'.$rank:'rank-other'; ?>"><?php echo $rank; ?></div></td>
 <td><strong><?php echo htmlspecialchars($t['name']); ?></strong><br><span style="font-size:10px;color:#9CA3AF"><?php echo htmlspecialchars($t['email']); ?></span></td>
 <td><?php echo htmlspecialchars($t['subject']); ?></td><td><?php echo htmlspecialchars($t['class_name']??'All'); ?></td><td><?php echo $t['experience']; ?>yr</td>
 <td><span class="badge bg">&#9733; <?php echo $t['rating']; ?></span></td><td><?php echo $t['total_students']; ?></td>
-<td><?php echo $roleBadge ?: ($t['is_active']?'<span style="color:#9CA3AF">-</span>':'<span class="badge br">Inactive</span>'); ?></td>
+<td><?php echo $badges?:'<span style="color:#9CA3AF">-</span>'; ?></td>
 <td class="actions"><a href="?page=teachers&edit=<?php echo $t['id']; ?>" class="btn btn-primary btn-sm"><i data-lucide="edit-2" style="width:12px;height:12px"></i></a><a href="?page=teachers&edit=<?php echo $t['id']; ?>&del_table=teachers" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
 <?php $rank++;endforeach; ?></table></div>
 
