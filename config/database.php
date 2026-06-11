@@ -37,6 +37,21 @@ class JsonDB {
         return $this->data[$table] ?? [];
     }
     
+    public function queryOne($sql) {
+        if (preg_match('/FROM\s+(\w+)/i', $sql, $m)) $table = $m[1]; else return null;
+        $where = [];
+        if (preg_match('/WHERE\s+(.+?)(?:\s+ORDER|\s+LIMIT|$)/i', $sql, $m)) {
+            preg_match_all('/(\w+)\s*=\s*[\'"]([^\'"]*)[\'"]/i', $m[1], $conds);
+            for ($i = 0; $i < count($conds[0]); $i++) $where[$conds[1][$i]] = $conds[2][$i];
+        }
+        foreach (($this->data[$table] ?? []) as $row) {
+            $match = true;
+            foreach ($where as $k => $v) { if (!isset($row[$k]) || (string)$row[$k] !== $v) { $match = false; break; } }
+            if ($match) return $row;
+        }
+        return null;
+    }
+    
     public function querySingle($sql) {
         // Simple: "SELECT COUNT(*) FROM table WHERE field='value'"
         if (preg_match('/COUNT\(\*\)\s+FROM\s+(\w+)\s+WHERE\s+(\w+)\s*=\s*[\'"]([^\'"]+)[\'"]/i', $sql, $m)) {

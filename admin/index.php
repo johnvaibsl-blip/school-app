@@ -10,7 +10,7 @@ $view = isset($_GET['view']) ? intval($_GET['view']) : 0;
 $msg = $_GET['msg'] ?? '';
 
 if ($edit > 0 && isset($_GET['del_table'])) {
-    $allowed = ['users','subjects','homework','exams','library','book_content','question_bank','chapters','announcements','live_classes','live_schedule','notifications','student_progress','homework_submissions','exam_results','badges','calendar_events','subscriptions','packages','settings'];
+    $allowed = ['users','subjects','homework','exams','library','book_content','question_bank','chapters','announcements','live_classes','live_schedule','notifications','student_progress','homework_submissions','exam_results','badges','calendar_events','subscriptions','packages','settings','teachers'];
     if (in_array($_GET['del_table'], $allowed)) { $db->delete($_GET['del_table'], $edit); header("Location: ?page=$page&msg=deleted"); exit; }
 }
 
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 if($role==='student'&&$class&&!in_array($class,$validClasses)){ $errors[]="Skipped: invalid class '$class' for '$email'"; $skipped++; continue; }
                 $uid=$db->insert('users',['name'=>sanitize($name),'email'=>sanitize($email),'password'=>password_hash($password,PASSWORD_DEFAULT),'role'=>$role,'class'=>sanitize($class),'phone'=>sanitize($phone),'school'=>sanitize($school),'is_premium'=>0]);
                 if($role==='teacher'&&$subject!==''){
-                    $db->insert('teachers',['user_id'=>$uid,'subject'=>sanitize($subject),'class_name'=>sanitize($className?:'All'),'experience'=>$experience,'bio'=>sanitize($bio),'rating'=>0,'total_students'=>0,'total_classes'=>0,'is_featured'=>0,'is_active'=>1]);
+                    $db->insert('teachers',['user_id'=>$uid,'subject'=>sanitize($subject),'class_name'=>sanitize($className?:'All'),'experience'=>$experience,'bio'=>sanitize($bio),'featured_video'=>'','rating'=>0,'total_students'=>0,'total_classes'=>0,'is_featured'=>0,'is_top_rated'=>0,'is_popular'=>0,'is_new'=>0,'is_active'=>1]);
                 }
                 $added++;
             } fclose($file);}
