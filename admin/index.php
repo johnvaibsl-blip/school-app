@@ -20,6 +20,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $a = $_POST['action'];
     if ($a === 'add_user') { $uid=$db->insert('users', ['name'=>sanitize($_POST['name']),'email'=>sanitize($_POST['email']),'password'=>password_hash($_POST['password'],PASSWORD_DEFAULT),'role'=>sanitize($_POST['role']),'class'=>sanitize($_POST['class']??''),'phone'=>sanitize($_POST['phone']??''),'school'=>sanitize($_POST['school']??''),'is_premium'=>0]); if(sanitize($_POST['role'])==='teacher'&&isset($_POST['t_subject'])&&$_POST['t_subject']!==''){$db->insert('teachers',['user_id'=>$uid,'subject'=>sanitize($_POST['t_subject']),'class_name'=>sanitize($_POST['t_class_name']??'All'),'experience'=>intval($_POST['t_experience']??1),'bio'=>sanitize($_POST['t_bio']??''),'rating'=>0,'total_students'=>0,'total_classes'=>0,'is_featured'=>0,'is_active'=>1]);} header('Location: ?page=users&msg=added'); exit; }
     if ($a === 'edit_user') { $d = ['name'=>sanitize($_POST['name']),'email'=>sanitize($_POST['email']),'role'=>sanitize($_POST['role']),'class'=>sanitize($_POST['class']??''),'phone'=>sanitize($_POST['phone']??''),'school'=>sanitize($_POST['school']??''),'is_premium'=>intval($_POST['is_premium']??0)]; if(!empty($_POST['password'])) $d['password']=password_hash($_POST['password'],PASSWORD_DEFAULT); $db->update('users',intval($_POST['id']),$d); if(sanitize($_POST['role'])==='teacher'&&isset($_POST['t_subject'])&&$_POST['t_subject']!==''){$etp=$db->queryOne('SELECT * FROM teachers WHERE user_id='.intval($_POST['id']));$td=['user_id'=>intval($_POST['id']),'subject'=>sanitize($_POST['t_subject']),'class_name'=>sanitize($_POST['t_class_name']??'All'),'experience'=>intval($_POST['t_experience']??1),'bio'=>sanitize($_POST['t_bio']??''),'rating'=>0,'total_students'=>0,'total_classes'=>0,'is_featured'=>0,'is_active'=>1];if($etp){$db->update('teachers',$etp['id'],$td);}else{$db->insert('teachers',$td);}} header('Location: ?page=users&msg=updated'); exit; }
+    if ($a === 'bulk_upload_users') {
+        $validClasses = ['Class 7','Class 8','Class 9 Science','Class 9 Commerce','Class 9 Arts','Class 10 Science','Class 10 Commerce','Class 10 Arts'];
+        $added=0; $skipped=0; $errors=[];
+        if(isset($_FILES['csv_file'])&&$_FILES['csv_file']['error']===0){
+            $file=fopen($_FILES['csv_file']['tmp_name'],'r');
+            if($file){$header=fgetcsv($file);while(($row=fgetcsv($file))!==false){
+                if(count($row)<4){$skipped++;continue;}
+                $name=trim($row[0]??''); $email=trim($row[1]??''); $password=trim($row[2]??''); $class=trim($row[3]??'');
+                $phone=trim($row[4]??''); $school=trim($row[5]??''); $role=trim($row[6]??'student');
+                $subject=trim($row[7]??''); $className=trim($row[8]??'All'); $experience=intval($row[9]??1); $bio=trim($row[10]??'');
+                if(empty($name)||empty($email)||empty($password)){ $errors[]="Skipped: missing name/email/password for '$email'"; $skipped++; continue; }
+                if(strlen($password)<6){ $errors[]="Skipped: password too short for '$email'"; $skipped++; continue; }
+                if($db->find('users','email',$email)){ $errors[]="Skipped: duplicate email '$email'"; $skipped++; continue; }
+                if($role!=='teacher'){$role='student';}
+                if($role==='student'&&$class&&!in_array($class,$validClasses)){ $errors[]="Skipped: invalid class '$class' for '$email'"; $skipped++; continue; }
+                $uid=$db->insert('users',['name'=>sanitize($name),'email'=>sanitize($email),'password'=>password_hash($password,PASSWORD_DEFAULT),'role'=>$role,'class'=>sanitize($class),'phone'=>sanitize($phone),'school'=>sanitize($school),'is_premium'=>0]);
+                if($role==='teacher'&&$subject!==''){
+                    $db->insert('teachers',['user_id'=>$uid,'subject'=>sanitize($subject),'class_name'=>sanitize($className?:'All'),'experience'=>$experience,'bio'=>sanitize($bio),'rating'=>0,'total_students'=>0,'total_classes'=>0,'is_featured'=>0,'is_active'=>1]);
+                }
+                $added++;
+            } fclose($file);}
+        }
+        $msgParam=$added>0?'bulk_upload&count='.$added.'&skipped='.$skipped:'bulk_upload_fail';
+        header('Location: ?page=users&msg='.$msgParam); exit;
+    }
     if ($a === 'add_subject') { $db->insert('subjects', ['name'=>sanitize($_POST['name']),'icon'=>sanitize($_POST['icon']),'color'=>sanitize($_POST['color'])]); header('Location: ?page=subjects&msg=added'); exit; }
     if ($a === 'edit_subject') { $db->update('subjects',intval($_POST['id']),['name'=>sanitize($_POST['name']),'icon'=>sanitize($_POST['icon']),'color'=>sanitize($_POST['color'])]); header('Location: ?page=subjects&msg=updated'); exit; }
     if ($a === 'add_homework') { $db->insert('homework', ['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'teacher_id'=>intval($_POST['teacher_id']??1),'description'=>sanitize($_POST['description']??''),'due_date'=>sanitize($_POST['due_date']),'total_marks'=>intval($_POST['total_marks']),'status'=>sanitize($_POST['status']??'pending')]); header('Location: ?page=homework&msg=added'); exit; }
@@ -251,7 +276,7 @@ echo $t[$page]??ucfirst(str_replace('_',' ',$page));
 <div class="info"><div><div class="name"><?php echo htmlspecialchars($_SESSION['user_name']); ?></div><div class="role">Administrator</div></div></div>
 </div>
 <div class="content">
-<?php if($msg): ?><div class="msg"><i data-lucide="check-circle" style="width:14px;height:14px"></i><?php echo $msg==='broadcast'?'Broadcast sent!':ucfirst($msg).' successfully!'; ?></div><?php endif; ?>
+<?php if($msg): ?><div class="msg"><i data-lucide="check-circle" style="width:14px;height:14px"></i><?php echo $msg==='broadcast'?'Broadcast sent!':($msg==='bulk_upload'?'Bulk upload complete: '.($_GET['count']??0).' added, '.($_GET['skipped']??0).' skipped.':($msg==='bulk_upload_fail'?'Upload failed. Please check CSV format.':ucfirst($msg).' successfully!')); ?></div><?php endif; ?>
 <?php if($page!=='dashboard'): ?>
 <div class="breadcrumb"><a href="?page=dashboard"><i data-lucide="home" style="width:12px;height:12px"></i></a><span style="margin:0 6px;color:#D1D5DB">/</span><span style="color:#6B7280;font-size:12px"><?php echo $t[$page]??ucfirst(str_replace('_',' ',$page)); ?></span></div>
 <?php
@@ -350,6 +375,30 @@ $euTeacher=$eu&&$eu['role']==='teacher'?$db->queryOne('SELECT * FROM teachers WH
 </div>
 
 <div style="display:flex;gap:8px;margin-top:16px"><button type="submit" class="btn btn-primary"><?php echo $eu?'Update':'Add User'; ?></button><?php if($eu): ?><a href="?page=users" class="btn btn-outline">Cancel</a><?php endif; ?></div></form></div>
+<div class="card">
+<h3><i data-lucide="upload"></i>Bulk Upload Users</h3>
+<p style="font-size:12px;color:#9CA3AF;margin:0 0 12px">Upload a CSV file to add multiple students or teachers at once.</p>
+<form method="POST" enctype="multipart/form-data" id="bulkUploadForm">
+<input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+<input type="hidden" name="action" value="bulk_upload_users">
+<div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+<div class="form-group" style="flex:1;min-width:200px">
+<label>CSV File</label>
+<input type="file" name="csv_file" accept=".csv" required style="padding:8px;border:1px solid #D1D5DB;border-radius:6px;width:100%">
+</div>
+<div style="display:flex;gap:8px">
+<button type="submit" class="btn btn-primary"><i data-lucide="upload" style="width:14px;height:14px"></i> Upload</button>
+<a href="assets/sample-users.csv" download class="btn btn-outline"><i data-lucide="download" style="width:14px;height:14px"></i> Sample CSV</a>
+</div>
+</div>
+<div style="margin-top:12px;padding:12px;background:#F9FAFB;border-radius:8px;font-size:12px;color:#6B7280">
+<strong>CSV Format:</strong> name, email, password, class, phone, school, role, subject, class_name, experience, bio<br>
+<strong>Required fields:</strong> name, email, password, class (for students)<br>
+<strong>Teacher fields:</strong> subject, class_name, experience, bio (only needed when role=teacher)<br>
+<a href="assets/sample-users.csv" download style="color:#4F46E5">Download sample file</a> to see examples.
+</div>
+</form>
+</div>
 <div class="card">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="margin-bottom:0"><i data-lucide="users"></i>All Users (<?php echo count($allUsers); ?>)</h3>
 <div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="exportTable('users-table','users.csv')"><i data-lucide="download" style="width:12px;height:12px"></i>Export CSV</button></div></div>
