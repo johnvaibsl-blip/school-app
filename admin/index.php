@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/upload.php';
 requireRole('admin');
 requireDesktop();
 $db = getDB();
@@ -10,7 +11,7 @@ $view = isset($_GET['view']) ? intval($_GET['view']) : 0;
 $msg = $_GET['msg'] ?? '';
 
 if ($edit > 0 && isset($_GET['del_table'])) {
-    $allowed = ['users','subjects','homework','exams','library','book_content','question_bank','chapters','announcements','live_classes','live_schedule','notifications','student_progress','homework_submissions','exam_results','badges','calendar_events','subscriptions','packages','settings','teachers'];
+    $allowed = ['users','homework','exams','library','book_content','question_bank','announcements','live_classes','live_schedule','notifications','student_progress','homework_submissions','exam_results','badges','calendar_events','subscriptions','packages','settings','teachers'];
     if (in_array($_GET['del_table'], $allowed)) { $db->delete($_GET['del_table'], $edit); header("Location: ?page=$page&msg=deleted"); exit; }
 }
 
@@ -45,8 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $msgParam=$added>0?'bulk_upload&count='.$added.'&skipped='.$skipped:'bulk_upload_fail';
         header('Location: ?page=users&msg='.$msgParam); exit;
     }
-    if ($a === 'add_subject') { $db->insert('subjects', ['name'=>sanitize($_POST['name']),'icon'=>sanitize($_POST['icon']),'color'=>sanitize($_POST['color'])]); header('Location: ?page=subjects&msg=added'); exit; }
-    if ($a === 'edit_subject') { $db->update('subjects',intval($_POST['id']),['name'=>sanitize($_POST['name']),'icon'=>sanitize($_POST['icon']),'color'=>sanitize($_POST['color'])]); header('Location: ?page=subjects&msg=updated'); exit; }
     if ($a === 'add_homework') { $db->insert('homework', ['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'teacher_id'=>intval($_POST['teacher_id']??1),'description'=>sanitize($_POST['description']??''),'due_date'=>sanitize($_POST['due_date']),'total_marks'=>intval($_POST['total_marks']),'status'=>sanitize($_POST['status']??'pending')]); header('Location: ?page=homework&msg=added'); exit; }
     if ($a === 'edit_homework') { $db->update('homework',intval($_POST['id']),['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'description'=>sanitize($_POST['description']??''),'due_date'=>sanitize($_POST['due_date']),'total_marks'=>intval($_POST['total_marks']),'status'=>sanitize($_POST['status'])]); header('Location: ?page=homework&msg=updated'); exit; }
     if ($a === 'add_exam') { $db->insert('exams', ['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'teacher_id'=>intval($_POST['teacher_id']??1),'exam_date'=>sanitize($_POST['exam_date']),'total_marks'=>intval($_POST['total_marks']),'duration'=>intval($_POST['duration']),'type'=>sanitize($_POST['type']),'status'=>sanitize($_POST['status']??'upcoming')]); header('Location: ?page=exams&msg=added'); exit; }
@@ -55,15 +54,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($a === 'edit_announcement') { $db->update('announcements',intval($_POST['id']),['title'=>sanitize($_POST['title']),'message'=>sanitize($_POST['message']),'category'=>sanitize($_POST['category']),'target_class'=>sanitize($_POST['target_class']),'is_pinned'=>intval($_POST['is_pinned']??0)]); header('Location: ?page=announcements&msg=updated'); exit; }
     if ($a === 'add_package') { $db->insert('packages', ['name'=>sanitize($_POST['name']),'price'=>floatval($_POST['price']),'duration'=>intval($_POST['duration']),'features'=>sanitize($_POST['features']),'is_active'=>1]); header('Location: ?page=packages&msg=added'); exit; }
     if ($a === 'edit_package') { $db->update('packages',intval($_POST['id']),['name'=>sanitize($_POST['name']),'price'=>floatval($_POST['price']),'duration'=>intval($_POST['duration']),'features'=>sanitize($_POST['features']),'is_active'=>intval($_POST['is_active']??1)]); header('Location: ?page=packages&msg=updated'); exit; }
-    if ($a === 'add_chapter') { $db->insert('chapters', ['subject_id'=>intval($_POST['subject_id']),'title'=>sanitize($_POST['title']),'status'=>sanitize($_POST['status']??'not_started'),'pages'=>intval($_POST['pages']??10),'order'=>intval($_POST['order']??1)]); header('Location: ?page=chapters&msg=added'); exit; }
-    if ($a === 'edit_chapter') { $db->update('chapters',intval($_POST['id']),['subject_id'=>intval($_POST['subject_id']),'title'=>sanitize($_POST['title']),'status'=>sanitize($_POST['status']??'not_started'),'pages'=>intval($_POST['pages']??10),'order'=>intval($_POST['order']??1)]); header('Location: ?page=chapters&msg=updated'); exit; }
-    if ($a === 'toggle_chapter') { $ch = $db->find('chapters','id',intval($_POST['id'])); $newStatus = ($ch['status'] ?? 'not_started') === 'completed' ? 'not_started' : 'completed'; $db->update('chapters',intval($_POST['id']),['status'=>$newStatus]); header('Location: ?page=chapters&msg=toggled'); exit; }
     if ($a === 'add_question') { $opts=[]; for($i=1;$i<=6;$i++){if(!empty($_POST['opt_'.$i]))$opts[]=sanitize($_POST['opt_'.$i]);} $db->insert('question_bank', ['subject_id'=>intval($_POST['subject_id']),'chapter'=>sanitize($_POST['chapter']),'type'=>sanitize($_POST['type']),'question'=>sanitize($_POST['question']),'options'=>$opts,'correct'=>intval($_POST['correct_answer']??0),'marks'=>intval($_POST['marks']??1),'difficulty'=>sanitize($_POST['difficulty']??'easy')]); header('Location: ?page=questions&msg=added'); exit; }
     if ($a === 'edit_question') { $opts=[]; for($i=1;$i<=6;$i++){if(!empty($_POST['opt_'.$i]))$opts[]=sanitize($_POST['opt_'.$i]);} $db->update('question_bank',intval($_POST['id']),['subject_id'=>intval($_POST['subject_id']),'chapter'=>sanitize($_POST['chapter']),'type'=>sanitize($_POST['type']),'question'=>sanitize($_POST['question']),'options'=>$opts,'correct'=>intval($_POST['correct_answer']??0),'marks'=>intval($_POST['marks']??1),'difficulty'=>sanitize($_POST['difficulty']??'easy')]); header('Location: ?page=questions&msg=updated'); exit; }
     if ($a === 'add_bank_question') { $db->insert('question_bank', ['subject_id'=>intval($_POST['subject_id']),'type'=>sanitize($_POST['type']),'question'=>sanitize($_POST['question']),'correct'=>sanitize($_POST['correct_answer']??''),'marks'=>intval($_POST['marks']??1),'difficulty'=>sanitize($_POST['difficulty']??'easy')]); header('Location: ?page=bank-questions&msg=added'); exit; }
     if ($a === 'edit_bank_question') { $db->update('question_bank',intval($_POST['id']),['subject_id'=>intval($_POST['subject_id']),'type'=>sanitize($_POST['type']),'question'=>sanitize($_POST['question']),'correct'=>sanitize($_POST['correct_answer']??''),'marks'=>intval($_POST['marks']??1),'difficulty'=>sanitize($_POST['difficulty']??'easy')]); header('Location: ?page=bank-questions&msg=updated'); exit; }
-    if ($a === 'add_library') { $db->insert('library', ['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'class'=>sanitize($_POST['class']??'Class 8'),'type'=>sanitize($_POST['type']),'description'=>sanitize($_POST['description']??''),'file_url'=>sanitize($_POST['file_url']??''),'cover_url'=>sanitize($_POST['cover_url']??''),'uploader_id'=>0,'uploader_type'=>'admin','downloads'=>0,'is_active'=>1]); header('Location: ?page=library&msg=added'); exit; }
+    if ($a === 'add_library') { $dir=sanitizePath($_POST['library_path']??''); $dest=getBooksDir().($dir?'/'.$dir:''); ensureDir($dest); $count=0; if(!empty($_FILES['book_file']['tmp_name'])){ foreach($_FILES['book_file']['tmp_name'] as $i=>$tmp){ if(empty($tmp))continue; $fn=basename($_FILES['book_file']['name'][$i]); if(isAllowedExtension($fn)&&$_FILES['book_file']['size'][$i]<=UPLOAD_MAX_SIZE){move_uploaded_file($tmp,$dest.'/'.$fn); $count++;} } } header('Location: ?page=library&path='.urlencode($_POST['library_path']??'').'&msg=added&count='.$count); exit; }
     if ($a === 'edit_library') { $db->update('library',intval($_POST['id']),['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'class'=>sanitize($_POST['class']??'Class 8'),'type'=>sanitize($_POST['type']),'description'=>sanitize($_POST['description']??''),'file_url'=>sanitize($_POST['file_url']??''),'cover_url'=>sanitize($_POST['cover_url']??''),'is_active'=>intval($_POST['is_active']??1)]); header('Location: ?page=library&msg=updated'); exit; }
+    if ($a === 'create_folder') { $dir=sanitizePath($_POST['folder_path']??''); $name=sanitizePath($_POST['folder_name']??''); if($name){ensureDir(getBooksDir().'/'.$dir.'/'.$name);} header('Location: ?page=library&path='.urlencode($dir)); exit; }
     if ($a === 'add_live_class') { $db->insert('live_classes', ['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'teacher_id'=>intval($_POST['teacher_id']??1),'class_date'=>sanitize($_POST['class_date']),'start_time'=>sanitize($_POST['start_time']),'end_time'=>sanitize($_POST['end_time']),'status'=>'scheduled','meeting_link'=>sanitize($_POST['meeting_link']??'#')]); header('Location: ?page=live_classes&msg=added'); exit; }
     if ($a === 'edit_live_class') { $db->update('live_classes',intval($_POST['id']),['title'=>sanitize($_POST['title']),'subject_id'=>intval($_POST['subject_id']),'teacher_id'=>intval($_POST['teacher_id']??1),'class_date'=>sanitize($_POST['class_date']),'start_time'=>sanitize($_POST['start_time']),'end_time'=>sanitize($_POST['end_time']),'status'=>sanitize($_POST['status']),'meeting_link'=>sanitize($_POST['meeting_link']??'#')]); header('Location: ?page=live_classes&msg=updated'); exit; }
     if ($a === 'add_teacher_profile') { $db->insert('teachers', ['user_id'=>intval($_POST['user_id']),'subject'=>sanitize($_POST['subject']),'class_name'=>sanitize($_POST['class_name']??'All'),'experience'=>intval($_POST['experience']),'bio'=>sanitize($_POST['bio']??''),'featured_video'=>sanitize($_POST['featured_video']??''),'rating'=>0,'total_students'=>0,'total_classes'=>0,'is_featured'=>intval($_POST['is_featured']??0),'is_top_rated'=>intval($_POST['is_top_rated']??0),'is_popular'=>intval($_POST['is_popular']??0),'is_new'=>intval($_POST['is_new']??0),'is_active'=>1]); header('Location: ?page=teachers&msg=added'); exit; }
@@ -138,8 +135,8 @@ $premiumUsers=count($db->findAll('users','is_premium',1));
 $sidebar=[
 ['s'=>'Main','i'=>[['dashboard','layout-dashboard','Dashboard']]],
 ['s'=>'User Management','i'=>[['users','users','All Users'],['teachers','user-check','Teachers'],['student_progress','bar-chart-3','Student Progress']]],
-['s'=>'Academics','i'=>[['subjects','book-open','Subjects'],['chapters','layers','Chapters'],['class_schedule','clock','Class Schedule']]],
-['s'=>'Content','i'=>[['homework','file-text','Homework'],['exams','calendar','Exams'],['library','library','Library']]],
+['s'=>'Academics','i'=>[['library','library','Library'],['class_schedule','clock','Class Schedule']]],
+['s'=>'Content','i'=>[['homework','file-text','Homework'],['exams','calendar','Exams']]],
 ['s'=>'Assessment','i'=>[['questions','help-circle','Question Bank'],['submissions','inbox','Submissions'],['results','award','Exam Results'],['exam_analytics','bar-chart','Exam Analytics'],['hw_analytics','pie-chart','Homework Analytics'],['reports','file-bar-chart','Reports']]],
 ['s'=>'Communication','i'=>[['live_classes','tv','Live Classes'],['announcements','megaphone','Announcements'],['messages','message-square','Messages'],['notifications','bell','Notifications'],['calendar','calendar-days','Calendar'],['calendar_events','calendar-range','Calendar Events']]],
 ['s'=>'Business','i'=>[['packages','credit-card','Packages'],['subscriptions','user-check','Subscriptions'],['revenue','dollar-sign','Revenue']]],
@@ -270,7 +267,7 @@ body{background:white!important;color:black!important;-webkit-print-color-adjust
 <div class="main">
 <div class="topbar">
 <h1><?php
-$t=['dashboard'=>'Dashboard','users'=>'All Users','teachers'=>'Teachers','subjects'=>'Subjects','chapters'=>'Chapters','homework'=>'Homework','exams'=>'Exams','questions'=>'Question Bank','submissions'=>'Submissions','results'=>'Exam Results','live_classes'=>'Live Classes','announcements'=>'Announcements','messages'=>'Messages','packages'=>'Packages','subscriptions'=>'Subscriptions','revenue'=>'Revenue','settings'=>'General Settings','ai_settings'=>'AI Settings','library'=>'Library','student_progress'=>'Student Progress','exam_analytics'=>'Exam Analytics','hw_analytics'=>'Homework Analytics','notifications'=>'Notifications','calendar'=>'Calendar','calendar_events'=>'Calendar Events','class_schedule'=>'Class Schedule','reports'=>'Reports','activity_log'=>'Activity Log'];
+$t=['dashboard'=>'Dashboard','users'=>'All Users','teachers'=>'Teachers','homework'=>'Homework','exams'=>'Exams','questions'=>'Question Bank','submissions'=>'Submissions','results'=>'Exam Results','live_classes'=>'Live Classes','announcements'=>'Announcements','messages'=>'Messages','packages'=>'Packages','subscriptions'=>'Subscriptions','revenue'=>'Revenue','settings'=>'General Settings','ai_settings'=>'AI Settings','library'=>'Library','student_progress'=>'Student Progress','exam_analytics'=>'Exam Analytics','hw_analytics'=>'Homework Analytics','notifications'=>'Notifications','calendar'=>'Calendar','calendar_events'=>'Calendar Events','class_schedule'=>'Class Schedule','reports'=>'Reports','activity_log'=>'Activity Log'];
 echo $t[$page]??ucfirst(str_replace('_',' ',$page));
 ?></h1>
 <div class="info"><div><div class="name"><?php echo htmlspecialchars($_SESSION['user_name']); ?></div><div class="role">Administrator</div></div></div>
@@ -280,7 +277,7 @@ echo $t[$page]??ucfirst(str_replace('_',' ',$page));
 <?php if($page!=='dashboard'): ?>
 <div class="breadcrumb"><a href="?page=dashboard"><i data-lucide="home" style="width:12px;height:12px"></i></a><span style="margin:0 6px;color:#D1D5DB">/</span><span style="color:#6B7280;font-size:12px"><?php echo $t[$page]??ucfirst(str_replace('_',' ',$page)); ?></span></div>
 <?php
-$pageDescs=['users'=>'Manage all registered users, roles, and permissions','teachers'=>'Add, edit, and feature teachers with rankings and video trailers','subjects'=>'Add and organize subjects','chapters'=>'Manage book chapters and content','homework'=>'Create and grade homework assignments','exams'=>'Schedule and manage exams','questions'=>'Build your question bank for exams','submissions'=>'Review student homework submissions','results'=>'View exam results and scores','live_classes'=>'Schedule and manage live class sessions','announcements'=>'Send announcements to students and teachers','messages'=>'View platform messages','packages'=>'Create and manage subscription packages','subscriptions'=>'Approve or reject student subscriptions','revenue'=>'Track subscription revenue','settings'=>'General platform settings','ai_settings'=>'Configure AI tutor settings','library'=>'Manage library resources','student_progress'=>'Track student learning progress','exam_analytics'=>'Detailed exam performance analytics','hw_analytics'=>'Homework completion analytics','notifications'=>'Manage push notifications','calendar'=>'Weekly class timetable','calendar_events'=>'Manage calendar events','class_schedule'=>'Master class schedule','reports'=>'Student academic reports','activity_log'=>'View all user activity across the platform'];
+$pageDescs=['users'=>'Manage all registered users, roles, and permissions','teachers'=>'Add, edit, and feature teachers with rankings and video trailers','homework'=>'Create and grade homework assignments','exams'=>'Schedule and manage exams','questions'=>'Build your question bank for exams','submissions'=>'Review student homework submissions','results'=>'View exam results and scores','live_classes'=>'Schedule and manage live class sessions','announcements'=>'Send announcements to students and teachers','messages'=>'View platform messages','packages'=>'Create and manage subscription packages','subscriptions'=>'Approve or reject student subscriptions','revenue'=>'Track subscription revenue','settings'=>'General platform settings','ai_settings'=>'Configure AI tutor settings','library'=>'Manage library resources','student_progress'=>'Track student learning progress','exam_analytics'=>'Detailed exam performance analytics','hw_analytics'=>'Homework completion analytics','notifications'=>'Manage push notifications','calendar'=>'Weekly class timetable','calendar_events'=>'Manage calendar events','class_schedule'=>'Master class schedule','reports'=>'Student academic reports','activity_log'=>'View all user activity across the platform'];
 $desc=$pageDescs[$page]??''; ?>
 <div style="margin-bottom:20px"><h2 style="font-size:18px;margin:0 0 4px"><?php echo $t[$page]??ucfirst(str_replace('_',' ',$page)); ?></h2>
 <?php if($desc): ?><p style="font-size:12px;color:#9CA3AF;margin:0"><?php echo $desc; ?></p><?php endif; ?></div>
@@ -325,7 +322,6 @@ $engagementRate=$students>0?round($activeStudents/$students*100):0;
 <h3 style="font-size:14px;font-weight:700;margin-bottom:12px;color:#1F2937">Quick Actions</h3>
 <div class="quick-actions">
 <a href="?page=library" class="qa"><i data-lucide="library"></i><span>Library</span></a>
-<a href="?page=chapters" class="qa"><i data-lucide="layers"></i><span>Chapters</span></a>
 <a href="?page=ai_settings" class="qa"><i data-lucide="brain"></i><span>AI Settings</span></a>
 <a href="?page=packages" class="qa"><i data-lucide="credit-card"></i><span>Packages</span></a>
 <a href="?page=rankings" class="qa"><i data-lucide="trophy"></i><span>Rankings</span></a>
@@ -510,41 +506,6 @@ function closeEditModal(){document.getElementById('editTeacherModal').style.disp
 document.getElementById('editTeacherModal').addEventListener('click',function(e){if(e.target===this)closeEditModal();});
 </script>
 
-<?php /* === SUBJECTS === */ ?>
-<?php elseif($page==='subjects'):
-$es=$edit>0?$db->find('subjects','id',$edit):null; ?>
-<div class="card"><h3><i data-lucide="<?php echo $es?'edit':'plus-circle'; ?>"></i><?php echo $es?'Edit Subject':'Add Subject'; ?></h3>
-<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="<?php echo $es?'edit_subject':'add_subject'; ?>">
-<?php if($es): ?><input type="hidden" name="id" value="<?php echo $es['id']; ?>"><?php endif; ?>
-<div class="form-row"><div class="form-group"><label>Name</label><input type="text" name="name" value="<?php echo $es?htmlspecialchars($es['name']):''; ?>" required></div><div class="form-group"><label>Icon</label><input type="text" name="icon" value="<?php echo $es?htmlspecialchars($es['icon']):'calculator'; ?>" required></div></div>
-<div class="form-row"><div class="form-group"><label>Color</label><input type="color" name="color" value="<?php echo $es?$es['color']:'#6366F1'; ?>"></div><div class="form-group" style="display:flex;align-items:flex-end;gap:8px"><button type="submit" class="btn btn-primary"><?php echo $es?'Update':'Add'; ?></button><?php if($es): ?><a href="?page=subjects" class="btn btn-outline">Cancel</a><?php endif; ?></div></div></form></div>
-<div class="card"><h3><i data-lucide="book-open"></i>All Subjects (<?php echo count($allSubjects); ?>)</h3>
-<table><tr><th>ID</th><th>Name</th><th>Icon</th><th>Color</th><th>Chapters</th><th>Actions</th></tr>
-<?php foreach($allSubjects as $s): $cc=count($db->findAll('chapters','subject_id',$s['id'])); ?>
-<tr><td><?php echo $s['id']; ?></td><td><strong><?php echo htmlspecialchars($s['name']); ?></strong></td><td><?php echo htmlspecialchars($s['icon']); ?></td>
-<td><span style="display:inline-block;width:24px;height:24px;border-radius:8px;background:<?php echo $s['color']; ?>;vertical-align:middle"></span></td><td><?php echo $cc; ?></td>
-<td class="actions"><a href="?page=subjects&edit=<?php echo $s['id']; ?>" class="btn btn-primary btn-sm"><i data-lucide="edit-2" style="width:12px;height:12px"></i></a><a href="?page=subjects&edit=<?php echo $s['id']; ?>&del_table=subjects" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
-<?php endforeach; ?></table></div>
-
-<?php /* === CHAPTERS === */ ?>
-<?php elseif($page==='chapters'):
-$ec=$edit>0?$db->find('chapters','id',$edit):null; ?>
-<div class="card"><h3><i data-lucide="<?php echo $ec?'edit':'plus-circle'; ?>"></i><?php echo $ec?'Edit Chapter':'Add Chapter'; ?></h3>
-<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="<?php echo $ec?'edit_chapter':'add_chapter'; ?>">
-<?php if($ec): ?><input type="hidden" name="id" value="<?php echo $ec['id']; ?>"><?php endif; ?>
-<div class="form-row"><div class="form-group"><label>Subject</label><select name="subject_id"><?php foreach($allSubjects as $s): ?><option value="<?php echo $s['id']; ?>" <?php echo $ec&&$ec['subject_id']==$s['id']?'selected':''; ?>><?php echo htmlspecialchars($s['name']); ?></option><?php endforeach; ?></select></div><div class="form-group"><label>Order</label><input type="number" name="order" value="<?php echo $ec?($ec['order']??1):1; ?>" min="1" required></div></div>
-<div class="form-group"><label>Title</label><input type="text" name="title" value="<?php echo $ec?htmlspecialchars($ec['title']):''; ?>" required></div>
-<div class="form-row"><div class="form-group"><label>Status</label><select name="status"><?php foreach(['not_started'=>'Not Started','in_progress'=>'In Progress','completed'=>'Completed','locked'=>'Locked'] as $sv=>$sl): ?><option value="<?php echo $sv; ?>" <?php echo $ec&&($ec['status']??'not_started')===$sv?'selected':''; ?>><?php echo $sl; ?></option><?php endforeach; ?></select></div><div class="form-group"><label>Pages</label><input type="number" name="pages" value="<?php echo $ec?($ec['pages']??10):10; ?>" min="1" required></div></div>
-<div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary"><?php echo $ec?'Update':'Add'; ?></button><?php if($ec): ?><a href="?page=chapters" class="btn btn-outline">Cancel</a><?php endif; ?></div></form></div>
-<div class="card"><h3><i data-lucide="layers"></i>All Chapters (<?php echo count($allChapters); ?>)</h3>
-<table><tr><th>#</th><th>Subject</th><th>Title</th><th>Pages</th><th>Status</th><th>Actions</th></tr>
-<?php foreach($allChapters as $ch): $subj=$db->find('subjects','id',$ch['subject_id']); ?>
-<tr><td><?php echo $ch['order'] ?? $ch['id']; ?></td><td><?php echo $subj?htmlspecialchars($subj['name']):''; ?></td>
-<td><strong><?php echo htmlspecialchars($ch['title']); ?></strong></td><td><?php echo $ch['pages'] ?? 0; ?></td>
-<td><span class="badge <?php echo ($ch['status']??'not_started')==='completed'?'bg':(($ch['status']??'')==='in_progress'?'bo':(($ch['status']??'')==='locked'?'br':'bb')); ?>"><?php echo ucfirst(str_replace('_',' ',$ch['status']??'not_started')); ?></span></td>
-<td class="actions"><a href="?page=chapters&edit=<?php echo $ch['id']; ?>" class="btn btn-primary btn-sm"><i data-lucide="edit-2" style="width:12px;height:12px"></i></a><a href="?page=chapters&edit=<?php echo $ch['id']; ?>&del_table=chapters" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
-<?php endforeach; ?></table></div>
-
 <?php /* === HOMEWORK === */ ?>
 <?php elseif($page==='homework'):
 $eh=$edit>0?$db->find('homework','id',$edit):null; ?>
@@ -726,24 +687,76 @@ foreach($bySubj as $sid=>$data):$subj=$db->find('subjects','id',$sid);$avg=round
 
 <?php /* === LIBRARY === */ ?>
 <?php elseif($page==='library'):
-$el=$edit>0?$db->find('library','id',$edit):null; ?>
-<div class="card"><h3><i data-lucide="<?php echo $el?'edit':'plus-circle'; ?>"></i><?php echo $el?'Edit Library Item':'Add Library Item'; ?></h3>
-<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="<?php echo $el?'edit_library':'add_library'; ?>">
-<?php if($el): ?><input type="hidden" name="id" value="<?php echo $el['id']; ?>"><?php endif; ?>
-<div class="form-row"><div class="form-group"><label>Title</label><input type="text" name="title" value="<?php echo $el?htmlspecialchars($el['title']):''; ?>" required></div><div class="form-group"><label>Subject</label><select name="subject_id"><?php foreach($allSubjects as $s): ?><option value="<?php echo $s['id']; ?>" <?php echo $el&&$el['subject_id']==$s['id']?'selected':''; ?>><?php echo htmlspecialchars($s['name']); ?></option><?php endforeach; ?></select></div></div>
-<div class="form-row"><div class="form-group"><label>Class</label><select name="class"><option value="Class 7" <?php echo $el&&$el['class']==='Class 7'?'selected':''; ?>>Class 7</option><option value="Class 8" <?php echo (!$el||$el['class']==='Class 8')?'selected':''; ?>>Class 8</option><option value="Class 9 Science" <?php echo $el&&$el['class']==='Class 9 Science'?'selected':''; ?>>Class 9 Science</option><option value="Class 10 Science" <?php echo $el&&$el['class']==='Class 10 Science'?'selected':''; ?>>Class 10 Science</option><option value="Class 9 Commerce" <?php echo $el&&$el['class']==='Class 9 Commerce'?'selected':''; ?>>Class 9 Commerce</option><option value="Class 10 Commerce" <?php echo $el&&$el['class']==='Class 10 Commerce'?'selected':''; ?>>Class 10 Commerce</option><option value="Class 9 Arts" <?php echo $el&&$el['class']==='Class 9 Arts'?'selected':''; ?>>Class 9 Arts</option><option value="Class 10 Arts" <?php echo $el&&$el['class']==='Class 10 Arts'?'selected':''; ?>>Class 10 Arts</option></select></div><div class="form-group"><label>Type</label><select name="type"><option value="textbook" <?php echo $el&&$el['type']==='textbook'?'selected':''; ?>>Textbook</option><option value="guide" <?php echo $el&&$el['type']==='guide'?'selected':''; ?>>Guide</option><option value="reference" <?php echo $el&&$el['type']==='reference'?'selected':''; ?>>Reference</option><option value="notes" <?php echo $el&&$el['type']==='notes'?'selected':''; ?>>Notes</option><option value="video" <?php echo $el&&$el['type']==='video'?'selected':''; ?>>Video</option></select></div></div>
-<div class="form-row"><div class="form-group"><label>File URL</label><input type="text" name="file_url" value="<?php echo $el?htmlspecialchars($el['file_url']):''; ?>"></div><div class="form-group"><label>Cover URL</label><input type="text" name="cover_url" value="<?php echo $el?htmlspecialchars($el['cover_url']):''; ?>"></div></div>
-<div class="form-group"><label>Description</label><textarea name="description" rows="2"><?php echo $el?htmlspecialchars($el['description']):''; ?></textarea></div>
-<?php if($el): ?><div class="form-group"><label>Status</label><select name="is_active"><option value="1" <?php echo $el['is_active']?'selected':''; ?>>Active</option><option value="0" <?php echo !$el['is_active']?'selected':''; ?>>Inactive</option></select></div><?php endif; ?>
-<div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary"><?php echo $el?'Update':'Add'; ?></button><?php if($el): ?><a href="?page=library" class="btn btn-outline">Cancel</a><?php endif; ?></div></form></div>
-<div class="card"><h3><i data-lucide="library"></i>Library (<?php echo count($allLibrary); ?>)</h3>
-<table><tr><th>Title</th><th>Subject</th><th>Class</th><th>Type</th><th>Downloads</th><th>Status</th><th>Actions</th></tr>
-<?php foreach($allLibrary as $l): $subj=$db->find('subjects','id',$l['subject_id']); ?>
-<tr><td><strong><?php echo htmlspecialchars($l['title']); ?></strong></td><td><?php echo $subj?htmlspecialchars($subj['name']):''; ?></td><td><?php echo htmlspecialchars($l['class']??''); ?></td>
-<td><span class="badge bp"><?php echo ucfirst($l['type']); ?></span></td><td><?php echo $l['downloads']; ?></td>
-<td><span class="badge <?php echo $l['is_active']?'bg':'br'; ?>"><?php echo $l['is_active']?'Active':'Inactive'; ?></span></td>
-<td class="actions"><a href="?page=library&edit=<?php echo $l['id']; ?>" class="btn btn-primary btn-sm"><i data-lucide="edit-2" style="width:12px;height:12px"></i></a><a href="?page=library&edit=<?php echo $l['id']; ?>&del_table=library" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></a></td></tr>
-<?php endforeach; ?></table></div>
+$libPath=trim($_GET['path']??'','/');
+$libFull=getBooksDir().($libPath?'/'.$libPath:'');
+$items=scanFolder($libFull);
+$breadcrumbs=explode('/',$libPath);
+$breadcrumbs=array_filter($breadcrumbs);
+?>
+<?php if($msg): ?><div class="msg"><i data-lucide="check-circle" style="width:14px;height:14px"></i><?php echo $msg==='added'?'Added successfully!':($msg==='updated'?'Updated!':($msg==='deleted'?'Deleted!':ucfirst($msg))); ?></div><?php endif; ?>
+<div class="card">
+<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+<h3 style="display:flex;align-items:center;gap:8px;margin:0">
+<i data-lucide="hard-drive" style="width:20px;height:20px;color:#4F46E5"></i>
+<a href="?page=library" style="font-size:14px;color:#4F46E5;text-decoration:none">Library</a>
+<?php $crumb=''; foreach($breadcrumbs as $i=>$b): $crumb.=($crumb?'/':'').$b; ?>
+<span style="color:#9CA3AF;margin:0 4px">/</span>
+<?php if($i===count($breadcrumbs)-1): ?>
+<span style="font-size:14px;font-weight:700;color:#1F2937"><?php echo htmlspecialchars($b); ?></span>
+<?php else: ?>
+<a href="?page=library&path=<?php echo urlencode($crumb); ?>" style="font-size:14px;color:#4F46E5;text-decoration:none"><?php echo htmlspecialchars($b); ?></a>
+<?php endif; ?>
+<?php endforeach; ?>
+</h3>
+<div style="display:flex;gap:8px">
+<button class="btn btn-outline btn-sm" onclick="document.getElementById('new-folder-modal').style.display='flex'"><i data-lucide="folder-plus" style="width:14px;height:14px"></i> New Folder</button>
+<button class="btn btn-primary btn-sm" onclick="document.getElementById('upload-file-modal').style.display='flex'"><i data-lucide="upload" style="width:14px;height:14px"></i> Upload File</button>
+</div>
+</div>
+<div id="new-folder-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center">
+<div style="background:white;border-radius:16px;padding:24px;width:400px;max-width:90vw">
+<h3 style="margin:0 0 16px;font-size:16px;display:flex;align-items:center;gap:8px"><i data-lucide="folder-plus" style="width:18px;height:18px"></i> New Folder</h3>
+<form method="POST"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="create_folder"><input type="hidden" name="folder_path" value="<?php echo htmlspecialchars($libPath); ?>">
+<div class="form-group"><label>Folder Name</label><input type="text" name="folder_name" required placeholder="Enter folder name"></div>
+<div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="document.getElementById('new-folder-modal').style.display='none'">Cancel</button><button type="submit" class="btn btn-primary">Create</button></div>
+</form></div></div>
+<div id="upload-file-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center">
+<div style="background:white;border-radius:16px;padding:24px;width:500px;max-width:90vw">
+<h3 style="margin:0 0 16px;font-size:16px;display:flex;align-items:center;gap:8px"><i data-lucide="upload" style="width:18px;height:18px"></i> Upload File</h3>
+<form method="POST" enctype="multipart/form-data"><input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>"><input type="hidden" name="action" value="add_library"><input type="hidden" name="library_path" value="<?php echo htmlspecialchars($libPath); ?>">
+<div class="form-group"><label>File(s)</label><input type="file" name="book_file[]" multiple required style="width:100%;padding:10px;border:1.5px dashed #D1D5DB;border-radius:10px;cursor:pointer"></div>
+<p style="font-size:11px;color:#9CA3AF;margin-top:4px">Select multiple files at once (Ctrl+Click or drag)</p>
+<div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="document.getElementById('upload-file-modal').style.display='none'">Cancel</button><button type="submit" class="btn btn-primary">Upload</button></div>
+</form></div></div>
+<?php if(empty($items)): ?>
+<div style="text-align:center;padding:60px 20px;color:#9CA3AF">
+<i data-lucide="folder-open" style="width:48px;height:48px;margin-bottom:12px;opacity:0.3"></i>
+<p style="font-size:14px;margin:0">This folder is empty</p>
+<p style="font-size:12px;margin:4px 0 0">Upload files or create a new folder</p>
+</div>
+<?php else: ?>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">
+<?php foreach($items as $item): ?>
+<?php if($item['is_dir']): ?>
+<div style="background:#F9FAFB;border:1.5px solid #E5E7EB;border-radius:12px;padding:16px;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='#4F46E5'" onmouseout="this.style.borderColor='#E5E7EB'" onclick="location.href='?page=library&path=<?php echo urlencode($libPath.($libPath?'/':'').$item['name']); ?>'">
+<div style="display:flex;align-items:center;gap:10px">
+<div style="width:40px;height:40px;background:linear-gradient(135deg,#FBBF24,#F59E0B);border-radius:10px;display:flex;align-items:center;justify-content:center"><i data-lucide="folder" style="width:20px;height:20px;color:white"></i></div>
+<div style="flex:1;min-width:0"><p style="font-size:13px;font-weight:600;color:#1F2937;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?php echo htmlspecialchars($item['name']); ?></p></div>
+</div>
+</div>
+<?php else: ?>
+<div style="background:white;border:1.5px solid #E5E7EB;border-radius:12px;padding:16px;transition:all .2s" onmouseover="this.style.borderColor='#4F46E5'" onmouseout="this.style.borderColor='#E5E7EB'">
+<div style="display:flex;align-items:center;gap:10px">
+<div style="width:40px;height:40px;background:linear-gradient(135deg,#6366F1,#8B5CF6);border-radius:10px;display:flex;align-items:center;justify-content:center"><i data-lucide="<?php echo $item['icon']; ?>" style="width:20px;height:20px;color:white"></i></div>
+<div style="flex:1;min-width:0"><p style="font-size:13px;font-weight:600;color:#1F2937;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?php echo htmlspecialchars($item['name']); ?></p><p style="font-size:11px;color:#9CA3AF;margin:2px 0 0"><?php echo formatSize($item['size']); ?></p></div>
+<a href="/books/<?php echo urlencode($libPath.($libPath?'/':'').$item['name']); ?>" download class="btn btn-outline btn-sm" style="padding:4px 8px" onclick="event.stopPropagation()"><i data-lucide="download" style="width:12px;height:12px"></i></a>
+</div>
+</div>
+<?php endif; ?>
+<?php endforeach; ?>
+</div>
+<?php endif; ?>
+</div>
 
 <?php /* === LIVE CLASSES === */ ?>
 <?php elseif($page==='live_classes'):

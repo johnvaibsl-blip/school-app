@@ -1,5 +1,5 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) @session_start();
 
 define('DATA_DIR', __DIR__ . '/../data');
 define('DB_FILE', DATA_DIR . '/school.json');

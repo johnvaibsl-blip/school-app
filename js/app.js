@@ -16,7 +16,7 @@ var ROLE_SCREENS = {
         'screen-exam-interface','screen-exam-result','screen-subject',
         'screen-reader','screen-live-lobby','screen-live-class','screen-search',
         'screen-pricing','screen-payment','screen-payment-success','screen-settings','screen-notif',
-        'screen-my-study','screen-library-subject','screen-messages','screen-question-bank'
+        'screen-my-study','screen-book-browser','screen-messages','screen-question-bank'
     ],
     teacher: [
         'screen-teacher-dash','screen-upload-content','screen-content-library',
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
         handleHashRoute();
     }
     try { bindEvents(); } catch(e) {}
-    if (USER_ROLE === 'student') try { loadLibraryGrid(); } catch(e) {}
+    if (USER_ROLE === 'student') try { loadBooksRoot(); } catch(e) {}
 });
 
 function applyRoleVisibility() {
@@ -282,7 +282,7 @@ function showScreen(id) {
     if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
     if (id === 'screen-exam-interface') setTimeout(startExamTimer, 100);
     else if (examTimerInterval) clearInterval(examTimerInterval);
-    if (id === 'screen-my-study' && USER_ROLE === 'student') loadLibraryGrid();
+    if (id === 'screen-my-study' && USER_ROLE === 'student') loadBooksRoot();
     if (id === 'screen-content-library' && (USER_ROLE === 'teacher' || USER_ROLE === 'admin')) loadTeacherContentLibrary();
     if (id === 'screen-home' && USER_ROLE === 'student') loadStudentHome();
     if (id === 'screen-teacher-dash' && USER_ROLE === 'teacher') loadTeacherDashboard();
@@ -305,7 +305,7 @@ function showScreen(id) {
     if (id === 'screen-messages') loadMessages();
     if (id === 'screen-earnings') loadEarnings();
     if (id === 'screen-live-lobby') loadLiveSchedule();
-    if (id === 'screen-my-study') { loadMyStudyStats(); loadSubjectChapters(1); }
+    if (id === 'screen-my-study') { loadMyStudyStats(); }
     if (id === 'screen-tutors' && USER_ROLE === 'student') loadTutorsScreen();
     if (id === 'screen-teacher-dash' && USER_ROLE === 'teacher') loadTeacherDashStats();
     if (id === 'screen-exam-analytics') loadExamAnalytics();
@@ -343,205 +343,262 @@ function openChatFromFAB() {
     showScreen('screen-chat');
 }
 
-// === OPEN SUBJECT FOLDER ===
-var SUBJECTS = {
-    mathematics: { name: 'Mathematics', icon: 'calculator', color: '#3B82F6', color2: '#2563EB' },
-    science: { name: 'Science', icon: 'flask-conical', color: '#22C55E', color2: '#16A34A' },
-    english: { name: 'English', icon: 'book-text', color: '#8B5CF6', color2: '#7C3AED' },
-    bangla: { name: 'Bangla', icon: 'pen-tool', color: '#F59E0B', color2: '#D97706' },
-    ict: { name: 'ICT', icon: 'laptop', color: '#06B6D4', color2: '#0891B2' },
-    religion: { name: 'Religion', icon: 'landmark', color: '#EC4899', color2: '#DB2777' }
-};
+// === BOOKS FOLDER BROWSER (Google Drive style) ===
+var _currentBookPath = '';
+var _pdfDoc = null;
+var _pdfPage = 1;
+var _pdfTotal = 0;
 
-var CLASS_SUBJECTS = {
-    'Class 7': ['bangla','english','math','science','ict','religion'],
-    'Class 8': ['bangla','english','math','science','ict','religion'],
-    'Class 9 Science': ['bangla','english','math','physics','chemistry','biology','ict'],
-    'Class 10 Science': ['bangla','english','math','physics','chemistry','biology','ict'],
-    'Class 9 Commerce': ['bangla','english','math','accounting','finance','religion'],
-    'Class 10 Commerce': ['bangla','english','math','accounting','finance','religion'],
-    'Class 9 Arts': ['bangla','english','math','history','geography','ict'],
-    'Class 10 Arts': ['bangla','english','math','history','geography','ict']
-};
-
-function openSubjectFolderDynamic(subjectId, subjectKey) {
-    currentLibrarySubjectId = subjectId;
-    currentLibrarySubjectKey = subjectKey;
-    var s = SUBJECTS[subjectKey];
-    if (!s) {
-        var fallbackMap = { 5:{name:'Physics',icon:'atom',color:'#3B82F6',color2:'#2563EB'}, 6:{name:'Chemistry',icon:'test-tubes',color:'#06B6D4',color2:'#0891B2'}, 7:{name:'Biology',icon:'bug',color:'#10B981',color2:'#059669'}, 9:{name:'Geography',icon:'globe',color:'#F97316',color2:'#EA580C'}, 11:{name:'Accounting',icon:'calculator',color:'#F59E0B',color2:'#D97706'}, 12:{name:'Finance',icon:'wallet',color:'#06B6D4',color2:'#0891B2'}, 13:{name:'History',icon:'landmark',color:'#8B5CF6',color2:'#7C3AED'} };
-        s = fallbackMap[subjectId] || { name: subjectKey, icon: 'book-open', color: '#6366F1', color2: '#4F46E5' };
-    }
-    document.getElementById('libSubjectTitle').textContent = s.name;
-    document.getElementById('libSubjectName').textContent = s.name;
-    document.getElementById('libSubjectIcon').setAttribute('data-lucide', s.icon);
-    var header = document.getElementById('libSubjectHeader');
-    header.style.background = 'linear-gradient(135deg,' + s.color + ',' + s.color2 + ')';
-    loadSubjectFiles(subjectId);
-    showFolderView();
-    showScreen('screen-library-subject');
+function loadBooksRoot() {
+    loadBooksContents('');
 }
 
-function loadSubjectFiles(subjectId) {
-    var fileContainer = document.getElementById('libFileList');
-    if (!fileContainer) return;
-    var userClass = USER_CLASS || 'Class 8';
-    fetch('/api/index.php?action=library&class=' + encodeURIComponent(userClass) + '&subject_id=' + subjectId)
+function openBooksFolder(folderName) {
+    var newPath = _currentBookPath ? _currentBookPath + '/' + folderName : folderName;
+    loadBooksContents(newPath);
+}
+
+function loadBooksContents(path) {
+    _currentBookPath = path;
+    showScreen('screen-book-browser');
+    var container = document.getElementById('bookBrowserContent');
+    var emptyEl = document.getElementById('bookBrowserEmpty');
+    var breadcrumbEl = document.getElementById('bookBrowserBreadcrumbs');
+    var titleEl = document.getElementById('bookBrowserTitle');
+    if (!container) return;
+    container.innerHTML = '<div style="text-align:center;padding:40px"><div style="width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 12px"></div><p style="font-size:12px;color:var(--text3)">Loading...</p></div>';
+    emptyEl.style.display = 'none';
+    if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+
+    fetch('/api/index.php?action=browse_books&path=' + encodeURIComponent(path))
         .then(function(r) { return r.json(); })
-        .then(function(files) {
-            var bookCount = 0, notesCount = 0, videoCount = 0;
-            var typeMap = { textbook: 'book', guide: 'book', reference: 'book', notes: 'notes', video: 'video' };
+        .then(function(data) {
+            renderBookBreadcrumbs(data.breadcrumbs || [], data.class_folder || '');
+            var items = data.items || [];
+            if (!items.length) {
+                container.innerHTML = '';
+                emptyEl.style.display = '';
+                if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
+                return;
+            }
+            var folders = items.filter(function(i) { return i.is_dir; });
+            var files = items.filter(function(i) { return !i.is_dir; });
             var html = '';
-            (files || []).forEach(function(f) {
-                var mappedType = typeMap[f.type] || 'book';
-                if (mappedType === 'book') bookCount++;
-                else if (mappedType === 'notes') notesCount++;
-                else videoCount++;
-                var typeIcon = mappedType === 'book' ? 'book-open' : mappedType === 'notes' ? 'file-text' : 'video';
-                var typeColor = mappedType === 'book' ? '#3B82F6' : mappedType === 'notes' ? '#8B5CF6' : '#EF4444';
-                var boxClass = mappedType === 'book' ? 'blue' : mappedType === 'notes' ? 'purple' : 'red';
-                var badge = '';
-                if (f.uploader_type === 'admin') badge = '<span class="list-item-badge" style="background:#EEF2FF;color:#6366F1">Admin</span>';
-                html += '<div class="list-item card-enter" data-type="' + mappedType + '" onclick="openLibraryFile(' + (f.subject_id || 0) + ',\'' + mappedType + '\',\'' + (f.title || '').replace(/'/g, "\\'") + '\')">' +
-                    '<div class="icon-box ' + boxClass + ' sm"><i data-lucide="' + typeIcon + '" class="icon-sm"></i></div>' +
-                    '<div class="list-item-content"><h5>' + (f.title || 'Untitled') + '</h5>' +
-                    '<p>' + (f.type || 'file') + ' - ' + (f.description || '') + '</p></div>' + badge + '</div>';
-            });
-            if (!html) html = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No files available for this subject.</p>';
-            fileContainer.innerHTML = html;
-            var bc = document.getElementById('bookCount');
-            var nc = document.getElementById('notesCount');
-            var vc = document.getElementById('videoCount');
-            if (bc) bc.textContent = bookCount + ' book' + (bookCount !== 1 ? 's' : '');
-            if (nc) nc.textContent = notesCount + ' note' + (notesCount !== 1 ? 's' : '');
-            if (vc) vc.textContent = videoCount + ' video' + (videoCount !== 1 ? 's' : '');
+            if (folders.length) {
+                html += '<div class="section-header" style="margin-bottom:8px"><h2 class="section-title"><i data-lucide="folder" style="width:14px;height:14px;color:#F59E0B"></i> Folders</h2></div>';
+                html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:16px">';
+                folders.forEach(function(f) {
+                    html += '<div class="book-folder-card" onclick="openBooksFolder(\'' + f.name.replace(/'/g, "\\'") + '\')">' +
+                        '<div style="width:40px;height:40px;background:linear-gradient(135deg,#FBBF24,#F59E0B);border-radius:10px;display:flex;align-items:center;justify-content:center"><i data-lucide="folder" style="width:20px;height:20px;color:white"></i></div>' +
+                        '<div style="flex:1;min-width:0"><p style="font-size:13px;font-weight:600;color:var(--text);margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escapeHtml(f.name) + '</p></div></div>';
+                });
+                html += '</div>';
+            }
+            if (files.length) {
+                html += '<div class="section-header" style="margin-bottom:8px"><h2 class="section-title"><i data-lucide="file" style="width:14px;height:14px;color:var(--primary)"></i> Files</h2></div>';
+                html += '<div style="display:flex;flex-direction:column;gap:6px">';
+                files.forEach(function(f) {
+                    var typeColor = getFileTypeColor(f.name);
+                    var typeIcon = f.icon || 'file';
+                    html += '<div class="book-file-card" onclick="openBooksFile(\'' + escapeHtml(_currentBookPath) + '\',\'' + escapeHtml(f.name) + '\',\'' + (f.type || '') + '\')">' +
+                        '<div style="width:36px;height:36px;border-radius:10px;background:' + typeColor + ';display:flex;align-items:center;justify-content:center"><i data-lucide="' + typeIcon + '" style="width:18px;height:18px;color:white"></i></div>' +
+                        '<div style="flex:1;min-width:0"><p style="font-size:13px;font-weight:600;color:var(--text);margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escapeHtml(f.name) + '</p>' +
+                        '<p style="font-size:11px;color:var(--text3);margin:2px 0 0">' + formatFileSize(f.size) + '</p></div></div>';
+                });
+                html += '</div>';
+            }
+            container.innerHTML = html;
             if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
         })
         .catch(function() {
-            fileContainer.innerHTML = '<p style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">Failed to load files.</p>';
+            container.innerHTML = '<p style="text-align:center;padding:40px;color:var(--text3)">Failed to load content.</p>';
         });
 }
 
-// === OPEN LIBRARY FILE ===
-function openLibraryFile(subjectId, type, title) {
-    if (type === 'video') {
-        _previousScreen = document.querySelector('.screen.active') ? document.querySelector('.screen.active').id : 'screen-my-study';
-        showScreen('screen-live-lobby');
-        return;
-    }
-    if (type === 'notes') {
-        api('chapters&subject_id=' + subjectId).then(function(chapters) {
-            var ch = (chapters || [])[0];
-            if (ch) {
-                openBookReader(ch.id, ch.title);
-            } else {
-                showToast('No content available yet', 'info');
-            }
-        });
-        return;
-    }
-    api('chapters&subject_id=' + subjectId).then(function(chapters) {
-        var ch = (chapters || [])[0];
-        if (ch) {
-            openBookReader(ch.id, ch.title);
+function renderBookBreadcrumbs(crumbs, classFolder) {
+    var el = document.getElementById('bookBrowserBreadcrumbs');
+    var titleEl = document.getElementById('bookBrowserTitle');
+    if (!el) return;
+    var html = '<span class="book-crumb" onclick="loadBooksContents(\'\')">My Books</span>';
+    var built = '';
+    crumbs.forEach(function(c, i) {
+        built += (built ? '/' : '') + c;
+        var path = built;
+        var isLast = i === crumbs.length - 1;
+        html += '<span class="book-crumb-sep">/</span>';
+        if (isLast) {
+            html += '<span class="book-crumb active">' + escapeHtml(c) + '</span>';
         } else {
-            showToast('No chapters available for this subject', 'info');
+            html += '<span class="book-crumb" onclick="loadBooksContents(\'' + escapeHtml(path) + '\')">' + escapeHtml(c) + '</span>';
         }
     });
+    el.innerHTML = html;
+    if (titleEl) {
+        titleEl.textContent = crumbs.length ? crumbs[crumbs.length - 1] : 'My Books';
+    }
 }
 
-function openBookReader(chapterId, chapterTitle) {
-    _previousScreen = document.querySelector('.screen.active') ? document.querySelector('.screen.active').id : 'screen-my-study';
-    loadBookContent(chapterId);
+function bookBrowserBack() {
+    if (!_currentBookPath) {
+        showScreen('screen-my-study');
+        return;
+    }
+    var parts = _currentBookPath.split('/');
+    parts.pop();
+    var parent = parts.join('/');
+    loadBooksContents(parent);
+}
+
+function openBooksFile(path, name, type) {
+    var url = '/books/' + encodeURIComponent(path ? path + '/' + name : name);
+    var ext = name.split('.').pop().toLowerCase();
+    var viewerType = getFileViewerType(ext);
+    _previousScreen = 'screen-book-browser';
+    if (viewerType === 'pdf') {
+        initPdfViewer(url, name);
+    } else if (viewerType === 'image') {
+        initImageViewer(url, name);
+    } else if (viewerType === 'video') {
+        initVideoPlayer(url, name);
+    } else {
+        initUnsupportedViewer(name);
+    }
     showScreen('screen-reader');
-}
-
-// === FILE FOLDER VIEW ===
-function openFileFolder(type) {
-    var folderView = document.getElementById('folderView');
-    var fileListView = document.getElementById('fileListView');
-    var items = document.querySelectorAll('#libFileList .list-item');
-    var typeNames = { book: 'Books', notes: 'Notes', video: 'Videos' };
-    var typeIcons = { book: 'book-open', notes: 'file-text', video: 'video' };
-    var typeColors = { book: '#3B82F6', notes: '#8B5CF6', video: '#EF4444' };
-
-    folderView.style.display = 'none';
-    fileListView.style.display = '';
-    document.getElementById('fileListTitle').innerHTML = '<i data-lucide="' + typeIcons[type] + '" style="width:14px;height:14px;color:' + typeColors[type] + '"></i> ' + typeNames[type];
-
-    items.forEach(function(item) {
-        item.style.display = item.getAttribute('data-type') === type ? '' : 'none';
-    });
-
     if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
 }
 
-function showFolderView() {
-    var folderView = document.getElementById('folderView');
-    var fileListView = document.getElementById('fileListView');
-    var items = document.querySelectorAll('#libFileList .list-item');
-    folderView.style.display = '';
-    fileListView.style.display = 'none';
-    items.forEach(function(item) { item.style.display = ''; });
+function closeFileViewer() {
+    if (_pdfDoc) { _pdfDoc.destroy(); _pdfDoc = null; }
+    var video = document.getElementById('viewerVideo');
+    if (video) { video.pause(); video.src = ''; }
+    hideAllViewers();
+    showScreen(_previousScreen || 'screen-book-browser');
 }
 
-// === DYNAMIC LIBRARY GRID ===
-var LIBRARY_DATA = [];
-var currentLibrarySubjectId = 0;
-var currentLibrarySubjectKey = '';
-
-function loadLibraryGrid() {
-    var grid = document.getElementById('myMaterialsGrid');
-    if (!grid) return;
-    var userClass = USER_CLASS || 'Class 8';
-    fetch('/api/index.php?action=library&class=' + encodeURIComponent(userClass))
-        .then(function(r) { return r.json(); })
-        .then(function(items) {
-            LIBRARY_DATA = items || [];
-            var subjects = {};
-            items.forEach(function(item) {
-                var sid = item.subject_id;
-                if (!subjects[sid]) subjects[sid] = { count: 0, types: {} };
-                subjects[sid].count++;
-                var t = item.type || 'textbook';
-                subjects[sid].types[t] = (subjects[sid].types[t] || 0) + 1;
-            });
-            var html = '';
-            var allowed = CLASS_SUBJECTS[USER_CLASS] || CLASS_SUBJECTS['Class 8'];
-            Object.keys(subjects).forEach(function(sid) {
-                var info = _subjectsCache ? _subjectsCache[sid] : null;
-                if (!info) return;
-                var key = (info.name || '').toLowerCase().replace(/\s+/g, '');
-                if (allowed.indexOf(key) === -1) return;
-                var s = subjects[sid];
-                var pct = Math.min(s.count * 25, 100);
-                html += '<div class="material-card" onclick="openSubjectFolderDynamic(' + sid + ',\'' + key + '\')">' +
-                    '<div class="material-icon ' + key + '"><i data-lucide="' + (info.icon || 'book-open') + '" style="width:18px;height:18px"></i></div>' +
-                    '<h5>' + info.name + '</h5>' +
-                    '<div class="material-bar"><div class="material-bar-fill progress-green" style="width:' + pct + '%"></div></div>' +
-                    '</div>';
-            });
-            if (!html) html = '<p style="grid-column:1/-1;text-align:center;padding:20px;font-size:12px;color:var(--text3)">No content available for your class yet.</p>';
-            grid.innerHTML = html;
-            if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
-        })
-        .catch(function() {
-            LIBRARY_DATA = [];
-        });
-}
-
-// === FILTER SUBJECT FILES ===
-function filterSubjectFiles(btn, type) {
-    btn.parentElement.querySelectorAll('.filter-chip').forEach(function(c) { c.classList.remove('active'); });
-    btn.classList.add('active');
-    var items = document.querySelectorAll('#libFileList .list-item');
-    items.forEach(function(item) {
-        if (type === 'all') {
-            item.style.display = '';
-        } else {
-            item.style.display = item.getAttribute('data-type') === type ? '' : 'none';
-        }
+function hideAllViewers() {
+    ['pdfViewer','imageViewer','videoViewer','unsupportedViewer'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.style.display = 'none';
     });
+}
+
+function getFileViewerType(ext) {
+    if (ext === 'pdf') return 'pdf';
+    if (['jpg','jpeg','png','gif','webp','svg','bmp'].indexOf(ext) > -1) return 'image';
+    if (['mp4','mov','avi','mkv','webm','ogg'].indexOf(ext) > -1) return 'video';
+    return 'other';
+}
+
+function getFileTypeColor(filename) {
+    var ext = filename.split('.').pop().toLowerCase();
+    if (ext === 'pdf') return 'linear-gradient(135deg,#EF4444,#DC2626)';
+    if (['jpg','jpeg','png','gif','webp'].indexOf(ext) > -1) return 'linear-gradient(135deg,#8B5CF6,#7C3AED)';
+    if (['mp4','mov','avi','mkv'].indexOf(ext) > -1) return 'linear-gradient(135deg,#EF4444,#DC2626)';
+    if (['doc','docx'].indexOf(ext) > -1) return 'linear-gradient(135deg,#3B82F6,#2563EB)';
+    if (['xls','xlsx'].indexOf(ext) > -1) return 'linear-gradient(135deg,#22C55E,#16A34A)';
+    if (['ppt','pptx'].indexOf(ext) > -1) return 'linear-gradient(135deg,#F97316,#EA580C)';
+    return 'linear-gradient(135deg,#6366F1,#4F46E5)';
+}
+
+function formatFileSize(bytes) {
+    if (!bytes || bytes === 0) return '0 B';
+    var u = ['B','KB','MB','GB'];
+    var i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + u[i];
+}
+
+function escapeHtml(s) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(s));
+    return div.innerHTML;
+}
+
+// === PDF VIEWER ===
+function initPdfViewer(url, title) {
+    hideAllViewers();
+    var el = document.getElementById('pdfViewer');
+    if (el) el.style.display = '';
+    var titleEl = document.getElementById('viewerTitle');
+    if (titleEl) titleEl.textContent = title;
+    _pdfPage = 1;
+    _pdfTotal = 0;
+    if (typeof pdfjsLib === 'undefined') {
+        document.getElementById('pdfCanvasContainer').innerHTML = '<p style="text-align:center;padding:40px;color:var(--text3)">PDF viewer loading failed. Check your connection.</p>';
+        return;
+    }
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    var loadingTask = pdfjsLib.getDocument(url);
+    loadingTask.promise.then(function(pdf) {
+        _pdfDoc = pdf;
+        _pdfTotal = pdf.numPages;
+        renderPdfPage(1);
+    }).catch(function() {
+        document.getElementById('pdfCanvasContainer').innerHTML = '<p style="text-align:center;padding:40px;color:var(--text3)">Failed to load PDF.</p>';
+    });
+}
+
+function renderPdfPage(num) {
+    if (!_pdfDoc) return;
+    _pdfPage = num;
+    _pdfDoc.getPage(num).then(function(page) {
+        var canvas = document.getElementById('pdfCanvas');
+        var container = document.getElementById('pdfCanvasContainer');
+        var containerWidth = container.clientWidth - 32;
+        var viewport = page.getViewport({ scale: 1 });
+        var scale = containerWidth / viewport.width;
+        viewport = page.getViewport({ scale: scale });
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        var ctx = canvas.getContext('2d');
+        page.render({ canvasContext: ctx, viewport: viewport });
+        document.getElementById('pdfPageInfo').textContent = 'Page ' + _pdfPage + ' of ' + _pdfTotal;
+        document.getElementById('pdfProgressBar').style.width = (_pdfPage / _pdfTotal * 100) + '%';
+        document.getElementById('pdfZoomLevel').textContent = Math.round(scale * 100) + '%';
+        document.getElementById('pdfPrevBtn').style.opacity = _pdfPage <= 1 ? '0.5' : '1';
+        document.getElementById('pdfNextBtn').style.opacity = _pdfPage >= _pdfTotal ? '0.5' : '1';
+    });
+}
+
+function pdfNavigate(dir) {
+    var newPage = _pdfPage + dir;
+    if (newPage < 1 || newPage > _pdfTotal) return;
+    renderPdfPage(newPage);
+}
+
+// === IMAGE VIEWER ===
+function initImageViewer(url, title) {
+    hideAllViewers();
+    var el = document.getElementById('imageViewer');
+    if (el) el.style.display = '';
+    var titleEl = document.getElementById('viewerTitle');
+    if (titleEl) titleEl.textContent = title;
+    var img = document.getElementById('viewerImage');
+    if (img) img.src = url;
+}
+
+// === VIDEO PLAYER ===
+function initVideoPlayer(url, title) {
+    hideAllViewers();
+    var el = document.getElementById('videoViewer');
+    if (el) el.style.display = '';
+    var titleEl = document.getElementById('viewerTitle');
+    if (titleEl) titleEl.textContent = title;
+    var video = document.getElementById('viewerVideo');
+    if (video) {
+        video.src = url;
+        video.load();
+    }
+}
+
+// === UNSUPPORTED FILE ===
+function initUnsupportedViewer(name) {
+    hideAllViewers();
+    var el = document.getElementById('unsupportedViewer');
+    if (el) el.style.display = '';
+    var titleEl = document.getElementById('viewerTitle');
+    if (titleEl) titleEl.textContent = name;
+    var nameEl = document.getElementById('unsupportedFileName');
+    if (nameEl) nameEl.textContent = name;
 }
 
 // === FILTER MESSAGES ===
@@ -2809,55 +2866,7 @@ function loadSubjectChapters(subjectId) {
 }
 
 // --- BOOK CONTENT ---
-var _currentBookChapterId = null;
 var _currentBookSubjectId = null;
-
-function loadBookContent(chapterId) {
-    if (!chapterId) return;
-    _currentBookChapterId = chapterId;
-    api('book_content&chapter_id=' + chapterId).then(function(book) {
-        if (!book || !book.content) {
-            var contentEl = document.getElementById('bookContent');
-            if (contentEl) contentEl.innerHTML = '<p style="text-align:center;padding:40px;color:var(--text3)">No content available for this chapter yet.</p>';
-            return;
-        }
-        _currentBookSubjectId = book.subject_id || null;
-        logActivity('read', 'Read ' + (book.title || 'chapter'));
-        var setText = function(eid, val) { var el = document.getElementById(eid); if (el) el.textContent = val; };
-        setText('bookTitle', book.title || '');
-        var pct = book.pages_total ? Math.round((book.pages_read || 0) / book.pages_total * 100) : 0;
-        setText('bookProgress', pct + '% complete');
-        var bar = document.getElementById('bookProgressBar');
-        if (bar) bar.style.width = pct + '%';
-        setText('bookChapterInfo', 'Page ' + (book.pages_read || 0) + ' of ' + (book.pages_total || 1));
-        var contentEl = document.getElementById('bookContent');
-        if (contentEl) {
-            var lines = (book.content || '').split(/\n/);
-            contentEl.innerHTML = '<h3 style="font-size:16px;font-weight:700;margin-bottom:12px">' + (book.title || '') + '</h3>' +
-                lines.map(function(l) { return '<p style="font-size:13px;line-height:1.8;color:var(--text2);margin-bottom:8px">' + l + '</p>'; }).join('');
-        }
-        if (typeof lucide !== 'undefined') setTimeout(function() { lucide.createIcons(); }, 50);
-    });
-}
-
-function goBackFromReader() {
-    var back = _previousScreen || 'screen-my-study';
-    showScreen(back);
-}
-
-function readerNavigate(dir) {
-    if (!_currentBookSubjectId) { showToast('No more chapters', 'info'); return; }
-    api('chapters&subject_id=' + _currentBookSubjectId).then(function(chapters) {
-        var list = chapters || [];
-        var idx = -1;
-        for (var i = 0; i < list.length; i++) {
-            if (list[i].id === _currentBookChapterId) { idx = i; break; }
-        }
-        var nextIdx = idx + dir;
-        if (nextIdx < 0 || nextIdx >= list.length) { showToast('No more chapters', 'info'); return; }
-        openBookReader(list[nextIdx].id, list[nextIdx].title);
-    });
-}
 
 // --- TUTORS SCREEN (Full Dynamic) ---
 var _tutorVideoUrl = '';

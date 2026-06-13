@@ -6,6 +6,7 @@
     <title>EduAI - Premium EdTech Platform</title>
     <link rel="stylesheet" href="css/app.css">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
 
@@ -995,12 +996,12 @@
             </div>
         </div>
 
-        <!-- My Learning Materials -->
+        <!-- My Books -->
         <div class="section-header card-enter" style="animation-delay:0.25s">
-            <h2 class="section-title"><i data-lucide="library" style="width:16px;height:16px;color:var(--info)"></i> My Learning Materials</h2>
+            <h2 class="section-title"><i data-lucide="library" style="width:16px;height:16px;color:var(--info)"></i> My Books</h2>
         </div>
-        <div class="materials-grid-4 card-enter" style="animation-delay:0.3s" id="myMaterialsGrid">
-            <!-- Dynamic: loaded by loadLibraryGrid() -->
+        <div class="materials-grid-4 card-enter" style="animation-delay:0.3s" id="libraryGrid">
+            <!-- Dynamic: loaded by loadBooksRoot() -->
         </div>
 
         <!-- Question Bank CTA -->
@@ -1330,23 +1331,46 @@
 <!-- ========== 12. BOOK READER ========== -->
 <div id="screen-reader" class="screen">
     <header class="header">
-        <button class="header-back" onclick="goBackFromReader()"><i data-lucide="arrow-left"></i></button>
-        <h3 id="bookTitle" class="header-title">Loading...</h3>
-        <button class="icon-btn" onclick="showToast('Bookmark saved!')"><i data-lucide="bookmark"></i></button>
+        <button class="header-back" onclick="closeFileViewer()"><i data-lucide="arrow-left"></i></button>
+        <h3 id="viewerTitle" class="header-title">Loading...</h3>
     </header>
-    <div class="reader-header">
-        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3)">
-            <span id="bookChapterInfo">Chapter</span><span id="bookProgress">0% complete</span>
+    <!-- PDF Viewer -->
+    <div id="pdfViewer" style="display:none">
+        <div class="reader-header">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3)">
+                <span id="pdfPageInfo">Page 1 of 1</span><span id="pdfZoomLevel">100%</span>
+            </div>
+            <div class="reader-progress"><div id="pdfProgressBar" class="reader-progress-fill" style="width:0%"></div></div>
         </div>
-        <div class="reader-progress"><div id="bookProgressBar" class="reader-progress-fill" style="width:0%"></div></div>
+        <div id="pdfCanvasContainer" class="pdf-canvas-container">
+            <canvas id="pdfCanvas"></canvas>
+        </div>
+        <div class="reader-nav">
+            <button class="reader-btn prev" id="pdfPrevBtn" onclick="pdfNavigate(-1)"><i data-lucide="arrow-left" style="width:14px;height:14px"></i> Prev</button>
+            <button class="reader-btn next" id="pdfNextBtn" onclick="pdfNavigate(1)"><i data-lucide="arrow-right" style="width:14px;height:14px"></i> Next</button>
+        </div>
     </div>
-    <div id="bookContent" class="reader-content">
-        <p style="text-align:center;padding:40px;color:var(--text3)">Loading content...</p>
+    <!-- Image Viewer -->
+    <div id="imageViewer" style="display:none">
+        <div class="image-viewer-container">
+            <img id="viewerImage" src="" style="max-width:100%;max-height:100%;object-fit:contain">
+        </div>
     </div>
-    <div class="reader-nav">
-        <button class="reader-btn prev" id="readerPrevBtn" onclick="readerNavigate(-1)"><i data-lucide="arrow-left" style="width:14px;height:14px"></i> Previous</button>
-        <button class="reader-btn next" id="readerNextBtn" onclick="readerNavigate(1)"><i data-lucide="arrow-right" style="width:14px;height:14px"></i> Next</button>
+    <!-- Video Viewer -->
+    <div id="videoViewer" style="display:none">
+        <div class="video-viewer-container">
+            <video id="viewerVideo" controls style="max-width:100%;max-height:100%">
+                Your browser does not support video.
+            </video>
+        </div>
     </div>
+    <!-- Unsupported -->
+    <div id="unsupportedViewer" style="display:none">
+        <div style="text-align:center;padding:60px 20px;color:var(--text3)">
+            <i data-lucide="file-question" style="width:48px;height:48px;margin-bottom:12px;opacity:0.3"></i>
+            <p style="font-size:14px;margin:0">This file type is not supported</p>
+            <p id="unsupportedFileName" style="font-size:12px;margin:4px 0 0"></p>
+        </div>
     </div>
 </div>
 
@@ -1791,71 +1815,24 @@
     </div>
 </div>
 
-<!-- ========== 19B. LIBRARY SUBJECT FILES ========== -->
-<div id="screen-library-subject" class="screen">
+<!-- ========== 19B. LIBRARY FOLDER BROWSER ========== -->
+<div id="screen-book-browser" class="screen">
     <header class="header glass-header">
-        <button class="header-back" onclick="showScreen('screen-my-study')"><i data-lucide="arrow-left"></i></button>
-        <h3 class="header-title" id="libSubjectTitle">Mathematics</h3>
-        <button class="icon-btn glass-card-sm" onclick="toggleSearchBar('libSearchBar','libSearchInput')"><i data-lucide="search"></i></button>
+        <button class="header-back" onclick="bookBrowserBack()"><i data-lucide="arrow-left"></i></button>
+        <h3 class="header-title" id="bookBrowserTitle">My Books</h3>
     </header>
     <div class="main-content">
-        <div id="libSearchBar" style="display:none;margin-bottom:12px">
-            <input type="text" id="libSearchInput" class="input-field glass-input" placeholder="Search files..." style="width:100%" data-search-target="libFileList .list-item" oninput="searchItems('libSearchInput','libFileList .list-item')">
+        <!-- Breadcrumbs -->
+        <div id="bookBrowserBreadcrumbs" class="book-breadcrumbs"></div>
+        <!-- Folder/File Grid -->
+        <div id="bookBrowserContent">
+            <!-- Dynamic: loaded by loadBooksContents() -->
         </div>
-        <!-- Subject Header -->
-        <div class="card-enter" id="libSubjectHeader" style="background:linear-gradient(135deg,#3B82F6,#2563EB);border-radius:16px;padding:16px;color:white;margin-bottom:16px;display:flex;align-items:center;gap:12px">
-            <div style="width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center">
-                <i data-lucide="calculator" style="width:24px;height:24px" id="libSubjectIcon"></i>
-            </div>
-            <div style="flex:1">
-                <h3 style="font-size:16px;font-weight:700" id="libSubjectName">Mathematics</h3>
-                <p style="font-size:11px;opacity:0.85">Tap a folder to browse files</p>
-            </div>
-        </div>
-
-        <!-- FOLDER VIEW: Books / Notes / Videos -->
-        <div id="folderView">
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
-                <div class="glass-card" style="padding:20px 12px;cursor:pointer;text-align:center" onclick="openFileFolder('book')">
-                    <div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#3B82F6,#2563EB);margin:0 auto 10px;display:flex;align-items:center;justify-content:center">
-                        <i data-lucide="book-open" style="width:26px;height:26px;color:white"></i>
-                    </div>
-                    <h5 style="font-size:13px;font-weight:700;margin-bottom:2px">Books</h5>
-                    <p style="font-size:10px;color:var(--text3)" id="bookCount">2 books</p>
-                </div>
-                <div class="glass-card" style="padding:20px 12px;cursor:pointer;text-align:center" onclick="openFileFolder('notes')">
-                    <div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#8B5CF6,#7C3AED);margin:0 auto 10px;display:flex;align-items:center;justify-content:center">
-                        <i data-lucide="file-text" style="width:26px;height:26px;color:white"></i>
-                    </div>
-                    <h5 style="font-size:13px;font-weight:700;margin-bottom:2px">Notes</h5>
-                    <p style="font-size:10px;color:var(--text3)" id="notesCount">3 notes</p>
-                </div>
-                <div class="glass-card" style="padding:20px 12px;cursor:pointer;text-align:center" onclick="openFileFolder('video')">
-                    <div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#EF4444,#DC2626);margin:0 auto 10px;display:flex;align-items:center;justify-content:center">
-                        <i data-lucide="video" style="width:26px;height:26px;color:white"></i>
-                    </div>
-                    <h5 style="font-size:13px;font-weight:700;margin-bottom:2px">Videos</h5>
-                    <p style="font-size:10px;color:var(--text3)" id="videoCount">3 videos</p>
-                </div>
-            </div>
-
-            <!-- All Files -->
-            <div class="section-header">
-                <h2 class="section-title"><i data-lucide="list" style="width:14px;height:14px;color:var(--text3)"></i> All Files</h2>
-            </div>
-        </div>
-
-        <!-- FILE LIST VIEW (hidden by default) -->
-        <div id="fileListView" style="display:none">
-            <div class="section-header">
-                <h2 class="section-title" id="fileListTitle"><i data-lucide="book-open" style="width:14px;height:14px;color:var(--primary)"></i> Books</h2>
-                <a class="section-link" onclick="showFolderView()">Back to Folders</a>
-            </div>
-        </div>
-
-        <!-- File List -->
-        <div id="libFileList">
-            <!-- Dynamic: loaded by loadSubjectFiles() -->
+        <!-- Empty state -->
+        <div id="bookBrowserEmpty" style="display:none;text-align:center;padding:60px 20px;color:var(--text3)">
+            <i data-lucide="folder-open" style="width:48px;height:48px;margin-bottom:12px;opacity:0.3"></i>
+            <p style="font-size:14px;margin:0">This folder is empty</p>
+            <p style="font-size:12px;margin:4px 0 0">Ask admin to upload content here</p>
         </div>
     </div>
 </div>

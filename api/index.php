@@ -15,7 +15,8 @@ switch ($path) {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user_name'] = $user['name'];
             $_SESSION['role'] = $user['role'];
-            jsonResponse(['success'=>true,'user'=>['id'=>$user['id'],'name'=>$user['name'],'role'=>$user['role']]]);
+            $_SESSION['user_class'] = $user['class'] ?? 'Class 8';
+            jsonResponse(['success'=>true,'user'=>['id'=>$user['id'],'name'=>$user['name'],'role'=>$user['role'],'class'=>$user['class'] ?? 'Class 8']]);
         }
         jsonResponseError('Invalid credentials', 401);
         break;
@@ -138,6 +139,38 @@ switch ($path) {
         $delId = intval($_GET['id'] ?? 0);
         if ($delId > 0) { $db->delete('library', $delId); jsonResponse(['success' => true]); }
         else jsonResponseError('Invalid ID');
+        break;
+
+    case 'browse_books':
+        if (!isLoggedIn()) jsonResponseError('Not logged in', 401);
+        require_once __DIR__ . '/../config/upload.php';
+        $role = $_SESSION['role'] ?? '';
+        $userClass = $_SESSION['user_class'] ?? 'Class 8';
+        $reqPath = trim($_GET['path'] ?? '', '/');
+        if ($role === 'student') {
+            $classDir = sanitizePath($userClass);
+            $fullPath = getBooksDir() . '/' . $classDir . ($reqPath ? '/' . sanitizePath($reqPath) : '');
+            $realBase = realpath(getBooksDir() . '/' . $classDir);
+            $realFull = realpath($fullPath);
+            if (!$realBase || !$realFull || strpos($realFull, $realBase) !== 0) {
+                jsonResponse(['items' => [], 'breadcrumbs' => [], 'current_path' => '', 'error' => 'Access denied']);
+            }
+        } else {
+            $fullPath = getBooksDir() . ($reqPath ? '/' . sanitizePath($reqPath) : '');
+            $realBase = realpath(getBooksDir());
+            $realFull = realpath($fullPath);
+            if (!$realBase || ($realFull && strpos($realFull, $realBase) !== 0)) {
+                jsonResponse(['items' => [], 'breadcrumbs' => [], 'current_path' => '', 'error' => 'Access denied']);
+            }
+        }
+        $items = scanFolder($fullPath);
+        $breadcrumbs = $reqPath ? array_values(array_filter(explode('/', $reqPath))) : [];
+        jsonResponse([
+            'items' => $items,
+            'breadcrumbs' => $breadcrumbs,
+            'current_path' => $reqPath,
+            'class_folder' => $role === 'student' ? $userClass : ''
+        ]);
         break;
 
     case 'submit_homework':
